@@ -1,0 +1,57 @@
+# One-GPU full-parameter SFT on 240 verified MBPP agent traces.
+max_steps = 16
+output_dir = "outputs/sft"
+
+[model]
+name = "Qwen/Qwen3-4B-Base"
+impl = "auto"
+seq_len = 1024
+
+[tokenizer]
+chat_template = '''{%- for message in messages %}
+{%- set role = message['role'] %}
+{%- set content = message['content'] %}
+{{- '<|im_start|>' + role + '\n' + content.rstrip() + '\n<|im_end|>\n\n' }}
+{%- endfor %}
+{%- if add_generation_prompt %}
+{{- '<|im_start|>assistant\n' }}
+{%- endif %}'''
+
+[renderer]
+name = "default"
+
+[data]
+type = "sft"
+name = "data/sft.jsonl"
+batch_size = 32
+micro_batch_size = 1
+seq_len = 1024
+pack_function = "stack"
+shuffle = true
+seed = 42
+
+[data.loss_mask]
+system = false
+user = false
+assistant = true
+tool = false
+
+[optim]
+type = "adamw"
+lr = 2e-5
+weight_decay = 0.01
+
+[scheduler]
+type = "linear"
+warmup_steps = 2
+decay_steps = 14
+min_lr = 0.0
+
+[ckpt]
+interval = 16
+keep_last = 1
+
+[deployment]
+type = "single_node"
+num_gpus = 1
+gpus_per_node = 1

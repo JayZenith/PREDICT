@@ -1,0 +1,41 @@
+[project]
+name = "glyph"
+version = "2.0.0"
+description = "An agentic post-training stack for Python function generation"
+readme = "README.md"
+requires-python = "==3.12.*"
+dependencies = [
+    "openai==2.32.0",
+    "pyarrow==25.0.0",
+    "transformers==5.13.1",
+    "verifiers==0.2.0",
+]
+
+[project.scripts]
+glyph = "glyph.cli:main"
+
+[project.urls]
+Repository = "https://github.com/JayZenith/PREDICT"
+
+[dependency-groups]
+dev = [
+    "prime-rl-configs @ https://github.com/PrimeIntellect-ai/prime-rl/archive/d334ea52940b47f426293a7d146239e3fbf91caa.tar.gz#subdirectory=packages/prime-rl-configs",
+    "pytest==9.1.1",
+    "pytest-asyncio==1.3.0",
+]
+
+[build-system]
+requires = ["hatchling==1.29.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/glyph"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+asyncio_mode = "strict"
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.uv]
+prerelease = "allow"

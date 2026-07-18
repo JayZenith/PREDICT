@@ -1,0 +1,9 @@
+# Direct upstream compatibility pins. Do not float these independently.
+[verifiers]
+version = "0.2.0"
+commit = "6c64ce6a3a01e8edde7c3c0e8e5315fb236e9faa"
+
+[prime_rl]
+version = "0.7.0"
+commit = "d334ea52940b47f426293a7d146239e3fbf91caa"
+verifiers_commit = "6c64ce6a3a01e8edde7c3c0e8e5315fb236e9faa"

@@ -1,0 +1,37 @@
+# Python and local environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.venv-*/
+venv/
+.uv/
+.vendor/
+
+# Build and generated output
+.cache/
+dist/
+build/
+*.egg-info/
+data/*
+!data/README.md
+!data/__init__.py
+!data/prepare.py
+!data/recovery.py
+!data/validate.py
+outputs/
+runs/
+wandb/
+logs/
+*.log
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Secrets
+.env
+*.key
