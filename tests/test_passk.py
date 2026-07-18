@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from glyph.passk import compare, pass_at_k, select_frontier, summarize
+from glyph.passk import compare, pass_at_k, report, summarize
 
 
 def _trace(case_id: str, passed: bool) -> dict:
@@ -26,24 +26,43 @@ def test_pass_at_k_and_summary(tmp_path: Path) -> None:
     }
 
 
-def test_frontier_keeps_only_mixed_pass8_groups(tmp_path: Path) -> None:
-    traces = tmp_path / "screen.jsonl"
-    _write(
-        traces,
-        [_trace("mixed", value) for value in ([1] + [0] * 7)]
-        + [_trace("easy", 1)] * 8
-        + [_trace("hard", 0)] * 8,
-    )
-    tasks = tmp_path / "tasks.jsonl"
-    _write(tasks, [{"case_id": case_id} for case_id in ("mixed", "easy", "hard")])
-    output = tmp_path / "rl.jsonl"
-    assert select_frontier(traces, tasks, output) == {
-        "screened": 3,
-        "frontier": 1,
-        "all_failed": 1,
-        "all_passed": 1,
-    }
-    assert json.loads(output.read_text())["case_id"] == "mixed"
+def test_predict_report_aggregates_decisions_and_efficiency(tmp_path: Path) -> None:
+    traces = tmp_path / "traces.jsonl"
+    rows = []
+    for case_id, passed, actual, decision in (
+        ("a", True, "PASS", "KEEP"),
+        ("b", True, "ASSERTION_FAILURE", "REVISE"),
+    ):
+        row = _trace(case_id, passed)
+        row["info"] = {
+            "glyph": {
+                "calls": [
+                    {"tool": "apply_patch", "id": "c1"},
+                    {"tool": "python_test", "id": "c2"},
+                ],
+                "results": {
+                    "c2": {
+                        "success": actual == "PASS",
+                        "outcome": actual,
+                    }
+                },
+                "prediction_targets": [
+                    {
+                        "sampled_prediction": actual,
+                        "actual": actual,
+                        "decision": decision,
+                    }
+                ],
+            }
+        }
+        rows.append(row)
+    _write(traces, rows)
+    result = report(traces)
+    assert result["final_pass_at_1"] == 1.0
+    assert result["first_patch_success"] == 0.5
+    assert result["prediction_accuracy"] == 1.0
+    assert result["bad_patch_rejection_rate"] == 1.0
+    assert result["good_patch_unnecessary_rejection_rate"] == 0.0
 
 
 def test_compare_requires_paired_tasks(tmp_path: Path) -> None:

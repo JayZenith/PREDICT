@@ -1,83 +1,72 @@
 # PREDICT
 
-PREDICT tests whether a coding agent can predict the sandbox consequence of its
-own patch and use that prediction to keep or revise the patch before execution.
-It starts from GLYPH v2's minimal Python agent stack: a Qwen3-4B policy reads
-`solution.py`, patches it, runs hidden MBPP tests, and retries before emitting
-`FINAL`.
+PREDICT tests one claim: **does sandbox-supervised consequence prediction help
+a coding agent make better decisions before execution?**
 
-The matched Arm A/Arm B experiment is specified in
-[research specs](docs/research_specs.md), with complete
-[canonical agent traces](docs/agent_trace.md). The current code is the imported
-GLYPH v2 baseline from which both arms will be implemented.
+It extends the MBPP unit-test GRPO experiment in
+[arXiv:2605.30478](https://arxiv.org/abs/2605.30478) from single-shot function
+generation to a verified multi-turn agent.
 
-## Current GLYPH baseline
+Both agents solve the same official MBPP tasks with the same Qwen3-4B base,
+ChatML protocol, budgets, optimizer, hidden tests, and binary final reward.
 
-The data is small and fixed:
+| Arm | Agent loop | Training |
+|---|---|---|
+| A | patch → test → recover | agent SFT → GRPO |
+| B | patch → predict outcome → KEEP or REVISE | matched SFT → GRPO + verified-label CE |
 
-- 240 MBPP agent traces for SFT: 180 direct, 40 one-recovery, and 20
-  two-recovery trajectories.
-- 134 disjoint MBPP problems for pass@8 frontier screening.
-- 90 MBPP validation problems for development.
-- 224 held-out MBPP+ problems from the official MBPP test-ID range.
+Arm B predicts one objective class before testing:
+`PASS`, `ASSERTION_FAILURE`, `RUNTIME_ERROR`, `SYNTAX_ERROR`, `TIMEOUT`, or
+`OTHER`. Rejected patches are shadow-tested. The result trains the prediction
+label but is never shown to the agent.
 
-## SFT run
+Read the [experiment specification](docs/research_specs.md) and
+[canonical traces](docs/agent_trace.md).
 
-SFT is a one-GPU full-parameter run from `Qwen/Qwen3-4B-Base`. The 240 traces
-contain 180 direct successes, 40 one-recovery traces, and 20 two-recovery
-traces. Run:
+## Fixed data
+
+| Official MBPP split | IDs | Use |
+|---|---:|---|
+| Train | 601–974 (374) | matched SFT traces and RL environments |
+| Validation | 511–600 (90) | tune λ and check overfitting |
+| Test | 11–510 (500) | one final pass@1 evaluation |
+
+Each arm gets 250 direct-success and 124 verified one-recovery SFT traces.
+There is no internal task split, frontier screen, MBPP+, or two-step synthetic
+recovery.
+
+## Train
+
+Requirements: Python 3.12, `uv`, one GPU for SFT, two GPUs for RL, and
+`PRIME_API_KEY` with Prime Sandbox credit.
 
 ```bash
 bash scripts/setup.sh
 uv run python -m data.prepare
-bash scripts/train_sft.sh
+uv run python -m data.validate data
+
+bash scripts/train_sft.sh a
+bash scripts/train_sft.sh b
+bash scripts/train_rl.sh a
+bash scripts/train_rl.sh b
 ```
 
-The launcher tokenizes every complete ChatML trace before step 1. The longest
-is 747 tokens against a 1024-token limit. It aborts if any trace exceeds that
-limit or lacks terminal `FINAL:`. Stack packing preserves whole traces; none
-are truncated or excluded. The final checkpoint is written to
-`outputs/sft/weights/step_16`.
+SFT uses 768-token whole traces and aborts rather than truncating or excluding
+one. RL allows 512 new tokens inside a 4096-token full trace and hard-fails on
+truncation. Arm A and B stay in one codebase; arm-specific data and configs
+prevent experimental drift.
 
-## RL run
-
-Screen the disjoint candidates, retain only the mixed pass@8 frontier, then
-run GRPO:
+Run validation before freezing λ. Touch the official 500-task test set once:
 
 ```bash
+bash scripts/evaluate.sh a MODEL validation
+bash scripts/evaluate.sh b MODEL validation
 
-# Sample the SFT checkpoint eight times on every RL candidate.
-uv run eval glyph --harness.id glyph \
-  --taskset.data-path data/rl_candidates.jsonl \
-  -m outputs/sft/weights/step_16 -n 134 -r 8 --no-push
-
-# Replace SCREEN_TRACES with that evaluation's traces.jsonl.
-uv run glyph frontier SCREEN_TRACES
-
-# GRPO on only mixed pass@8 groups (one training GPU + one inference GPU).
-uv run --project .vendor/prime-rl rl @ "$PWD/configs/rl.toml"
+bash scripts/evaluate.sh a FINAL_MODEL test
+bash scripts/evaluate.sh b FINAL_MODEL test
+uv run glyph report TRACES_JSONL
 ```
 
-SFT uses the rented GPU directly. RL uses both rented GPUs for training and
-vLLM inference; each agent rollout runs in a disposable Prime Sandbox and
-therefore also requires `PRIME_API_KEY` and Prime Sandbox balance. The pinned
-PRIME-RL patch installed by `setup.sh` records any truncated training rollout
-in the audit log, then aborts before it reaches the trainer. It never silently
-drops one and continues.
-
-Evaluate both checkpoints on the same held-out MBPP+ tasks, then compare them:
-
-```bash
-uv run eval glyph --harness.id glyph --taskset.data-path data/test.jsonl \
-  -m outputs/sft/weights/step_16 -n 224 -r 8 --no-push
-
-uv run eval glyph --harness.id glyph --taskset.data-path data/test.jsonl \
-  -m outputs/rl/weights/step_25 -n 224 -r 8 --no-push
-
-uv run glyph compare SFT_TRACES RLVR_TRACES -k 8
-```
-
-Generated code is arbitrary Python. Prime Sandboxes are the default. The local
-subprocess runtime is only for disposable development environments.
-
-See [architecture](docs/ARCHITECTURE.md) and [reproduction](docs/REPRODUCTION.md).
+The main result is Arm A RLVR versus Arm B RLVR. Also report base and SFT
+checkpoints as controls. See [reproduction](docs/REPRODUCTION.md) for the exact
+checkpoint map and [architecture](docs/ARCHITECTURE.md) for the loss path.

@@ -1,28 +1,69 @@
 # Architecture
 
-GLYPH has four moving parts:
+## Shared agent
 
-1. `python -m data.prepare` downloads pinned MBPP and MBPP+ parquet files, verifies
-   their hashes, and writes disjoint SFT, RL-candidate, development, and test
-   JSONL files.
-2. SFT demonstrations preserve the full agent trace: 180 direct successes, 40
-   one-recovery traces, and 20 two-recovery traces. Every recorded failure and
-   final pass is executed during curation.
-   `glyph.chat` defines the shared system prompt and ChatML template. SFT and
-   RL load that exact template; parity tests prevent role-marker drift. Exact
-   tokenizer preflight plus stack packing prevent partial traces entering SFT.
-3. `GlyphHarness` runs that text protocol inside one Verifiers v1 runtime. The
-   model can edit only `solution.py`; `python_test` executes hidden assertions
-   and returns sanitized pass/fail feedback.
-4. `GlyphTask` reads the runtime execution record. A real successful
-   `python_test`, its matching tool turn, and a terminal `FINAL:` earn `1`;
-   every other trace earns `0`. A length-truncated or trainer-overflowing RL
-   trace aborts the run before the orchestrator sends it to the trainer.
+`GlyphHarness` launches one Verifiers v1 program in a disposable Prime
+Sandbox. The policy sees structured ChatML and can:
 
-There are no formatting rewards, compiler rewards, protocol penalties, OPD,
-length shaping, or reference KL. `configs/rl.toml` is plain GRPO and explicitly
-sets the trainer KL coefficient to zero.
+```text
+read_file → apply_patch → python_test → FINAL
+```
 
-`glyph frontier` keeps only pass@8 groups containing both failures and
-successes. `glyph compare` performs the paired SFT-versus-RLVR report on
-identical held-out task IDs.
+Hidden MBPP assertions never enter the prompt or editable project. Test output
+is reduced to an outcome class. Runtime-recorded calls and results—not model
+claims—determine success.
+
+Reward is binary:
+
+```text
+1 = visible passing python_test + passing final-state check + terminal FINAL
+0 = everything else
+```
+
+The final-state check is hidden and does not count as an agent tool call. It
+prevents an earlier passing test from masking a later broken edit.
+
+There are no protocol penalties, partial-test rewards, compiler rewards,
+length shaping, OPD, or reference KL.
+
+## Matched arms
+
+Arm A executes each applied candidate and reacts to test output.
+
+Arm B must emit:
+
+```text
+<PREDICTION>OUTCOME</PREDICTION>
+<DECISION>KEEP|REVISE</DECISION>
+```
+
+`KEEP` visibly tests the candidate. `REVISE` shadow-tests it, hides that result
+from the agent, then permits another patch. Every candidate yields a runtime
+record containing the sampled label, verified label, decision, and candidate
+hash.
+
+## Arm B loss
+
+The patched PRIME-RL algorithm keeps two training views:
+
+1. Raw rollout: GRPO trains agent actions. Sampled prediction-label tokens have
+   zero GRPO weight.
+2. Auxiliary view: the exact pre-prediction context is followed by the verified
+   sandbox label. Only that label receives CE weight.
+
+```text
+loss = GRPO(actions) + λ × CE(verified outcome | problem, candidate, history)
+```
+
+An incorrect sampled label is never used as the CE target. Uniform-reward
+groups remain available because Arm B can still receive verified-label CE.
+
+## Failure policy
+
+SFT preflight rejects any row over 768 tokens or without terminal `FINAL:`.
+Stack packing preserves whole traces. RL rejects truncated or over-4096-token
+traces before they reach the trainer.
+
+The repository pins PRIME-RL v0.7.0 and Verifiers v0.2.0. `setup.sh` applies
+the small PREDICT objective patch and the fatal-truncation patch to the pinned
+checkout.

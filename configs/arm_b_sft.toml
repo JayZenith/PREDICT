@@ -1,11 +1,16 @@
-# One-GPU full-parameter SFT on 240 verified MBPP agent traces.
-max_steps = 16
-output_dir = "outputs/sft"
+# Arm B: matched full-parameter SFT with verified consequence predictions.
+max_steps = 24
+output_dir = "outputs/arm_b_sft"
+
+[wandb]
+project = "predict-mbpp"
+group = "matched-sft"
+name = "arm-b-sft"
 
 [model]
 name = "Qwen/Qwen3-4B-Base"
 impl = "auto"
-seq_len = 1024
+seq_len = 768
 
 [tokenizer]
 chat_template = '''{%- for message in messages %}
@@ -22,10 +27,10 @@ name = "default"
 
 [data]
 type = "sft"
-name = "data/sft.jsonl"
+name = "data/sft/arm_b"
 batch_size = 32
 micro_batch_size = 1
-seq_len = 1024
+seq_len = 768
 pack_function = "stack"
 shuffle = true
 seed = 42
@@ -44,11 +49,11 @@ weight_decay = 0.01
 [scheduler]
 type = "linear"
 warmup_steps = 2
-decay_steps = 14
+decay_steps = 22
 min_lr = 0.0
 
 [ckpt]
-interval = 16
+interval = 24
 keep_last = 1
 
 [deployment]

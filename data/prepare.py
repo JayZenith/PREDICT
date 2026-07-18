@@ -1,4 +1,4 @@
-"""Download, split, and format pinned MBPP data."""
+"""Download, verify, and format the official MBPP experiment splits."""
 
 from __future__ import annotations
 
@@ -7,29 +7,57 @@ import hashlib
 import json
 import os
 import shutil
+import tempfile
 import urllib.request
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
 import pyarrow.parquet as pq
 
+from glyph.chat import ARM_A_SYSTEM_PROMPT, ARM_B_SYSTEM_PROMPT
+from glyph.program import (
+    ASSERTION_FAILURE,
+    OTHER,
+    PASS,
+    RUNTIME_ERROR,
+    SYNTAX_ERROR,
+    TIMEOUT,
+    run_hidden_tests,
+)
+
 from .recovery import RecoveryTrace, generate_recovery
-from glyph.chat import DEFAULT_SYSTEM_PROMPT
 
 
 PLACEHOLDER = "# Write your function here.\n"
 MBPP_REVISION = "4bb6404fdc6cacfda99d4ac4205087b89d32030c"
-MBPP_PLUS_REVISION = "b2d74c91837c3f2a20c1299ae98133cbe7cfa077"
+TRAIN_IDS = range(601, 975)
+VALIDATION_IDS = range(511, 601)
+TEST_IDS = range(11, 511)
+RECOVERY_COUNT = 124
+DIRECT_COUNT = 250
+SEED = 42
+DATA_ARTIFACTS = (
+    "sft/arm_a/train.jsonl",
+    "sft/arm_b/train.jsonl",
+    "arm_a_train.jsonl",
+    "arm_a_validation.jsonl",
+    "arm_a_test.jsonl",
+    "arm_b_train.jsonl",
+    "arm_b_validation.jsonl",
+    "arm_b_test.jsonl",
+    "assignments.json",
+)
 
 
 @dataclass(frozen=True)
 class SourceFile:
     name: str
-    repository: str
-    revision: str
     path: str
     sha256: str
-    license: str
+    repository: str = "google-research-datasets/mbpp"
+    revision: str = MBPP_REVISION
+    license: str = "CC-BY-4.0"
 
     @property
     def url(self) -> str:
@@ -42,27 +70,18 @@ class SourceFile:
 SOURCES = {
     "train": SourceFile(
         "train",
-        "google-research-datasets/mbpp",
-        MBPP_REVISION,
         "full/train-00000-of-00001.parquet",
         "09d125ca31edacb7800be8c67c45abff618faf0214ff551291817d06bdb914ae",
-        "CC-BY-4.0",
     ),
     "validation": SourceFile(
         "validation",
-        "google-research-datasets/mbpp",
-        MBPP_REVISION,
         "full/validation-00000-of-00001.parquet",
         "3f0ec060987432d99fe8fb409d31e6c67445b208a01741c5583517c80a10fe80",
-        "CC-BY-4.0",
     ),
-    "mbppplus": SourceFile(
-        "mbppplus",
-        "evalplus/mbppplus",
-        MBPP_PLUS_REVISION,
-        "data/test-00000-of-00001-d5781c9c51e02795.parquet",
-        "dc20030b3788fccf617444edcb34138ef13d7e4fafd17bfcb8c1279dbb12399b",
-        "Apache-2.0",
+    "test": SourceFile(
+        "test",
+        "full/test-00000-of-00001.parquet",
+        "566fd53060ffba5766dace1d1e2f4c38906781526de222b0dfbdbc325b696c77",
     ),
 }
 
@@ -73,11 +92,11 @@ class MBPPTask:
     prompt: str
     code: str
     test_code: str
-    source: str
+    split: str
 
     @property
     def case_id(self) -> str:
-        return f"{self.source}_{self.task_id}"
+        return f"mbpp_{self.task_id}"
 
 
 def _sha256(path: Path) -> str:
@@ -88,6 +107,10 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _text_sha256(text: str) -> str:
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
 def download_source(source: SourceFile, cache_dir: Path) -> Path:
     cache_dir = cache_dir.expanduser().resolve()
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -96,8 +119,12 @@ def download_source(source: SourceFile, cache_dir: Path) -> Path:
         return destination
     destination.unlink(missing_ok=True)
     temporary = destination.with_suffix(".parquet.part")
-    request = urllib.request.Request(source.url, headers={"User-Agent": "GLYPH/2.0"})
-    with urllib.request.urlopen(request, timeout=120) as response, temporary.open("wb") as output:
+    request = urllib.request.Request(
+        source.url, headers={"User-Agent": "PREDICT/0.1"}
+    )
+    with urllib.request.urlopen(request, timeout=120) as response, temporary.open(
+        "wb"
+    ) as output:
         shutil.copyfileobj(response, output)
     if _sha256(temporary) != source.sha256:
         temporary.unlink(missing_ok=True)
@@ -106,7 +133,7 @@ def download_source(source: SourceFile, cache_dir: Path) -> Path:
     return destination
 
 
-def load_mbpp(path: Path, source: str) -> list[MBPPTask]:
+def load_mbpp(path: Path, split: str) -> list[MBPPTask]:
     table = pq.read_table(
         path,
         columns=["task_id", "text", "code", "test_list", "test_setup_code"],
@@ -114,174 +141,267 @@ def load_mbpp(path: Path, source: str) -> list[MBPPTask]:
     tasks: list[MBPPTask] = []
     for row in table.to_pylist():
         task_id = int(row["task_id"])
-        prompt = str(row["text"] or "").strip()
-        code = str(row["code"] or "").strip()
-        tests = [str(test).strip() for test in row["test_list"] or [] if str(test).strip()]
-        setup = str(row["test_setup_code"] or "").strip()
-        if not prompt or not code or not tests:
-            raise ValueError(f"{source} task {task_id} is missing prompt, code, or tests")
-        test_code = "\n".join(part for part in (setup, *tests) if part) + "\n"
-        tasks.append(MBPPTask(task_id, prompt, code + "\n", test_code, source))
-    return tasks
-
-
-def load_mbppplus(path: Path) -> list[MBPPTask]:
-    table = pq.read_table(path, columns=["task_id", "prompt", "code", "test"])
-    tasks: list[MBPPTask] = []
-    for row in table.to_pylist():
-        task_id = int(row["task_id"])
-        # The official MBPP test partition is task IDs 11-510. Keeping only this
-        # range removes every overlap with the MBPP train/validation partitions.
-        if not 11 <= task_id <= 510:
-            continue
-        prompt = str(row["prompt"] or "").strip()
-        code = str(row["code"] or "").strip()
-        test_code = str(row["test"] or "").strip()
-        if not prompt or not code or not test_code:
-            raise ValueError(f"MBPP+ task {task_id} is missing prompt, code, or tests")
-        tasks.append(MBPPTask(task_id, prompt, code + "\n", test_code + "\n", "mbppplus"))
-    return tasks
-
-
-def _split_key(task: MBPPTask, seed: int) -> str:
-    return hashlib.sha256(f"{seed}\0{task.task_id}\0{task.prompt}".encode()).hexdigest()
-
-
-def split_train(
-    tasks: list[MBPPTask], *, sft_count: int, rl_count: int, seed: int
-) -> tuple[list[MBPPTask], list[MBPPTask]]:
-    if sft_count < 1 or rl_count < 1:
-        raise ValueError("sft_count and rl_count must be positive")
-    if sft_count + rl_count > len(tasks):
-        raise ValueError(
-            f"requested {sft_count + rl_count} MBPP train tasks but only {len(tasks)} exist"
+        prompt = str(row["text"] or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+        code = str(row["code"] or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+        tests = [
+            str(test).replace("\r\n", "\n").replace("\r", "\n").strip()
+            for test in row["test_list"] or []
+            if str(test).strip()
+        ]
+        setup = (
+            str(row["test_setup_code"] or "")
+            .replace("\r\n", "\n")
+            .replace("\r", "\n")
+            .strip()
         )
-    ordered = sorted(tasks, key=lambda task: (_split_key(task, seed), task.task_id))
-    return ordered[:sft_count], ordered[sft_count : sft_count + rl_count]
+        if not prompt or not code or not tests:
+            raise ValueError(
+                f"{split} task {task_id} is missing prompt, code, or tests"
+            )
+        test_code = "\n".join(part for part in (setup, *tests) if part) + "\n"
+        tasks.append(MBPPTask(task_id, prompt, code + "\n", test_code, split))
+    return tasks
 
 
-def task_prompt(task: MBPPTask, trace_prefix: str) -> list[dict[str, str]]:
+def _require_ids(tasks: list[MBPPTask], expected: range, split: str) -> None:
+    actual = {task.task_id for task in tasks}
+    wanted = set(expected)
+    if actual != wanted:
+        raise RuntimeError(
+            f"{split} IDs differ from official MBPP: "
+            f"missing={sorted(wanted - actual)[:5]} extra={sorted(actual - wanted)[:5]}"
+        )
+
+
+def _assignment_key(task: MBPPTask, seed: int) -> str:
+    return hashlib.sha256(
+        f"{seed}\0{task.task_id}\0{task.prompt}".encode()
+    ).hexdigest()
+
+
+def task_prompt(
+    task: MBPPTask, trace_prefix: str, arm: str
+) -> list[dict[str, str]]:
+    system = ARM_A_SYSTEM_PROMPT if arm == "a" else ARM_B_SYSTEM_PROMPT
     user = (
         "Implement the requested Python function in solution.py. Run the tests.\n\n"
         f"{task.prompt}\n\nThe project is at {trace_prefix}."
     )
     return [
-        {"role": "system", "content": DEFAULT_SYSTEM_PROMPT},
+        {"role": "system", "content": system},
         {"role": "user", "content": user},
     ]
 
 
-def task_row(task: MBPPTask) -> dict:
+def task_row(task: MBPPTask, arm: str) -> dict:
     blueprint_root = f"blueprints/{task.case_id}"
     trace_prefix = f"data/{blueprint_root}"
     return {
+        "arm": arm,
         "blueprint_root": blueprint_root,
         "case_id": task.case_id,
-        "prompt": task_prompt(task, trace_prefix),
-        "source": task.source,
+        "prompt": task_prompt(task, trace_prefix, arm),
+        "source": "mbpp",
+        "split": task.split,
         "task_id": task.task_id,
         "test_code": task.test_code,
         "trace_prefix": trace_prefix,
     }
 
 
-def sft_row(task: MBPPTask, recovery: RecoveryTrace | None = None) -> dict:
+def _call(tool: str, payload: dict[str, str]) -> str:
+    return f"CALL {tool} " + json.dumps(payload, separators=(",", ":"))
+
+
+def _failed_result(call_id: str, outcome: str) -> str:
+    detail = {
+        ASSERTION_FAILURE: "hidden tests failed",
+        RUNTIME_ERROR: "generated solution raised a runtime error",
+        SYNTAX_ERROR: "generated solution has a syntax error",
+        TIMEOUT: "hidden tests timed out",
+        OTHER: "hidden tests failed",
+    }[outcome]
+    return f"RESULT {call_id}:\nstatus: failed\nstderr:\n{detail}"
+
+
+def _matched_key(task: MBPPTask, initial_code: str, initial_outcome: str) -> str:
+    payload = json.dumps(
+        {
+            "task_id": task.task_id,
+            "initial_code": initial_code,
+            "initial_outcome": initial_outcome,
+            "final_code": task.code,
+            "final_outcome": PASS,
+        },
+        sort_keys=True,
+    )
+    return _text_sha256(payload)
+
+
+def sft_row(task: MBPPTask, arm: str, recovery: RecoveryTrace | None) -> dict:
     trace_prefix = f"data/blueprints/{task.case_id}"
     file_path = f"{trace_prefix}/solution.py"
     initial_code = recovery.initial_code if recovery else task.code
-    messages = [
-        *task_prompt(task, trace_prefix),
+    initial_outcome = recovery.outcome if recovery else PASS
+    messages: list[dict[str, str]] = [
+        *task_prompt(task, trace_prefix, arm),
         {
             "role": "assistant",
-            "content": f'CALL read_file {{"id":"c1","file_path":"{file_path}"}}',
+            "content": _call(
+                "read_file", {"id": "c1", "file_path": file_path}
+            ),
         },
         {
             "role": "tool",
-            "content": f"RESULT c1:\nstatus: success\nstdout:\n{PLACEHOLDER.rstrip()}",
+            "content": (
+                f"RESULT c1:\nstatus: success\nstdout:\n{PLACEHOLDER.rstrip()}"
+            ),
         },
         {
             "role": "assistant",
-            "content": "CALL apply_patch "
-            + json.dumps(
+            "content": _call(
+                "apply_patch",
                 {
                     "id": "c2",
                     "file_path": file_path,
                     "find": PLACEHOLDER,
                     "replace": initial_code,
                 },
-                separators=(",", ":"),
             ),
         },
         {
             "role": "tool",
             "content": "RESULT c2:\nstatus: success\nstdout:\npatch applied",
         },
-        {
-            "role": "assistant",
-            "content": f'CALL python_test {{"id":"c3","project_path":"{trace_prefix}"}}',
-        },
     ]
-    test_call = 3
-    for patch in recovery.patches if recovery else ():
-        patch_call = test_call + 1
-        next_test = patch_call + 1
+
+    if arm == "a":
+        messages.append(
+            {
+                "role": "assistant",
+                "content": _call(
+                    "python_test",
+                    {"id": "c3", "project_path": trace_prefix},
+                ),
+            }
+        )
+        if recovery:
+            messages.extend(
+                [
+                    {"role": "tool", "content": _failed_result("c3", recovery.outcome)},
+                    {
+                        "role": "assistant",
+                        "content": _call(
+                            "apply_patch",
+                            {
+                                "id": "c4",
+                                "file_path": file_path,
+                                "find": recovery.patch.find,
+                                "replace": recovery.patch.replace,
+                            },
+                        ),
+                    },
+                    {
+                        "role": "tool",
+                        "content": (
+                            "RESULT c4:\nstatus: success\nstdout:\npatch applied"
+                        ),
+                    },
+                    {
+                        "role": "assistant",
+                        "content": _call(
+                            "python_test",
+                            {"id": "c5", "project_path": trace_prefix},
+                        ),
+                    },
+                    {
+                        "role": "tool",
+                        "content": (
+                            "RESULT c5:\nstatus: success\nstdout:\nhidden tests passed"
+                        ),
+                    },
+                ]
+            )
+        else:
+            messages.append(
+                {
+                    "role": "tool",
+                    "content": (
+                        "RESULT c3:\nstatus: success\nstdout:\nhidden tests passed"
+                    ),
+                }
+            )
+    else:
+        if recovery:
+            messages.extend(
+                [
+                    {
+                        "role": "assistant",
+                        "content": (
+                            f"<PREDICTION>{recovery.outcome}</PREDICTION>\n"
+                            "<DECISION>REVISE</DECISION>\n"
+                            + _call(
+                                "apply_patch",
+                                {
+                                    "id": "c3",
+                                    "file_path": file_path,
+                                    "find": recovery.patch.find,
+                                    "replace": recovery.patch.replace,
+                                },
+                            )
+                        ),
+                    },
+                    {
+                        "role": "tool",
+                        "content": (
+                            "RESULT c3:\nstatus: success\nstdout:\npatch applied"
+                        ),
+                    },
+                ]
+            )
+            test_call = "c4"
+        else:
+            test_call = "c3"
         messages.extend(
             [
                 {
-                    "role": "tool",
-                    "content": (
-                        f"RESULT c{test_call}:\nstatus: failed\n"
-                        "stderr:\nhidden tests failed"
-                    ),
-                },
-                {
                     "role": "assistant",
-                    "content": "CALL apply_patch "
-                    + json.dumps(
-                        {
-                            "id": f"c{patch_call}",
-                            "file_path": file_path,
-                            "find": patch.find,
-                            "replace": patch.replace,
-                        },
-                        separators=(",", ":"),
+                    "content": (
+                        "<PREDICTION>PASS</PREDICTION>\n"
+                        "<DECISION>KEEP</DECISION>\n"
+                        + _call(
+                            "python_test",
+                            {"id": test_call, "project_path": trace_prefix},
+                        )
                     ),
                 },
                 {
                     "role": "tool",
                     "content": (
-                        f"RESULT c{patch_call}:\nstatus: success\nstdout:\npatch applied"
-                    ),
-                },
-                {
-                    "role": "assistant",
-                    "content": (
-                        f'CALL python_test {{"id":"c{next_test}",'
-                        f'"project_path":"{trace_prefix}"}}'
+                        f"RESULT {test_call}:\n"
+                        "status: success\nstdout:\nhidden tests passed"
                     ),
                 },
             ]
         )
-        test_call = next_test
-    messages.extend(
-        [
-            {
-                "role": "tool",
-                "content": (
-                    f"RESULT c{test_call}:\n"
-                    "status: success\nstdout:\nhidden tests passed"
-                ),
-            },
-            {
-                "role": "assistant",
-                "content": "FINAL: implemented the function and passed the hidden tests.",
-            },
-        ]
+
+    messages.append(
+        {
+            "role": "assistant",
+            "content": "FINAL: implemented the function and passed the hidden tests.",
+        }
     )
     return {
+        "arm": arm,
         "case_id": task.case_id,
+        "candidate_code_sha256": _text_sha256(initial_code),
+        "candidate_outcome": initial_outcome,
+        "final_code_sha256": _text_sha256(task.code),
+        "final_outcome": PASS,
+        "matched_key": _matched_key(task, initial_code, initial_outcome),
         "messages": messages,
-        "recovery_phases": len(recovery.patches) if recovery else 0,
+        "task_id": task.task_id,
+        "trace_type": "recovery" if recovery else "direct",
     }
 
 
@@ -292,64 +412,140 @@ def _write_jsonl(path: Path, rows: list[dict]) -> None:
     )
 
 
+def _verify_gold(tasks: list[MBPPTask], timeout: int) -> None:
+    with tempfile.TemporaryDirectory(prefix="predict-gold-audit-") as temporary:
+        project = Path(temporary)
+        solution = project / "solution.py"
+        for task in tasks:
+            solution.write_text(task.code, encoding="utf-8")
+            result = run_hidden_tests(project, task.test_code, timeout)
+            if result.outcome != PASS:
+                raise RuntimeError(
+                    f"official gold failed for {task.case_id}: {result.outcome}"
+                )
+
+
+def _assign_recoveries(
+    train: list[MBPPTask], *, seed: int, count: int, timeout: int
+) -> dict[str, RecoveryTrace]:
+    ordered = sorted(train, key=lambda task: (_assignment_key(task, seed), task.task_id))
+    recoveries: dict[str, RecoveryTrace] = {}
+    for task in ordered:
+        trace = generate_recovery(
+            task.code,
+            task.test_code,
+            task.case_id,
+            timeout=timeout,
+            gold_verified=True,
+        )
+        if trace is not None:
+            recoveries[task.case_id] = trace
+        if len(recoveries) == count:
+            break
+    if len(recoveries) != count:
+        raise RuntimeError(
+            f"constructed {len(recoveries)} verified recoveries; {count} required"
+        )
+    return recoveries
+
+
 def prepare_data(
     output: Path = Path("data"),
-    cache_dir: Path = Path(".cache/glyph"),
+    cache_dir: Path = Path(".cache/predict"),
     *,
-    sft_count: int = 240,
-    rl_count: int = 134,
-    recovery_one: int = 40,
-    recovery_two: int = 20,
-    seed: int = 42,
+    seed: int = SEED,
+    recovery_count: int = RECOVERY_COUNT,
+    timeout: int = 5,
 ) -> Path:
-    paths = {name: download_source(source, cache_dir) for name, source in SOURCES.items()}
-    train = load_mbpp(paths["train"], "mbpp")
-    validation = load_mbpp(paths["validation"], "mbpp_dev")
-    final = load_mbppplus(paths["mbppplus"])
-    sft, rl = split_train(train, sft_count=sft_count, rl_count=rl_count, seed=seed)
-    if recovery_one < 0 or recovery_two < 0 or recovery_one + recovery_two > len(sft):
-        raise ValueError("recovery counts must be non-negative and fit inside the SFT split")
-    recovery_by_id: dict[str, RecoveryTrace] = {}
-    recovery_counts = {1: recovery_one, 2: recovery_two}
-    for phases in (2, 1):
-        for task in sft:
-            found = sum(len(trace.patches) == phases for trace in recovery_by_id.values())
-            if found == recovery_counts[phases]:
-                break
-            if task.case_id in recovery_by_id:
-                continue
-            trace = generate_recovery(
-                task.code, task.test_code, task.case_id, phases=phases
-            )
-            if trace is not None:
-                recovery_by_id[task.case_id] = trace
-        found = sum(len(trace.patches) == phases for trace in recovery_by_id.values())
-        if found != recovery_counts[phases]:
-            raise RuntimeError(
-                f"constructed {found} {phases}-phase recovery traces; "
-                f"{recovery_counts[phases]} requested"
-            )
+    if recovery_count != RECOVERY_COUNT:
+        raise ValueError(
+            f"the experiment requires exactly {RECOVERY_COUNT} recovery traces"
+        )
+    paths = {
+        name: download_source(source, cache_dir) for name, source in SOURCES.items()
+    }
+    train = load_mbpp(paths["train"], "train")
+    validation = load_mbpp(paths["validation"], "validation")
+    final = load_mbpp(paths["test"], "test")
+    _require_ids(train, TRAIN_IDS, "train")
+    _require_ids(validation, VALIDATION_IDS, "validation")
+    _require_ids(final, TEST_IDS, "test")
+    all_tasks = [*train, *validation, *final]
+    if len({task.task_id for task in all_tasks}) != len(all_tasks):
+        raise RuntimeError("official MBPP splits overlap by task ID")
+
+    _verify_gold(all_tasks, timeout)
+    recoveries = _assign_recoveries(
+        train, seed=seed, count=recovery_count, timeout=timeout
+    )
+    if len(train) - len(recoveries) != DIRECT_COUNT:
+        raise RuntimeError("SFT direct/recovery composition drifted")
 
     output = output.expanduser().resolve()
     staging = output.with_name(f".{output.name}.staging")
     shutil.rmtree(staging, ignore_errors=True)
     (staging / "blueprints").mkdir(parents=True)
-    selected = [*sft, *rl, *validation, *final]
-    if len({task.case_id for task in selected}) != len(selected):
-        raise RuntimeError("task identifiers overlap across prepared splits")
-    for task in selected:
+    (staging / "sft" / "arm_a").mkdir(parents=True)
+    (staging / "sft" / "arm_b").mkdir(parents=True)
+    for task in all_tasks:
         project = staging / "blueprints" / task.case_id
         project.mkdir()
         (project / "solution.py").write_text(PLACEHOLDER, encoding="utf-8")
 
-    _write_jsonl(
-        staging / "sft.jsonl",
-        [sft_row(task, recovery_by_id.get(task.case_id)) for task in sft],
+    arm_a_sft = [
+        sft_row(task, "a", recoveries.get(task.case_id)) for task in train
+    ]
+    arm_b_sft = [
+        sft_row(task, "b", recoveries.get(task.case_id)) for task in train
+    ]
+    _write_jsonl(staging / "sft" / "arm_a" / "train.jsonl", arm_a_sft)
+    _write_jsonl(staging / "sft" / "arm_b" / "train.jsonl", arm_b_sft)
+    for arm in ("a", "b"):
+        _write_jsonl(
+            staging / f"arm_{arm}_train.jsonl",
+            [task_row(task, arm) for task in train],
+        )
+        _write_jsonl(
+            staging / f"arm_{arm}_validation.jsonl",
+            [task_row(task, arm) for task in validation],
+        )
+        _write_jsonl(
+            staging / f"arm_{arm}_test.jsonl",
+            [task_row(task, arm) for task in final],
+        )
+
+    ordered_train = sorted(train, key=lambda task: task.task_id)
+    assignment = [
+        {
+            "task_id": task.task_id,
+            "case_id": task.case_id,
+            "trace_type": (
+                "recovery" if task.case_id in recoveries else "direct"
+            ),
+            "candidate_outcome": (
+                recoveries[task.case_id].outcome
+                if task.case_id in recoveries
+                else PASS
+            ),
+        }
+        for task in ordered_train
+    ]
+    (staging / "assignments.json").write_text(
+        json.dumps(assignment, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
     )
-    _write_jsonl(staging / "rl_candidates.jsonl", [task_row(task) for task in rl])
-    _write_jsonl(staging / "dev.jsonl", [task_row(task) for task in validation])
-    _write_jsonl(staging / "test.jsonl", [task_row(task) for task in final])
+
+    outcome_counts = Counter(
+        trace.outcome for trace in recoveries.values()
+    )
     manifest = {
+        "artifacts": {
+            relative: {
+                "sha256": _sha256(staging / relative),
+                "bytes": (staging / relative).stat().st_size,
+            }
+            for relative in DATA_ARTIFACTS
+        },
         "sources": {
             name: {
                 "repository": source.repository,
@@ -362,28 +558,35 @@ def prepare_data(
         },
         "split": {
             "seed": seed,
-            "sft": len(sft),
-            "sft_recovery": len(recovery_by_id),
-            "sft_recovery_one": recovery_one,
-            "sft_recovery_two": recovery_two,
-            "rl_candidates": len(rl),
-            "dev": len(validation),
+            "train": len(train),
+            "validation": len(validation),
             "test": len(final),
-            "test_rule": "MBPP+ task_id 11-510; disjoint from MBPP train and validation",
+            "train_ids": "601-974",
+            "validation_ids": "511-600",
+            "test_ids": "11-510",
+            "sft_per_arm": len(train),
+            "sft_direct": DIRECT_COUNT,
+            "sft_recovery": len(recoveries),
+            "recovery_outcomes": dict(sorted(outcome_counts.items())),
         },
     }
     (staging / "manifest.json").write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
     )
+
     output.mkdir(parents=True, exist_ok=True)
-    (output / "rl.jsonl").unlink(missing_ok=True)
+    generated_names = {path.name for path in staging.iterdir()}
+    for existing in output.iterdir():
+        if existing.name == "README.md" or existing.name.startswith("__"):
+            continue
+        if existing.name in generated_names or existing.name.endswith(".jsonl"):
+            if existing.is_dir():
+                shutil.rmtree(existing)
+            else:
+                existing.unlink()
     for generated in staging.iterdir():
-        destination = output / generated.name
-        if destination.is_dir():
-            shutil.rmtree(destination)
-        else:
-            destination.unlink(missing_ok=True)
-        os.replace(generated, destination)
+        os.replace(generated, output / generated.name)
     staging.rmdir()
     return output / "manifest.json"
 
@@ -391,22 +594,16 @@ def prepare_data(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=Path("data"))
-    parser.add_argument("--cache-dir", type=Path, default=Path(".cache/glyph"))
-    parser.add_argument("--sft", type=int, default=240)
-    parser.add_argument("--rl", type=int, default=134)
-    parser.add_argument("--recovery-one", type=int, default=40)
-    parser.add_argument("--recovery-two", type=int, default=20)
-    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--cache-dir", type=Path, default=Path(".cache/predict"))
+    parser.add_argument("--seed", type=int, default=SEED)
+    parser.add_argument("--timeout", type=int, default=5)
     args = parser.parse_args()
     print(
         prepare_data(
             args.output,
             args.cache_dir,
-            sft_count=args.sft,
-            rl_count=args.rl,
-            recovery_one=args.recovery_one,
-            recovery_two=args.recovery_two,
             seed=args.seed,
+            timeout=args.timeout,
         )
     )
 

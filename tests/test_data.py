@@ -1,126 +1,88 @@
 import json
 from pathlib import Path
 
-import pyarrow as pa
-import pyarrow.parquet as pq
 import pytest
 
 from data import prepare, recovery as recovery_generator
 from data.validate import validate_sft
-from glyph.program import run_hidden_tests
+from glyph.program import PASS, run_hidden_tests
 
 
-def _write_mbpp(path: Path, ids: list[int]) -> None:
-    pq.write_table(
-        pa.table(
-            {
-                "task_id": ids,
-                "text": [f"Return {task_id}." for task_id in ids],
-                "code": [f"def answer():\n    return {task_id}" for task_id in ids],
-                "test_list": [[f"assert answer() == {task_id}"] for task_id in ids],
-                "test_setup_code": ["" for _ in ids],
-            }
-        ),
-        path,
+def test_official_mbpp_split_contract_is_fixed() -> None:
+    assert list(prepare.TRAIN_IDS) == list(range(601, 975))
+    assert list(prepare.VALIDATION_IDS) == list(range(511, 601))
+    assert list(prepare.TEST_IDS) == list(range(11, 511))
+    assert prepare.DIRECT_COUNT == 250
+    assert prepare.RECOVERY_COUNT == 124
+    assert prepare.SEED == 42
+    assert set(prepare.SOURCES) == {"train", "validation", "test"}
+    assert all(source.revision == prepare.MBPP_REVISION for source in prepare.SOURCES.values())
+    assert all(len(source.sha256) == 64 for source in prepare.SOURCES.values())
+
+
+def test_recovery_is_real_one_step_and_patch_is_unambiguous(tmp_path: Path) -> None:
+    code = (
+        "def is_key_present(d, x):\n"
+        "  if x in d:\n"
+        "    return True\n"
+        "  else:\n"
+        "     return False\n"
     )
-
-
-def _write_mbppplus(path: Path) -> None:
-    pq.write_table(
-        pa.table(
-            {
-                "task_id": [11, 602],
-                "prompt": ["Return eleven.", "Overlaps training."],
-                "code": ["def answer():\n    return 11", "def answer():\n    return 602"],
-                "test": ["assert answer() == 11", "assert answer() == 602"],
-            }
-        ),
-        path,
+    tests = (
+        "assert is_key_present({'a': 1}, 'a') is True\n"
+        "assert is_key_present({'a': 1}, 'b') is False\n"
     )
-
-
-def test_prepare_data_builds_disjoint_agentic_splits(tmp_path: Path, monkeypatch) -> None:
-    paths = {
-        "train": tmp_path / "train.parquet",
-        "validation": tmp_path / "validation.parquet",
-        "mbppplus": tmp_path / "plus.parquet",
-    }
-    _write_mbpp(paths["train"], [601, 602, 603, 604])
-    _write_mbpp(paths["validation"], [511, 512])
-    _write_mbppplus(paths["mbppplus"])
-    monkeypatch.setattr(prepare, "download_source", lambda source, cache: paths[source.name])
-
-    output = tmp_path / "data"
-    output.mkdir()
-    (output / "README.md").write_text("data documentation\n")
-    manifest = prepare.prepare_data(
-        output,
-        tmp_path / "cache",
-        sft_count=2,
-        rl_count=2,
-        recovery_one=1,
-        recovery_two=0,
-        seed=7,
-    )
-    counts = json.loads(manifest.read_text())["split"]
-    assert counts == {
-        "seed": 7,
-        "sft": 2,
-        "sft_recovery": 1,
-        "sft_recovery_one": 1,
-        "sft_recovery_two": 0,
-        "rl_candidates": 2,
-        "dev": 2,
-        "test": 1,
-        "test_rule": "MBPP+ task_id 11-510; disjoint from MBPP train and validation",
-    }
-    assert (output / "README.md").read_text() == "data documentation\n"
-    sft_rows = [json.loads(line) for line in (tmp_path / "data/sft.jsonl").read_text().splitlines()]
-    recovery = next(row for row in sft_rows if row["recovery_phases"] == 1)
-    direct = next(row for row in sft_rows if row["recovery_phases"] == 0)
-    assert [message["role"] for message in recovery["messages"]] == [
-        "system", "user", "assistant", "tool", "assistant", "tool", "assistant",
-        "tool", "assistant", "tool", "assistant", "tool", "assistant",
-    ]
-    assert "status: failed" in recovery["messages"][7]["content"]
-    assert "CALL apply_patch" in recovery["messages"][8]["content"]
-    assert "CALL python_test" in recovery["messages"][10]["content"]
-    assert "status: success" in recovery["messages"][11]["content"]
-    assert [message["role"] for message in direct["messages"]] == [
-        "system", "user", "assistant", "tool", "assistant", "tool", "assistant",
-        "tool", "assistant",
-    ]
-    test_row = json.loads((tmp_path / "data/test.jsonl").read_text())
-    assert test_row["task_id"] == 11
-    assert test_row["test_code"] not in test_row["prompt"][-1]["content"]
-
-
-def test_split_train_is_deterministic_and_disjoint() -> None:
-    tasks = [prepare.MBPPTask(i, str(i), "pass\n", "pass\n", "mbpp") for i in range(10)]
-    sft, rl = prepare.split_train(tasks, sft_count=6, rl_count=4, seed=42)
-    again = prepare.split_train(tasks, sft_count=6, rl_count=4, seed=42)
-    assert (sft, rl) == again
-    assert {task.task_id for task in sft}.isdisjoint(task.task_id for task in rl)
-
-
-def test_two_phase_recovery_fails_twice_then_passes(tmp_path: Path) -> None:
-    code = "def score(x):\n    left = x + 1\n    right = x * 2\n    return left + right\n"
-    tests = "assert score(1) == 4\nassert score(2) == 7\n"
-    trace = recovery_generator.generate_recovery(code, tests, "score", phases=2)
+    trace = recovery_generator.generate_recovery(code, tests, "key")
     assert trace is not None
-    assert len(trace.patches) == 2
+    assert trace.initial_code.count(trace.patch.find) == 1
 
     solution = tmp_path / "solution.py"
     solution.write_text(trace.initial_code)
     assert not run_hidden_tests(tmp_path, tests, 5).success
-    for index, patch in enumerate(trace.patches):
-        text = solution.read_text()
-        assert text.count(patch.find) == 1
-        solution.write_text(text.replace(patch.find, patch.replace, 1))
-        assert run_hidden_tests(tmp_path, tests, 5).success is (index == 1)
+    solution.write_text(
+        trace.initial_code.replace(trace.patch.find, trace.patch.replace, 1)
+    )
+    assert run_hidden_tests(tmp_path, tests, 5).outcome == PASS
 
 
-def test_sft_validation_rejects_truncation_and_incomplete_final(tmp_path: Path) -> None:
+def test_arm_sft_rows_are_task_and_candidate_matched() -> None:
+    task = prepare.MBPPTask(
+        601,
+        "Return whether n is even.",
+        "def is_even(n):\n    return n % 2 == 0\n",
+        "assert is_even(2)\nassert not is_even(3)\n",
+        "train",
+    )
+    recovery = recovery_generator.generate_recovery(
+        task.code, task.test_code, task.case_id
+    )
+    assert recovery is not None
+    arm_a = prepare.sft_row(task, "a", recovery)
+    arm_b = prepare.sft_row(task, "b", recovery)
+    for key in (
+        "candidate_code_sha256",
+        "candidate_outcome",
+        "final_code_sha256",
+        "final_outcome",
+        "matched_key",
+        "task_id",
+        "trace_type",
+    ):
+        assert arm_a[key] == arm_b[key]
+    assert "status: failed" in "\n".join(
+        message["content"] for message in arm_a["messages"]
+    )
+    arm_b_text = "\n".join(message["content"] for message in arm_b["messages"])
+    assert f"<PREDICTION>{recovery.outcome}</PREDICTION>" in arm_b_text
+    assert "<DECISION>REVISE</DECISION>" in arm_b_text
+    assert "status: failed" not in arm_b_text
+    assert arm_a["messages"][-1]["content"].startswith("FINAL:")
+    assert arm_b["messages"][-1]["content"].startswith("FINAL:")
+
+
+def test_sft_validation_rejects_truncation_and_incomplete_final(
+    tmp_path: Path,
+) -> None:
     class Tokenizer:
         def encode(self, text: str, add_special_tokens: bool = False) -> list[str]:
             assert not add_special_tokens

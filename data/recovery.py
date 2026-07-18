@@ -1,4 +1,4 @@
-"""Generate verified one- and two-phase SFT recovery trajectories."""
+"""Construct one verified semantic failure for matched recovery traces."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import tokenize
 from dataclasses import dataclass
 from pathlib import Path
 
-from glyph.program import run_hidden_tests
+from glyph.program import PASS, run_hidden_tests
 
 
 @dataclass(frozen=True)
@@ -20,7 +20,8 @@ class Patch:
 @dataclass(frozen=True)
 class RecoveryTrace:
     initial_code: str
-    patches: tuple[Patch, ...]
+    patch: Patch
+    outcome: str
 
 
 @dataclass(frozen=True)
@@ -56,6 +57,8 @@ def _mutations(code: str):
         line = lines[line_index]
         if line.lstrip().startswith(("def ", "import ", "from ")):
             continue
+        if lines.count(line) != 1:
+            continue
         replacement = _REPLACEMENTS.get(token.string)
         if replacement is None and token.type == tokenize.NUMBER and token.string.isdigit():
             replacement = str(int(token.string) + 1)
@@ -66,12 +69,11 @@ def _mutations(code: str):
             yield _Mutation(line_index, line, changed)
 
 
-def _apply(code: str, mutations: tuple[_Mutation, ...]) -> str:
+def _apply(code: str, mutation: _Mutation) -> str:
     lines = code.splitlines(keepends=True)
-    for mutation in mutations:
-        if lines[mutation.line] != mutation.original:
-            raise ValueError("recovery mutations overlap")
-        lines[mutation.line] = mutation.changed
+    if lines[mutation.line] != mutation.original:
+        raise ValueError("recovery mutation no longer matches its source line")
+    lines[mutation.line] = mutation.changed
     return "".join(lines)
 
 
@@ -80,41 +82,31 @@ def generate_recovery(
     test_code: str,
     case_id: str,
     *,
-    phases: int,
     timeout: int = 5,
+    gold_verified: bool = False,
 ) -> RecoveryTrace | None:
-    if phases not in (1, 2):
-        raise ValueError("recovery phases must be 1 or 2")
-    with tempfile.TemporaryDirectory(prefix="glyph-sft-recovery-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="predict-sft-recovery-") as temporary:
         project = Path(temporary)
         solution = project / "solution.py"
-        solution.write_text(code, encoding="utf-8")
-        if not run_hidden_tests(project, test_code, timeout).success:
-            raise RuntimeError(f"gold solution failed verification for {case_id}")
-
-        failing: list[_Mutation] = []
-        for mutation in _mutations(code):
-            solution.write_text(_apply(code, (mutation,)), encoding="utf-8")
-            if run_hidden_tests(project, test_code, timeout).success:
-                continue
-            if phases == 1:
-                return RecoveryTrace(
-                    initial_code=_apply(code, (mutation,)),
-                    patches=(Patch(mutation.changed, mutation.original),),
+        if not gold_verified:
+            solution.write_text(code, encoding="utf-8")
+            gold = run_hidden_tests(project, test_code, timeout)
+            if gold.outcome != PASS:
+                raise RuntimeError(
+                    f"gold solution failed verification for {case_id}: {gold.outcome}"
                 )
-            for earlier in failing:
-                if earlier.line == mutation.line or earlier.changed == mutation.changed:
-                    continue
-                pair = (earlier, mutation)
-                initial = _apply(code, pair)
-                solution.write_text(initial, encoding="utf-8")
-                if not run_hidden_tests(project, test_code, timeout).success:
-                    return RecoveryTrace(
-                        initial_code=initial,
-                        patches=(
-                            Patch(earlier.changed, earlier.original),
-                            Patch(mutation.changed, mutation.original),
-                        ),
-                    )
-            failing.append(mutation)
+
+        for mutation in _mutations(code):
+            initial = _apply(code, mutation)
+            if initial.count(mutation.changed) != 1:
+                continue
+            solution.write_text(initial, encoding="utf-8")
+            result = run_hidden_tests(project, test_code, timeout)
+            if result.outcome == PASS:
+                continue
+            return RecoveryTrace(
+                initial_code=initial,
+                patch=Patch(mutation.changed, mutation.original),
+                outcome=result.outcome,
+            )
     return None

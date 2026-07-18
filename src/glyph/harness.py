@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Literal
 
 import verifiers.v1 as vf
 
 
 PROGRAM_SOURCE = (Path(__file__).resolve().parent / "program.py").read_text()
 
-# Define Sandbox defaults: Python image, /worksapce, network on, CPUP/RAM/disk, max tool calls, timeout
+
 class GlyphHarnessConfig(vf.HarnessConfig):
     runtime: vf.RuntimeConfig = vf.PrimeConfig(
         image="python:3.12-slim-bookworm",
@@ -24,16 +25,12 @@ class GlyphHarnessConfig(vf.HarnessConfig):
     )
     max_tool_calls: int = 8
     tool_timeout: int = 30
+    arm: Literal["a", "b"] = "a"
 
 
 class GlyphHarness(vf.Harness[GlyphHarnessConfig]):
     SUPPORTS_MESSAGE_PROMPT = True
 
-    # preps program.py as a runnable uv script inside runtime
-    async def setup(self, runtime: vf.Runtime) -> None:
-        await runtime.prepare_uv_script(PROGRAM_SOURCE, self.config.resolved_env)
-
-    # Prime-RL reaches through Verifiers
     async def launch(
         self,
         ctx: vf.ModelContext,
@@ -45,7 +42,6 @@ class GlyphHarness(vf.Harness[GlyphHarnessConfig]):
     ) -> vf.ProgramResult:
         if mcp_urls:
             raise ValueError("GLYPH does not use MCP tools")
-        # get task's system/user messages
         _, prompt = self.resolve_prompt(trace.task.data)
         if not isinstance(prompt, list):
             raise ValueError("GLYPH tasks require structured system/user messages")
@@ -54,9 +50,12 @@ class GlyphHarness(vf.Harness[GlyphHarnessConfig]):
             for message in prompt
         ]
         data = trace.task.data
-        # Materializes program.py in sandbox
+        if self.config.arm != data.arm:
+            raise ValueError(
+                f"harness Arm {self.config.arm.upper()} does not match "
+                f"task Arm {data.arm.upper()}"
+            )
         program = await runtime.prepare_uv_script(PROGRAM_SOURCE, self.config.resolved_env)
-        # Sandbox script will know which served model endpoing to call and which task folder/tests to use
         argv = [
             *program,
             f"--base-url={endpoint}",
@@ -64,6 +63,7 @@ class GlyphHarness(vf.Harness[GlyphHarnessConfig]):
             f"--model={ctx.model}",
             f"--trace-prefix={data.trace_prefix}",
             "--test-file=.glyph/tests.py",
+            f"--arm={self.config.arm}",
             f"--max-tool-calls={self.config.max_tool_calls}",
             f"--tool-timeout={self.config.tool_timeout}",
         ]

@@ -7,10 +7,18 @@ from typing import Any
 
 IM_START = "<|im_start|>"
 IM_END = "<|im_end|>"
-DEFAULT_SYSTEM_PROMPT = (
+ARM_A_SYSTEM_PROMPT = (
     "You are a Python coding agent. Use tools when needed. "
     "After FINAL, stop immediately."
 )
+ARM_B_SYSTEM_PROMPT = (
+    "You are a Python coding agent. Before testing an applied candidate, emit "
+    "<PREDICTION>OUTCOME</PREDICTION>. OUTCOME is PASS, "
+    "ASSERTION_FAILURE, RUNTIME_ERROR, SYNTAX_ERROR, TIMEOUT, or OTHER. "
+    "Then emit <DECISION>KEEP</DECISION> to test or "
+    "<DECISION>REVISE</DECISION> to patch again. After FINAL, stop."
+)
+DEFAULT_SYSTEM_PROMPT = ARM_A_SYSTEM_PROMPT
 
 GLYPH_CHAT_TEMPLATE = r"""{%- for message in messages %}
 {%- set role = message['role'] %}
@@ -56,20 +64,6 @@ def render_messages(messages: list[Any], add_generation_prompt: bool = False) ->
     if add_generation_prompt:
         rendered += f"{IM_START}assistant\n"
     return rendered
-
-
-def render_prompt(user_message: str, system_message: str | None = None) -> str:
-    return render_messages(
-        [
-            {"role": "system", "content": system_message or DEFAULT_SYSTEM_PROMPT},
-            {"role": "user", "content": user_message},
-        ],
-        add_generation_prompt=True,
-    )
-
-
-def render_tool_turn(result_block: str) -> str:
-    return f"\n\n{render_message('tool', result_block)}\n\n{IM_START}assistant\n"
 
 
 def assert_glyph_template_parity(tokenizer: Any | None = None) -> None:

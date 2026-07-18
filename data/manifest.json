@@ -1,0 +1,79 @@
+{
+  "artifacts": {
+    "arm_a_test.jsonl": {
+      "bytes": 374345,
+      "sha256": "db117756fe55cd5f53a0b3f6ecd707a2df01455c1aaf951a81abdd5d638b2e59"
+    },
+    "arm_a_train.jsonl": {
+      "bytes": 277520,
+      "sha256": "f00040ac74729e4719d21cbced89c13c14da788005076f123794bd270a037fa5"
+    },
+    "arm_a_validation.jsonl": {
+      "bytes": 66645,
+      "sha256": "4cbf2f171bb1dd25334d462ef90dd2395c9c6bb728811c62f6cbb11ed8977f7d"
+    },
+    "arm_b_test.jsonl": {
+      "bytes": 482345,
+      "sha256": "8d771db7397fcdcf46fa919d1a1db349bc64f952aa18f715ae6002691e9445a0"
+    },
+    "arm_b_train.jsonl": {
+      "bytes": 358304,
+      "sha256": "d871a884218d0d669ce230bead2080d7dfd0c76b7d06f46377030dea9db0ee38"
+    },
+    "arm_b_validation.jsonl": {
+      "bytes": 86085,
+      "sha256": "79654e4f23c8fdf192ac5a2757e8f0eddbec05058846a436f393b44c0407844e"
+    },
+    "assignments.json": {
+      "bytes": 45171,
+      "sha256": "d9dfaff920011ac0a4af48b294ee5491f99316e96dc6ca9018ecace58569f659"
+    },
+    "sft/arm_a/train.jsonl": {
+      "bytes": 720401,
+      "sha256": "e8e10e0f6c230f42293f56be5a923a741bb1be5d9bd1bc5ab18f180ce77a1ea1"
+    },
+    "sft/arm_b/train.jsonl": {
+      "bytes": 806015,
+      "sha256": "1616929be85e4e51505dcaf95303d1c60ed87bf155749b79140a68ed112d5f61"
+    }
+  },
+  "sources": {
+    "test": {
+      "license": "CC-BY-4.0",
+      "path": "full/test-00000-of-00001.parquet",
+      "repository": "google-research-datasets/mbpp",
+      "revision": "4bb6404fdc6cacfda99d4ac4205087b89d32030c",
+      "sha256": "566fd53060ffba5766dace1d1e2f4c38906781526de222b0dfbdbc325b696c77"
+    },
+    "train": {
+      "license": "CC-BY-4.0",
+      "path": "full/train-00000-of-00001.parquet",
+      "repository": "google-research-datasets/mbpp",
+      "revision": "4bb6404fdc6cacfda99d4ac4205087b89d32030c",
+      "sha256": "09d125ca31edacb7800be8c67c45abff618faf0214ff551291817d06bdb914ae"
+    },
+    "validation": {
+      "license": "CC-BY-4.0",
+      "path": "full/validation-00000-of-00001.parquet",
+      "repository": "google-research-datasets/mbpp",
+      "revision": "4bb6404fdc6cacfda99d4ac4205087b89d32030c",
+      "sha256": "3f0ec060987432d99fe8fb409d31e6c67445b208a01741c5583517c80a10fe80"
+    }
+  },
+  "split": {
+    "recovery_outcomes": {
+      "ASSERTION_FAILURE": 105,
+      "RUNTIME_ERROR": 19
+    },
+    "seed": 42,
+    "sft_direct": 250,
+    "sft_per_arm": 374,
+    "sft_recovery": 124,
+    "test": 500,
+    "test_ids": "11-510",
+    "train": 374,
+    "train_ids": "601-974",
+    "validation": 90,
+    "validation_ids": "511-600"
+  }
+}

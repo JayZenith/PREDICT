@@ -34,6 +34,7 @@ def load_rows(data_path: str, max_samples: int | None = None) -> list[dict]:
 
 
 class GlyphTaskData(vf.TaskData):
+    arm: str = "a"
     case_id: str
     source: str = "mbpp"
     source_task_id: int
@@ -99,6 +100,7 @@ class GlyphTask(vf.Task[GlyphTaskData, vf.State, GlyphTaskConfig]):
         state = trace.info.get("glyph") or {}
         calls = state.get("calls") or []
         results = state.get("results") or {}
+        final_verification = state.get("final_verification") or {}
         successful_call_id = next(
             (
                 call.get("id")
@@ -111,6 +113,7 @@ class GlyphTask(vf.Task[GlyphTaskData, vf.State, GlyphTaskConfig]):
         messages = trace.branches[-1].messages if trace.branches else []
         valid = bool(
             successful_call_id
+            and final_verification.get("success")
             and not state.get("protocol_errors")
             and messages
             and message_role(messages[-1]) == "assistant"
@@ -125,6 +128,15 @@ class GlyphTask(vf.Task[GlyphTaskData, vf.State, GlyphTaskConfig]):
         trace.info["glyph_evaluation"] = evaluation
         return evaluation
 
+    @staticmethod
+    def _state(trace: vf.Trace) -> tuple[list[dict], dict[str, dict], list[dict]]:
+        state = trace.info.get("glyph") or {}
+        return (
+            list(state.get("calls") or []),
+            dict(state.get("results") or {}),
+            list(state.get("prediction_targets") or []),
+        )
+
     @vf.reward(weight=1.0)
     async def mbpp_reward(self, trace: vf.Trace) -> float:
         return self._evaluate(trace)[0]
@@ -132,6 +144,86 @@ class GlyphTask(vf.Task[GlyphTaskData, vf.State, GlyphTaskConfig]):
     @vf.metric
     async def passed(self, trace: vf.Trace) -> float:
         return float(self._evaluate(trace)[1])
+
+    @vf.metric
+    async def first_patch_correct(self, trace: vf.Trace) -> float:
+        calls, results, predictions = self._state(trace)
+        if predictions:
+            return float(predictions[0].get("actual") == "PASS")
+        first_test = next(
+            (call for call in calls if call.get("tool") == "python_test"), None
+        )
+        return float(
+            bool(first_test)
+            and bool((results.get(first_test.get("id")) or {}).get("success"))
+        )
+
+    @vf.metric
+    async def prediction_accuracy(self, trace: vf.Trace) -> float:
+        _, _, predictions = self._state(trace)
+        if not predictions:
+            return 0.0
+        return sum(
+            item.get("sampled_prediction") == item.get("actual")
+            for item in predictions
+        ) / len(predictions)
+
+    @vf.metric
+    async def bad_patch_rejection_rate(self, trace: vf.Trace) -> float:
+        _, _, predictions = self._state(trace)
+        bad = [item for item in predictions if item.get("actual") != "PASS"]
+        return (
+            sum(item.get("decision") == "REVISE" for item in bad) / len(bad)
+            if bad
+            else 0.0
+        )
+
+    @vf.metric
+    async def unnecessary_rejection_rate(self, trace: vf.Trace) -> float:
+        _, _, predictions = self._state(trace)
+        good = [item for item in predictions if item.get("actual") == "PASS"]
+        return (
+            sum(item.get("decision") == "REVISE" for item in good) / len(good)
+            if good
+            else 0.0
+        )
+
+    @vf.metric
+    async def recovered_after_executed_failure(self, trace: vf.Trace) -> float:
+        calls, results, _ = self._state(trace)
+        outcomes = [
+            bool((results.get(call.get("id")) or {}).get("success"))
+            for call in calls
+            if call.get("tool") == "python_test"
+        ]
+        first_failure = next(
+            (index for index, passed in enumerate(outcomes) if not passed),
+            None,
+        )
+        return float(
+            first_failure is not None and any(outcomes[first_failure + 1 :])
+        )
+
+    @vf.metric
+    async def had_executed_failure(self, trace: vf.Trace) -> float:
+        calls, results, _ = self._state(trace)
+        return float(
+            any(
+                not bool((results.get(call.get("id")) or {}).get("success"))
+                for call in calls
+                if call.get("tool") == "python_test"
+            )
+        )
+
+    @vf.metric
+    async def visible_test_calls(self, trace: vf.Trace) -> float:
+        calls, _, _ = self._state(trace)
+        return float(sum(call.get("tool") == "python_test" for call in calls))
+
+    @vf.metric
+    async def visible_tool_calls(self, trace: vf.Trace) -> float:
+        calls, _, _ = self._state(trace)
+        return float(len(calls))
 
 
 class GlyphTasksetConfig(vf.TasksetConfig):
@@ -159,6 +251,7 @@ class GlyphTaskset(vf.Taskset[GlyphTask, GlyphTasksetConfig]):
                         idx=idx,
                         name=row["case_id"],
                         prompt=row["prompt"],
+                        arm=row.get("arm", "a"),
                         case_id=row["case_id"],
                         source=row.get("source", "mbpp"),
                         source_task_id=int(row.get("task_id", idx)),

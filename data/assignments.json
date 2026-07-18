@@ -1,0 +1,2246 @@
+[
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_601",
+    "task_id": 601,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_602",
+    "task_id": 602,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_603",
+    "task_id": 603,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_604",
+    "task_id": 604,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_605",
+    "task_id": 605,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_606",
+    "task_id": 606,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_607",
+    "task_id": 607,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_608",
+    "task_id": 608,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_609",
+    "task_id": 609,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_610",
+    "task_id": 610,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_611",
+    "task_id": 611,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_612",
+    "task_id": 612,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_613",
+    "task_id": 613,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_614",
+    "task_id": 614,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_615",
+    "task_id": 615,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_616",
+    "task_id": 616,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_617",
+    "task_id": 617,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_618",
+    "task_id": 618,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_619",
+    "task_id": 619,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_620",
+    "task_id": 620,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_621",
+    "task_id": 621,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_622",
+    "task_id": 622,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_623",
+    "task_id": 623,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_624",
+    "task_id": 624,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_625",
+    "task_id": 625,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_626",
+    "task_id": 626,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_627",
+    "task_id": 627,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_628",
+    "task_id": 628,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_629",
+    "task_id": 629,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_630",
+    "task_id": 630,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_631",
+    "task_id": 631,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_632",
+    "task_id": 632,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_633",
+    "task_id": 633,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_634",
+    "task_id": 634,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_635",
+    "task_id": 635,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_636",
+    "task_id": 636,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_637",
+    "task_id": 637,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_638",
+    "task_id": 638,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_639",
+    "task_id": 639,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_640",
+    "task_id": 640,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_641",
+    "task_id": 641,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_642",
+    "task_id": 642,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_643",
+    "task_id": 643,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_644",
+    "task_id": 644,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_645",
+    "task_id": 645,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_646",
+    "task_id": 646,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_647",
+    "task_id": 647,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_648",
+    "task_id": 648,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_649",
+    "task_id": 649,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_650",
+    "task_id": 650,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_651",
+    "task_id": 651,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_652",
+    "task_id": 652,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_653",
+    "task_id": 653,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_654",
+    "task_id": 654,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_655",
+    "task_id": 655,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_656",
+    "task_id": 656,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_657",
+    "task_id": 657,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_658",
+    "task_id": 658,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_659",
+    "task_id": 659,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_660",
+    "task_id": 660,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_661",
+    "task_id": 661,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_662",
+    "task_id": 662,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_663",
+    "task_id": 663,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_664",
+    "task_id": 664,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_665",
+    "task_id": 665,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_666",
+    "task_id": 666,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_667",
+    "task_id": 667,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_668",
+    "task_id": 668,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_669",
+    "task_id": 669,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_670",
+    "task_id": 670,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_671",
+    "task_id": 671,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_672",
+    "task_id": 672,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_673",
+    "task_id": 673,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_674",
+    "task_id": 674,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_675",
+    "task_id": 675,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_676",
+    "task_id": 676,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_677",
+    "task_id": 677,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_678",
+    "task_id": 678,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_679",
+    "task_id": 679,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_680",
+    "task_id": 680,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_681",
+    "task_id": 681,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_682",
+    "task_id": 682,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_683",
+    "task_id": 683,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_684",
+    "task_id": 684,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_685",
+    "task_id": 685,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_686",
+    "task_id": 686,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_687",
+    "task_id": 687,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_688",
+    "task_id": 688,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_689",
+    "task_id": 689,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_690",
+    "task_id": 690,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_691",
+    "task_id": 691,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_692",
+    "task_id": 692,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_693",
+    "task_id": 693,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_694",
+    "task_id": 694,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_695",
+    "task_id": 695,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_696",
+    "task_id": 696,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_697",
+    "task_id": 697,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_698",
+    "task_id": 698,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_699",
+    "task_id": 699,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_700",
+    "task_id": 700,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_701",
+    "task_id": 701,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_702",
+    "task_id": 702,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_703",
+    "task_id": 703,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_704",
+    "task_id": 704,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_705",
+    "task_id": 705,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_706",
+    "task_id": 706,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_707",
+    "task_id": 707,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_708",
+    "task_id": 708,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_709",
+    "task_id": 709,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_710",
+    "task_id": 710,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_711",
+    "task_id": 711,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_712",
+    "task_id": 712,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_713",
+    "task_id": 713,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_714",
+    "task_id": 714,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_715",
+    "task_id": 715,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_716",
+    "task_id": 716,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_717",
+    "task_id": 717,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_718",
+    "task_id": 718,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_719",
+    "task_id": 719,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_720",
+    "task_id": 720,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_721",
+    "task_id": 721,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_722",
+    "task_id": 722,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_723",
+    "task_id": 723,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_724",
+    "task_id": 724,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_725",
+    "task_id": 725,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_726",
+    "task_id": 726,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_727",
+    "task_id": 727,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_728",
+    "task_id": 728,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_729",
+    "task_id": 729,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_730",
+    "task_id": 730,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_731",
+    "task_id": 731,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_732",
+    "task_id": 732,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_733",
+    "task_id": 733,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_734",
+    "task_id": 734,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_735",
+    "task_id": 735,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_736",
+    "task_id": 736,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_737",
+    "task_id": 737,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_738",
+    "task_id": 738,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_739",
+    "task_id": 739,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_740",
+    "task_id": 740,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_741",
+    "task_id": 741,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_742",
+    "task_id": 742,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_743",
+    "task_id": 743,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_744",
+    "task_id": 744,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_745",
+    "task_id": 745,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_746",
+    "task_id": 746,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_747",
+    "task_id": 747,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_748",
+    "task_id": 748,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_749",
+    "task_id": 749,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_750",
+    "task_id": 750,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_751",
+    "task_id": 751,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_752",
+    "task_id": 752,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_753",
+    "task_id": 753,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_754",
+    "task_id": 754,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_755",
+    "task_id": 755,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_756",
+    "task_id": 756,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_757",
+    "task_id": 757,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_758",
+    "task_id": 758,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_759",
+    "task_id": 759,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_760",
+    "task_id": 760,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_761",
+    "task_id": 761,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_762",
+    "task_id": 762,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_763",
+    "task_id": 763,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_764",
+    "task_id": 764,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_765",
+    "task_id": 765,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_766",
+    "task_id": 766,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_767",
+    "task_id": 767,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_768",
+    "task_id": 768,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_769",
+    "task_id": 769,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_770",
+    "task_id": 770,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_771",
+    "task_id": 771,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_772",
+    "task_id": 772,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_773",
+    "task_id": 773,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_774",
+    "task_id": 774,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_775",
+    "task_id": 775,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_776",
+    "task_id": 776,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_777",
+    "task_id": 777,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_778",
+    "task_id": 778,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_779",
+    "task_id": 779,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_780",
+    "task_id": 780,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_781",
+    "task_id": 781,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_782",
+    "task_id": 782,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_783",
+    "task_id": 783,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_784",
+    "task_id": 784,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_785",
+    "task_id": 785,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_786",
+    "task_id": 786,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_787",
+    "task_id": 787,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_788",
+    "task_id": 788,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_789",
+    "task_id": 789,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_790",
+    "task_id": 790,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_791",
+    "task_id": 791,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_792",
+    "task_id": 792,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_793",
+    "task_id": 793,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_794",
+    "task_id": 794,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_795",
+    "task_id": 795,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_796",
+    "task_id": 796,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_797",
+    "task_id": 797,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_798",
+    "task_id": 798,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_799",
+    "task_id": 799,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_800",
+    "task_id": 800,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_801",
+    "task_id": 801,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_802",
+    "task_id": 802,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_803",
+    "task_id": 803,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_804",
+    "task_id": 804,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_805",
+    "task_id": 805,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_806",
+    "task_id": 806,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_807",
+    "task_id": 807,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_808",
+    "task_id": 808,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_809",
+    "task_id": 809,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_810",
+    "task_id": 810,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_811",
+    "task_id": 811,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_812",
+    "task_id": 812,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_813",
+    "task_id": 813,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_814",
+    "task_id": 814,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_815",
+    "task_id": 815,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_816",
+    "task_id": 816,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_817",
+    "task_id": 817,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_818",
+    "task_id": 818,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_819",
+    "task_id": 819,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_820",
+    "task_id": 820,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_821",
+    "task_id": 821,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_822",
+    "task_id": 822,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_823",
+    "task_id": 823,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_824",
+    "task_id": 824,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_825",
+    "task_id": 825,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_826",
+    "task_id": 826,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_827",
+    "task_id": 827,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_828",
+    "task_id": 828,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_829",
+    "task_id": 829,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_830",
+    "task_id": 830,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_831",
+    "task_id": 831,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_832",
+    "task_id": 832,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_833",
+    "task_id": 833,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_834",
+    "task_id": 834,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_835",
+    "task_id": 835,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_836",
+    "task_id": 836,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_837",
+    "task_id": 837,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_838",
+    "task_id": 838,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_839",
+    "task_id": 839,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_840",
+    "task_id": 840,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_841",
+    "task_id": 841,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_842",
+    "task_id": 842,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_843",
+    "task_id": 843,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_844",
+    "task_id": 844,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_845",
+    "task_id": 845,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_846",
+    "task_id": 846,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_847",
+    "task_id": 847,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_848",
+    "task_id": 848,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_849",
+    "task_id": 849,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_850",
+    "task_id": 850,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_851",
+    "task_id": 851,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_852",
+    "task_id": 852,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_853",
+    "task_id": 853,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_854",
+    "task_id": 854,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_855",
+    "task_id": 855,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_856",
+    "task_id": 856,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_857",
+    "task_id": 857,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_858",
+    "task_id": 858,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_859",
+    "task_id": 859,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_860",
+    "task_id": 860,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_861",
+    "task_id": 861,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_862",
+    "task_id": 862,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_863",
+    "task_id": 863,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_864",
+    "task_id": 864,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_865",
+    "task_id": 865,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_866",
+    "task_id": 866,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_867",
+    "task_id": 867,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_868",
+    "task_id": 868,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_869",
+    "task_id": 869,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_870",
+    "task_id": 870,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_871",
+    "task_id": 871,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_872",
+    "task_id": 872,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_873",
+    "task_id": 873,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_874",
+    "task_id": 874,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_875",
+    "task_id": 875,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_876",
+    "task_id": 876,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_877",
+    "task_id": 877,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_878",
+    "task_id": 878,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_879",
+    "task_id": 879,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_880",
+    "task_id": 880,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_881",
+    "task_id": 881,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_882",
+    "task_id": 882,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_883",
+    "task_id": 883,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_884",
+    "task_id": 884,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_885",
+    "task_id": 885,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_886",
+    "task_id": 886,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_887",
+    "task_id": 887,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_888",
+    "task_id": 888,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_889",
+    "task_id": 889,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_890",
+    "task_id": 890,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_891",
+    "task_id": 891,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_892",
+    "task_id": 892,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_893",
+    "task_id": 893,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_894",
+    "task_id": 894,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_895",
+    "task_id": 895,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_896",
+    "task_id": 896,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_897",
+    "task_id": 897,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_898",
+    "task_id": 898,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_899",
+    "task_id": 899,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_900",
+    "task_id": 900,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_901",
+    "task_id": 901,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_902",
+    "task_id": 902,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_903",
+    "task_id": 903,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_904",
+    "task_id": 904,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_905",
+    "task_id": 905,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_906",
+    "task_id": 906,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_907",
+    "task_id": 907,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_908",
+    "task_id": 908,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_909",
+    "task_id": 909,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_910",
+    "task_id": 910,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_911",
+    "task_id": 911,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_912",
+    "task_id": 912,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_913",
+    "task_id": 913,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_914",
+    "task_id": 914,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_915",
+    "task_id": 915,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_916",
+    "task_id": 916,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_917",
+    "task_id": 917,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_918",
+    "task_id": 918,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_919",
+    "task_id": 919,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_920",
+    "task_id": 920,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_921",
+    "task_id": 921,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_922",
+    "task_id": 922,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_923",
+    "task_id": 923,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_924",
+    "task_id": 924,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_925",
+    "task_id": 925,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_926",
+    "task_id": 926,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_927",
+    "task_id": 927,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_928",
+    "task_id": 928,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_929",
+    "task_id": 929,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_930",
+    "task_id": 930,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_931",
+    "task_id": 931,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_932",
+    "task_id": 932,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_933",
+    "task_id": 933,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_934",
+    "task_id": 934,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_935",
+    "task_id": 935,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_936",
+    "task_id": 936,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_937",
+    "task_id": 937,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_938",
+    "task_id": 938,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_939",
+    "task_id": 939,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_940",
+    "task_id": 940,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_941",
+    "task_id": 941,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_942",
+    "task_id": 942,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_943",
+    "task_id": 943,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_944",
+    "task_id": 944,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_945",
+    "task_id": 945,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_946",
+    "task_id": 946,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_947",
+    "task_id": 947,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_948",
+    "task_id": 948,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_949",
+    "task_id": 949,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_950",
+    "task_id": 950,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_951",
+    "task_id": 951,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_952",
+    "task_id": 952,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_953",
+    "task_id": 953,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_954",
+    "task_id": 954,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_955",
+    "task_id": 955,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_956",
+    "task_id": 956,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_957",
+    "task_id": 957,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_958",
+    "task_id": 958,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_959",
+    "task_id": 959,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_960",
+    "task_id": 960,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_961",
+    "task_id": 961,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_962",
+    "task_id": 962,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_963",
+    "task_id": 963,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_964",
+    "task_id": 964,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_965",
+    "task_id": 965,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_966",
+    "task_id": 966,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_967",
+    "task_id": 967,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "ASSERTION_FAILURE",
+    "case_id": "mbpp_968",
+    "task_id": 968,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_969",
+    "task_id": 969,
+    "trace_type": "recovery"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_970",
+    "task_id": 970,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_971",
+    "task_id": 971,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_972",
+    "task_id": 972,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "PASS",
+    "case_id": "mbpp_973",
+    "task_id": 973,
+    "trace_type": "direct"
+  },
+  {
+    "candidate_outcome": "RUNTIME_ERROR",
+    "case_id": "mbpp_974",
+    "task_id": 974,
+    "trace_type": "recovery"
+  }
+]

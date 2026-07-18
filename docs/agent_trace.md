@@ -25,12 +25,11 @@ CALL read_file {"id":"c1","file_path":"data/blueprints/mbpp_example/solution.py"
 RESULT c1:
 status: success
 stdout:
-def is_even(n):
-    raise NotImplementedError
+# Write your function here.
 <|im_end|>
 
 <|im_start|>assistant
-CALL apply_patch {"id":"c2","file_path":"data/blueprints/mbpp_example/solution.py","find":"    raise NotImplementedError","replace":"    return n % 2 == 1"}
+CALL apply_patch {"id":"c2","file_path":"data/blueprints/mbpp_example/solution.py","find":"# Write your function here.\n","replace":"def is_even(n):\n    return n % 2 == 1\n"}
 <|im_end|>
 
 <|im_start|>tool
@@ -82,7 +81,7 @@ FINAL: implemented is_even and passed the hidden tests.
 
 ```text
 <|im_start|>system
-You are a Python coding agent. Before testing a candidate, predict its outcome and choose KEEP or REVISE. After FINAL, stop immediately.
+You are a Python coding agent. Before testing an applied candidate, emit <PREDICTION>OUTCOME</PREDICTION>. OUTCOME is PASS, ASSERTION_FAILURE, RUNTIME_ERROR, SYNTAX_ERROR, TIMEOUT, or OTHER. Then emit <DECISION>KEEP</DECISION> to test or <DECISION>REVISE</DECISION> to patch again. After FINAL, stop.
 <|im_end|>
 
 <|im_start|>user
@@ -99,12 +98,11 @@ CALL read_file {"id":"c1","file_path":"data/blueprints/mbpp_example/solution.py"
 RESULT c1:
 status: success
 stdout:
-def is_even(n):
-    raise NotImplementedError
+# Write your function here.
 <|im_end|>
 
 <|im_start|>assistant
-CALL apply_patch {"id":"c2","file_path":"data/blueprints/mbpp_example/solution.py","find":"    raise NotImplementedError","replace":"    return n % 2 == 1"}
+CALL apply_patch {"id":"c2","file_path":"data/blueprints/mbpp_example/solution.py","find":"# Write your function here.\n","replace":"def is_even(n):\n    return n % 2 == 1\n"}
 <|im_end|>
 
 <|im_start|>tool
@@ -145,7 +143,7 @@ FINAL: implemented is_even and passed the hidden tests.
 <|im_end|>
 ```
 
-The rejected `c2` candidate is tested in a cloned sandbox:
+The rejected `c2` candidate is copied into an isolated hidden test process:
 
 ```json
 {
@@ -173,7 +171,7 @@ ChatML and does not count as a visible tool call.
    the rejected candidate before applying the next patch.
 6. Runtime executions are authoritative. Assistant text cannot claim a pass.
 7. `FINAL:` is valid only after a real visible passing test and must be the last
-   assistant turn.
+   assistant turn. A hidden final-state check must also pass.
 8. Preserve sampled predictions for metrics. Prediction CE targets the verified
    sandbox label in a separate auxiliary view.
 9. Mask prediction-label tokens from GRPO. Final task success remains the only

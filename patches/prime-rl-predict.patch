@@ -1,0 +1,175 @@
+diff --git a/packages/prime-rl-configs/src/prime_rl/configs/algorithm.py b/packages/prime-rl-configs/src/prime_rl/configs/algorithm.py
+index b328247..a9c04f2 100644
+--- a/packages/prime-rl-configs/src/prime_rl/configs/algorithm.py
++++ b/packages/prime-rl-configs/src/prime_rl/configs/algorithm.py
+@@ -217,6 +217,18 @@ class EchoAlgoConfig(GRPOAlgoConfig):
+     """Optional user-supplied filter narrowing the role-selected tokens."""
+ 
+ 
++class PredictAlgoConfig(GRPOAlgoConfig):
++    type: Literal["predict"] = "predict"  # type: ignore[assignment]
++    """PREDICT: GRPO on agent actions plus verified-label CE on hidden
++    pre-execution consequence targets supplied by the environment."""
++
++    alpha: float = Field(0.1, gt=0)
++    """Weight of verified-label cross-entropy relative to mean GRPO loss."""
++
++    max_aux_tokens: int = Field(4096, ge=1)
++    """Hard limit for each corrected-label auxiliary sequence."""
++
++
+ class MaxRLAlgoConfig(BaseAlgoConfig):
+     type: Literal["max_rl"] = "max_rl"
+     """MaxRL (arXiv:2602.02710): scalar advantage = (reward − group mean) /
+@@ -305,7 +317,13 @@ class SFTAlgoConfig(BaseAlgoConfig):
+ 
+ 
+ AlgoConfig: TypeAlias = Annotated[
+-    GRPOAlgoConfig | EchoAlgoConfig | MaxRLAlgoConfig | OPDAlgoConfig | OPSDAlgoConfig | SFTAlgoConfig,
++    GRPOAlgoConfig
++    | EchoAlgoConfig
++    | PredictAlgoConfig
++    | MaxRLAlgoConfig
++    | OPDAlgoConfig
++    | OPSDAlgoConfig
++    | SFTAlgoConfig,
+     Field(discriminator="type"),
+ ]
+ """The training algorithm: sampling plus the per-token training signal (credit
+@@ -318,6 +336,7 @@ its class defaults are the vetted setting.
+ - ``opsd`` — SDFT: policy samples, demo-conditioned reverse KL against the live policy (the teacher is the policy itself).
+ - ``sft`` — a frozen model samples, the policy trains with CE on its tokens. Needs a frozen ``sampling.source``.
+ - ``echo`` — GRPO on action tokens + weighted CE on tool-response observation tokens.
++- ``predict`` — GRPO actions + verified-label CE on pre-execution predictions.
+ 
+ A new credit-assignment scheme is a new named algorithm in code (subclass
+ ``Algorithm``, register it), not a config that points at an import path.
+diff --git a/src/prime_rl/orchestrator/algo/__init__.py b/src/prime_rl/orchestrator/algo/__init__.py
+index 8d1baa6..79acf93 100644
+--- a/src/prime_rl/orchestrator/algo/__init__.py
++++ b/src/prime_rl/orchestrator/algo/__init__.py
+@@ -37,6 +37,7 @@ from prime_rl.orchestrator.algo.opsd import OPSDAlgorithm
+ from prime_rl.orchestrator.algo.routing import stamp_advantages, stamp_loss_routing
+ from prime_rl.orchestrator.algo.sft import SFTDistillAlgorithm
+ from prime_rl.orchestrator.types import Rollout
++from glyph.prime_rl import PredictAlgorithm
+ 
+ if TYPE_CHECKING:
+     from prime_rl.configs.algorithm import AlgoConfig
+@@ -47,6 +48,7 @@ if TYPE_CHECKING:
+ ALGORITHM_CLASSES: dict[str, type[Algorithm]] = {
+     "grpo": GRPOAlgorithm,
+     "echo": EchoAlgorithm,
++    "predict": PredictAlgorithm,
+     "max_rl": MaxRLAlgorithm,
+     "opd": OPDAlgorithm,
+     "opsd": OPSDAlgorithm,
+@@ -54,7 +56,12 @@ ALGORITHM_CLASSES: dict[str, type[Algorithm]] = {
+ }
+ 
+ 
+-def build_algorithm(config: AlgoConfig, policy_pool: InferencePool) -> Algorithm:
++def build_algorithm(
++    config: AlgoConfig,
++    policy_pool: InferencePool,
++    policy_renderer=None,
++    policy_tokenizer=None,
++) -> Algorithm:
+     cls = ALGORITHM_CLASSES[config.type]
+     assert cls.action_loss_type == config.action_loss_type  # config and runtime declare in two places
+     # The Algorithm is the runtime of the algorithm config's training signal
+@@ -62,7 +69,10 @@ def build_algorithm(config: AlgoConfig, policy_pool: InferencePool) -> Algorithm
+     # handed the live policy pool — opsd self-distills against it, others may
+     # judge against it or ignore it. Other models (a frozen teacher, a hint
+     # renderer) are built from the algorithm's own config in setup().
+-    return cls(config, policy_pool)
++    algorithm = cls(config, policy_pool)
++    algorithm.policy_renderer = policy_renderer
++    algorithm.policy_tokenizer = policy_tokenizer
++    return algorithm
+ 
+ 
+ __all__ = [
+@@ -72,6 +82,7 @@ __all__ = [
+     "MaxRLAlgorithm",
+     "OPDAlgorithm",
+     "OPSDAlgorithm",
++    "PredictAlgorithm",
+     "Rollout",
+     "SFTDistillAlgorithm",
+     "build_algorithm",
+diff --git a/src/prime_rl/orchestrator/algo/base.py b/src/prime_rl/orchestrator/algo/base.py
+index b12d17d..2f4414f 100644
+--- a/src/prime_rl/orchestrator/algo/base.py
++++ b/src/prime_rl/orchestrator/algo/base.py
+@@ -113,14 +113,16 @@ class Algorithm:
+ 
+     Constructed with the algorithm config it interprets plus the live policy
+     pool (``self.policy_pool`` — always available, never closed by the
+-    algorithm). An algorithm that needs to tokenize (e.g. opsd's demonstration
+-    hint) builds its own renderer in :meth:`setup` from its config; the policy's
+-    renderer is not threaded in."""
++    algorithm). An algorithm may build a separate renderer in :meth:`setup` or
++    use the attached live-policy renderer and tokenizer when an auxiliary
++    target must share the policy's exact tokenization."""
+ 
+     action_loss_type: ClassVar[ActionLossType] = "rl"
+ 
+     def __init__(self, config: AlgoConfig, policy_pool: InferencePool):
+         self.policy_pool = policy_pool
++        self.policy_renderer = None
++        self.policy_tokenizer = None
+         self.connected_pools: list[InferencePool] = []  # frozen pools connected in setup(); closed at shutdown
+ 
+     async def setup(self) -> None:
+diff --git a/src/prime_rl/orchestrator/envs.py b/src/prime_rl/orchestrator/envs.py
+index 75e1a55..c6b11c0 100644
+--- a/src/prime_rl/orchestrator/envs.py
++++ b/src/prime_rl/orchestrator/envs.py
+@@ -280,14 +280,27 @@ class TrainEnvs(Envs[TrainEnv]):
+     :class:`Sampler` and runtime :class:`Algorithm`, built from the env's
+     resolved algorithm config."""
+ 
+-    def __init__(self, configs: Sequence[TrainEnvConfig], *, policy_pool, renderer_config=None):
++    def __init__(
++        self,
++        configs: Sequence[TrainEnvConfig],
++        *,
++        policy_pool,
++        policy_renderer=None,
++        policy_tokenizer=None,
++        renderer_config=None,
++    ):
+         self._envs: dict[str, TrainEnv] = {}
+         for config in configs:
+             assert config.algo is not None, "TrainEnvConfig.algo must be resolved before env construction"
+             env = TrainEnv(
+                 config,
+                 Sampler(config.algo.sampling, policy_pool, renderer_config),
+-                build_algorithm(config.algo, policy_pool),
++                build_algorithm(
++                    config.algo,
++                    policy_pool,
++                    policy_renderer,
++                    policy_tokenizer,
++                ),
+             )
+             self._envs[env.name] = env
+ 
+diff --git a/src/prime_rl/orchestrator/orchestrator.py b/src/prime_rl/orchestrator/orchestrator.py
+index 05dc535..781a63d 100644
+--- a/src/prime_rl/orchestrator/orchestrator.py
++++ b/src/prime_rl/orchestrator/orchestrator.py
+@@ -248,7 +248,11 @@ class Orchestrator:
+ 
+         get_logger().info("Loading training environments")
+         self.train_envs = TrainEnvs(
+-            config.train.env, policy_pool=self.policy_inference, renderer_config=config.renderer
++            config.train.env,
++            policy_pool=self.policy_inference,
++            policy_renderer=self.renderer,
++            policy_tokenizer=self.tokenizer,
++            renderer_config=config.renderer,
+         )
+         get_logger().debug(
+             f"Loaded {len(self.train_envs)} training environment(s) ({', '.join(self.train_envs.names)})"

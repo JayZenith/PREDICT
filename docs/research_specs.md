@@ -58,8 +58,10 @@ Both arms start from `Qwen3-4B-Base` and use:
 
 - Identical MBPP tasks.
 - Matching direct-success and verified-recovery examples.
-- The same optimizer, GRPO groups, seeds, token budget, and visible tool budget.
-- The same final reward: `1` if the completed project passes, otherwise `0`.
+- The same optimizer, GRPO groups, seeds, visible rollout-token budget, and
+  visible tool budget.
+- The same final reward: `1` after a visible passing test, a passing hidden
+  final-state check, and terminal `FINAL`; otherwise `0`.
 
 ## Arm A — reactive baseline
 
@@ -180,9 +182,9 @@ problem + candidate code → likely execution consequence
 
 ## Shadow execution
 
-If Arm B chooses `REVISE`, the evaluator tests the rejected candidate in a
-cloned sandbox. The result is never shown to the agent and does not count as a
-visible tool call.
+If Arm B chooses `REVISE`, the evaluator copies the rejected candidate into an
+isolated hidden test process inside the disposable sandbox. The result is never
+shown to the agent and does not count as a visible tool call.
 
 ```text
 Agent:     PREDICT ASSERTION_FAILURE → REVISE
@@ -244,6 +246,15 @@ Training consequence prediction improves patch judgment:
 
 Hidden-representation improvement is a hypothesis, not a result. The behavioral
 claim must stand on prediction quality, decisions, correctness, and efficiency.
+
+## Limits to report
+
+- Arm B adds auxiliary CE sequences, so it uses more trainer tokens than Arm A.
+  Report trainer tokens and GPU-hours. A compute-matched control is follow-up
+  work, not part of this two-arm test.
+- MBPP may appear in model pretraining. The matched comparison can test the
+  intervention, but absolute MBPP performance is not a clean measure of novel
+  Python capability.
 
 ## Novelty relative to ECHO
 

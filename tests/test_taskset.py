@@ -60,8 +60,11 @@ def _trace(task, turns: list[tuple[str, str, str | None]]) -> vf.Trace:
 
 def _runtime_record(*, errors: list[str] | None = None) -> dict:
     return {
+        "arm": "a",
         "calls": [{"tool": "python_test", "id": "c1", "params": {}}],
-        "results": {"c1": {"success": True}},
+        "final_verification": {"success": True, "outcome": "PASS"},
+        "results": {"c1": {"success": True, "outcome": "PASS"}},
+        "prediction_targets": [],
         "protocol_errors": errors or [],
     }
 
@@ -153,6 +156,27 @@ async def test_runtime_success_cannot_bypass_clean_trace_gate(
 
 
 @pytest.mark.asyncio
+async def test_visible_pass_cannot_hide_a_broken_final_project(
+    tmp_path: Path,
+) -> None:
+    [task] = _taskset(tmp_path).load()
+    trace = _trace(
+        task,
+        [
+            ("assistant", 'CALL python_test {"id":"c1"}', None),
+            ("tool", "RESULT c1:\nstatus: success", "c1"),
+            ("assistant", "FINAL: done.", None),
+        ],
+    )
+    trace.info["glyph"] = _runtime_record()
+    trace.info["glyph"]["final_verification"] = {
+        "success": False,
+        "outcome": "ASSERTION_FAILURE",
+    }
+    assert await task.mbpp_reward(trace) == 0.0
+
+
+@pytest.mark.asyncio
 async def test_later_tool_turn_is_not_a_separate_penalty(tmp_path: Path) -> None:
     [task] = _taskset(tmp_path).load()
     trace = _trace(
@@ -170,10 +194,78 @@ async def test_later_tool_turn_is_not_a_separate_penalty(tmp_path: Path) -> None
             {"tool": "python_test", "id": "c1", "params": {}},
             {"tool": "apply_patch", "id": "c2", "params": {}},
         ],
+        "final_verification": {"success": True, "outcome": "PASS"},
         "results": {"c1": {"success": True}, "c2": {"success": True}},
         "protocol_errors": [],
     }
     assert await task.mbpp_reward(trace) == 1.0
+
+
+@pytest.mark.asyncio
+async def test_prediction_metrics_use_shadow_execution_records(
+    tmp_path: Path,
+) -> None:
+    [task] = _taskset(tmp_path).load()
+    trace = _trace(
+        task,
+        [
+            ("assistant", 'CALL python_test {"id":"c2"}', None),
+            ("tool", "RESULT c2:\nstatus: success", "c2"),
+            ("assistant", "FINAL: done.", None),
+        ],
+    )
+    trace.info["glyph"] = {
+        "arm": "b",
+        "calls": [{"tool": "python_test", "id": "c2", "params": {}}],
+        "final_verification": {"success": True, "outcome": "PASS"},
+        "results": {"c2": {"success": True, "outcome": "PASS"}},
+        "prediction_targets": [
+            {
+                "sampled_prediction": "ASSERTION_FAILURE",
+                "actual": "ASSERTION_FAILURE",
+                "decision": "REVISE",
+                "shadow": True,
+            },
+            {
+                "sampled_prediction": "PASS",
+                "actual": "PASS",
+                "decision": "KEEP",
+                "shadow": False,
+            },
+        ],
+        "protocol_errors": [],
+    }
+    assert await task.first_patch_correct(trace) == 0.0
+    assert await task.prediction_accuracy(trace) == 1.0
+    assert await task.bad_patch_rejection_rate(trace) == 1.0
+    assert await task.unnecessary_rejection_rate(trace) == 0.0
+    assert await task.visible_test_calls(trace) == 1.0
+    assert await task.mbpp_reward(trace) == 1.0
+
+
+@pytest.mark.asyncio
+async def test_recovery_requires_a_visible_pass_after_the_failure(
+    tmp_path: Path,
+) -> None:
+    [task] = _taskset(tmp_path).load()
+    trace = _trace(task, [("assistant", "FINAL: done.", None)])
+    trace.info["glyph"] = {
+        "calls": [
+            {"tool": "python_test", "id": "c1"},
+            {"tool": "python_test", "id": "c2"},
+        ],
+        "results": {
+            "c1": {"success": True},
+            "c2": {"success": False},
+        },
+    }
+    assert await task.had_executed_failure(trace) == 1.0
+    assert await task.recovered_after_executed_failure(trace) == 0.0
+    trace.info["glyph"]["results"] = {
+        "c1": {"success": False},
+        "c2": {"success": True},
+    }
+    assert await task.recovered_after_executed_failure(trace) == 1.0
 
 
 @pytest.mark.asyncio
