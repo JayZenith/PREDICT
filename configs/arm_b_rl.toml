@@ -81,8 +81,7 @@ seed = 42
 port = 8001
 
 [weight_broadcast]
-type = "nccl"
-port = 29511
+type = "filesystem"
 
 [deployment]
 type = "single_node"

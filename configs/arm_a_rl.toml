@@ -72,6 +72,9 @@ keep_last = 2
 gpu_memory_utilization = 0.85
 seed = 42
 
+[weight_broadcast]
+type = "filesystem"
+
 [deployment]
 type = "single_node"
 num_train_gpus = 1
