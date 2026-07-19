@@ -13,14 +13,6 @@ venv/
 dist/
 build/
 *.egg-info/
-data/*
-!data/README.md
-!data/assignments.json
-!data/__init__.py
-!data/manifest.json
-!data/prepare.py
-!data/recovery.py
-!data/validate.py
 outputs/
 runs/
 wandb/

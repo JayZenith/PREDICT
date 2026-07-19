@@ -46,5 +46,6 @@ sandbox outcomes.
 Current longest traces are 703 tokens for Arm A and 766 for Arm B. The
 768-token SFT limit fits every row. Nothing is shortened or omitted.
 
-Generated files are local build artifacts, not hand-edited source. Re-run the
-two commands above to reproduce them byte-for-byte.
+Generated files are committed so a fresh clone is immediately trainable. They
+are not hand-edited; re-run the two commands above to reproduce them
+byte-for-byte.
