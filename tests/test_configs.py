@@ -4,14 +4,16 @@ import sys
 import tomllib
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(
+    0, str(ROOT / ".vendor/prime-rl/packages/prime-rl-configs/src")
+)
+
 from prime_rl.configs.rl import RLConfig
 from prime_rl.configs.sft import SFTConfig
 
 from data.validate import SFT_MAX_TOKENS
 from glyph.chat import GLYPH_CHAT_TEMPLATE
-
-
-ROOT = Path(__file__).resolve().parents[1]
 
 
 def _read(name: str) -> dict:
@@ -35,6 +37,7 @@ def test_matched_sft_configs_are_one_gpu_and_full_trace() -> None:
         assert not config.data.loss_mask.tool
         assert config.renderer is None
         assert config.tokenizer.chat_template == "configs/chat_template.jinja"
+        assert config.tokenizer.eos_token == "<|im_end|>"
         assert (
             ROOT / config.tokenizer.chat_template
         ).read_text().rstrip("\n") == GLYPH_CHAT_TEMPLATE
@@ -53,7 +56,11 @@ def test_matched_rl_configs_differ_only_in_arm_and_algorithm() -> None:
     }
     assert arm_a.seq_len == 4096
     assert arm_a.orchestrator.train.sampling.max_completion_tokens == 512
+    assert arm_a.orchestrator.train.sampling.extra_body == {
+        "stop_token_ids": [151645]
+    }
     assert arm_a.tokenizer.chat_template == "configs/chat_template.jinja"
+    assert arm_a.tokenizer.eos_token == "<|im_end|>"
     assert (
         ROOT / arm_a.tokenizer.chat_template
     ).read_text().rstrip("\n") == GLYPH_CHAT_TEMPLATE
@@ -71,6 +78,12 @@ def test_matched_rl_configs_differ_only_in_arm_and_algorithm() -> None:
         )
         assert train["harness"]["arm"] == arm
         assert train["harness"]["max_tool_calls"] == 8
+        assert raw["orchestrator"]["train"]["sampling"]["extra_body"] == {
+            "stop_token_ids": [151645]
+        }
+        assert raw["orchestrator"]["eval"]["sampling"]["extra_body"] == {
+            "stop_token_ids": [151645]
+        }
         assert train["harness"]["runtime"]["image"] == (
             "python:3.12-slim-bookworm"
         )

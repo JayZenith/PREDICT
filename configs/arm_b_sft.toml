@@ -14,6 +14,7 @@ seq_len = 768
 
 [tokenizer]
 chat_template = "configs/chat_template.jinja"
+eos_token = "<|im_end|>"
 
 [data]
 type = "sft"

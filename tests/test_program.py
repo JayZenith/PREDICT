@@ -13,6 +13,7 @@ from glyph.program import (
     execute_tool,
     parse_calls,
     parse_prediction_decision,
+    validate_turn_shape,
 )
 
 
@@ -44,6 +45,41 @@ def test_arm_b_prediction_and_decision_are_strict() -> None:
         "unknown prediction outcome: MAYBE",
         "unknown decision: WAIT",
     ]
+
+
+def test_runtime_turn_shape_matches_sft_turns() -> None:
+    [call], errors = parse_calls(
+        'CALL read_file {"id":"c1","file_path":"solution.py"}'
+    )
+    assert not errors
+    assert not validate_turn_shape(
+        'CALL read_file {"id":"c1","file_path":"solution.py"}',
+        [call],
+        arm="a",
+        pending_candidate=False,
+    )
+    assert validate_turn_shape(
+        'CALL read_file {"id":"c1","file_path":"solution.py"}\njunk',
+        [call],
+        arm="a",
+        pending_candidate=False,
+    ) == ["CALL turn cannot contain additional text"]
+    assert not validate_turn_shape(
+        (
+            "<PREDICTION>PASS</PREDICTION>\n"
+            "<DECISION>KEEP</DECISION>\n"
+            'CALL python_test {"id":"c2","project_path":"."}'
+        ),
+        [Call("python_test", "c2", {"project_path": "."})],
+        arm="b",
+        pending_candidate=True,
+    )
+    assert not validate_turn_shape(
+        "FINAL: done", [], arm="a", pending_candidate=False
+    )
+    assert validate_turn_shape(
+        "FINAL: done\nextra", [], arm="a", pending_candidate=False
+    )
 
 
 def test_python_agent_tools_patch_and_run_hidden_tests(tmp_path: Path) -> None:
@@ -122,7 +158,9 @@ def test_full_agent_loop_records_read_patch_test_and_final(tmp_path: Path) -> No
             nonlocal requests
             requests += 1
             length = int(self.headers["Content-Length"])
-            messages = json.loads(self.rfile.read(length))["messages"]
+            body = json.loads(self.rfile.read(length))
+            assert body["stop_token_ids"] == [151645]
+            messages = body["messages"]
             last = messages[-1]
             if last["role"] == "user":
                 content = 'CALL read_file {"id":"c1","file_path":"data/project/solution.py"}'

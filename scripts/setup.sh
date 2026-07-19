@@ -23,6 +23,7 @@ git -C "$PRIME_DIR" submodule update --init --depth=1 \
 
 for patch in \
   "$PWD/patches/prime-rl-fail-on-truncation.patch" \
+  "$PWD/patches/prime-rl-eos-token.patch" \
   "$PWD/patches/prime-rl-predict.patch"
 do
   if ! git -C "$PRIME_DIR" apply --reverse --check "$patch" 2>/dev/null; then

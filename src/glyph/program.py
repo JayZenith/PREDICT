@@ -34,6 +34,7 @@ OUTCOME_CLASSES = frozenset(
 )
 DECISIONS = frozenset({"KEEP", "REVISE"})
 SUPPORTED_TOOLS = frozenset({"read_file", "apply_patch", "python_test"})
+IM_END_TOKEN_ID = 151645
 TOOL_NAME_RE = re.compile(r"^[A-Za-z_]\w*$")
 PREDICTION_RE = re.compile(
     r"<PREDICTION>\s*([A-Z_]+)\s*</PREDICTION>", re.DOTALL
@@ -116,6 +117,38 @@ def parse_prediction_decision(
     elif decision not in DECISIONS:
         errors.append(f"unknown decision: {decision}")
     return prediction, decision, errors
+
+
+def validate_turn_shape(
+    text: str,
+    calls: list[Call],
+    *,
+    arm: str,
+    pending_candidate: bool,
+) -> list[str]:
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    if not calls:
+        if len(lines) == 1 and lines[0].startswith("FINAL:"):
+            return []
+        return ["assistant turn must contain exactly one CALL or one FINAL"]
+    if len(calls) != 1:
+        return ["assistant turn requires exactly one CALL"]
+    call_lines = [line for line in lines if line.startswith("CALL ")]
+    if arm == "b" and pending_candidate:
+        if (
+            len(lines) != 3
+            or len(call_lines) != 1
+            or not PREDICTION_RE.fullmatch(lines[0])
+            or not DECISION_RE.fullmatch(lines[1])
+            or lines[2] != call_lines[0]
+        ):
+            return [
+                "Arm B prediction turn requires PREDICTION, DECISION, and one CALL"
+            ]
+        return []
+    if len(lines) != 1 or len(call_lines) != 1:
+        return ["CALL turn cannot contain additional text"]
+    return []
 
 
 def confined_path(value: str, root: Path, *, require_exists: bool = False) -> Path:
@@ -300,7 +333,9 @@ async def main() -> None:
 
     async def complete() -> str:
         completion = await client.chat.completions.create(
-            model=args.model, messages=messages
+            model=args.model,
+            messages=messages,
+            extra_body={"stop_token_ids": [IM_END_TOKEN_ID]},
         )
         return completion.choices[0].message.content or ""
 
@@ -326,17 +361,22 @@ async def main() -> None:
             errors.extend(parse_errors)
             if parse_errors:
                 break
+            shape_errors = validate_turn_shape(
+                assistant,
+                calls,
+                arm=args.arm,
+                pending_candidate=pending_candidate is not None,
+            )
+            errors.extend(shape_errors)
+            if shape_errors:
+                break
 
             if args.arm == "b" and pending_candidate is not None:
                 prediction, decision, protocol_errors = parse_prediction_decision(
                     assistant
                 )
-                if len(calls) != 1:
-                    protocol_errors.append(
-                        "Arm B prediction turns require exactly one CALL"
-                    )
                 expected = "python_test" if decision == "KEEP" else "apply_patch"
-                if len(calls) == 1 and decision in DECISIONS and calls[0].tool != expected:
+                if decision in DECISIONS and calls[0].tool != expected:
                     protocol_errors.append(
                         f"{decision} requires CALL {expected}, got {calls[0].tool}"
                     )
@@ -393,15 +433,7 @@ async def main() -> None:
                     pending_candidate = None
                 continue
 
-            if args.arm == "b" and (
-                PREDICTION_RE.search(assistant) or DECISION_RE.search(assistant)
-            ):
-                errors.append("Arm B predicted without an untested applied candidate")
-                break
             if not calls:
-                break
-            if args.arm == "b" and len(calls) != 1:
-                errors.append("Arm B requires one CALL per assistant turn")
                 break
 
             remaining = args.max_tool_calls - len(executed)

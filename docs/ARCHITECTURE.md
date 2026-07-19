@@ -65,5 +65,5 @@ Stack packing preserves whole traces. RL rejects truncated or over-4096-token
 traces before they reach the trainer.
 
 The repository pins PRIME-RL v0.7.0 and Verifiers v0.2.0. `setup.sh` applies
-the small PREDICT objective patch and the fatal-truncation patch to the pinned
-checkout.
+the PREDICT objective, fatal-truncation, and explicit-tokenizer-EOS patches to
+the pinned checkout.

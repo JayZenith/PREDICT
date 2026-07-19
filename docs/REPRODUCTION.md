@@ -28,7 +28,8 @@ bash scripts/train_sft.sh b
 ```
 
 Both start from `Qwen/Qwen3-4B-Base`, see the same 374 tasks for roughly two
-epochs, and write:
+epochs, and use `<|im_end|>` as both the ChatML turn boundary and model EOS.
+The trainer must not print a missing-EOS warning. Checkpoints write:
 
 ```text
 outputs/arm_a_sft/weights/step_24
