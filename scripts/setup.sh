@@ -43,4 +43,11 @@ done
 test "$(git -C "$PRIME_DIR/deps/verifiers" rev-parse HEAD)" = "$VERIFIERS_COMMIT"
 uv sync --locked --group dev
 
-echo "PREDICT is ready. PRIME-RL training dependencies sync on the first SFT/RL command."
+uv sync --project "$PRIME_DIR" --extra flash-attn --no-build-package flash-attn
+uv run --project "$PRIME_DIR" --extra flash-attn python - <<'PY'
+import flash_attn
+
+print("flash-attn", flash_attn.__version__)
+PY
+
+echo "PREDICT is ready. PRIME-RL training dependencies are synced with the prebuilt flash-attn wheel."
