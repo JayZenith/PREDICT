@@ -40,13 +40,34 @@ recovery.
 Requirements: Python 3.12, `uv`, one GPU for SFT, two GPUs for RL, and
 `PRIME_API_KEY` with Prime Sandbox credit.
 
+### Reproduce the published SFT models
+
+The published [Arm A](https://huggingface.co/JayZenith/SFT_ARM_A) and
+[Arm B](https://huggingface.co/JayZenith/SFT_ARM_B) checkpoints were trained
+from commit
+[`8a4089ba21a205eb8085efb50825a2f2175621cf`](https://github.com/JayZenith/PREDICT/commit/8a4089ba21a205eb8085efb50825a2f2175621cf).
+
 ```bash
+git clone https://github.com/JayZenith/PREDICT.git
+cd PREDICT
+git checkout 8a4089ba21a205eb8085efb50825a2f2175621cf
+
 bash scripts/setup.sh
 uv run python -m data.prepare
 uv run python -m data.validate data
 
 bash scripts/train_sft.sh a
 bash scripts/train_sft.sh b
+```
+
+Each command starts from `Qwen/Qwen3-4B-Base` and writes its final five-epoch
+checkpoint to `outputs/arm_a_sft/weights/step_60` or
+`outputs/arm_b_sft/weights/step_60`. The reference runs used one 96 GB GPU and
+peaked at 76.4 GiB.
+
+### Continue to RLVR
+
+```bash
 bash scripts/train_rl.sh a
 bash scripts/train_rl.sh b
 ```
