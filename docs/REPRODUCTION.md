@@ -29,7 +29,9 @@ bash scripts/train_sft.sh b
 
 Both start from `Qwen/Qwen3-4B-Base`, see the same 374 tasks for roughly four
 epochs, and use `<|im_end|>` as both the ChatML turn boundary and model EOS.
-The trainer must not print a missing-EOS warning. Checkpoints write:
+EOS targets receive `8x` cross-entropy weight so sampled policies learn the
+boundary rather than only producing it greedily. The trainer must not print a
+missing-EOS warning. Checkpoints write:
 
 ```text
 outputs/arm_a_sft/weights/step_48

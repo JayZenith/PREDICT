@@ -28,6 +28,7 @@ def test_matched_sft_configs_are_one_gpu_and_full_trace() -> None:
     for arm, config in zip(("a", "b"), configs, strict=True):
         assert config.model.name == "Qwen/Qwen3-4B-Base"
         assert config.max_steps == 48
+        assert config.eos_token_loss_weight == 8.0
         assert config.deployment.num_gpus == 1
         assert config.model.seq_len == SFT_MAX_TOKENS
         assert config.data.seq_len == SFT_MAX_TOKENS

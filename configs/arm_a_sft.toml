@@ -1,6 +1,7 @@
 # Arm A: roughly four full-parameter SFT epochs on 374 verified traces.
 max_steps = 48
 output_dir = "outputs/arm_a_sft"
+eos_token_loss_weight = 8.0
 
 [wandb]
 project = "predict-mbpp"
