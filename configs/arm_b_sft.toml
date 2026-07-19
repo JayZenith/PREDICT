@@ -15,9 +15,6 @@ seq_len = 768
 [tokenizer]
 chat_template = "configs/chat_template.jinja"
 
-[renderer]
-name = "default"
-
 [data]
 type = "sft"
 name = "data/sft/arm_b"

@@ -33,7 +33,7 @@ def test_matched_sft_configs_are_one_gpu_and_full_trace() -> None:
         assert config.data.pack_function == "stack"
         assert config.data.loss_mask.assistant
         assert not config.data.loss_mask.tool
-        assert config.renderer.name == "default"
+        assert config.renderer is None
         assert config.tokenizer.chat_template == "configs/chat_template.jinja"
         assert (
             ROOT / config.tokenizer.chat_template
