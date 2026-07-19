@@ -34,7 +34,10 @@ def test_matched_sft_configs_are_one_gpu_and_full_trace() -> None:
         assert config.data.loss_mask.assistant
         assert not config.data.loss_mask.tool
         assert config.renderer.name == "default"
-        assert config.tokenizer.chat_template == GLYPH_CHAT_TEMPLATE
+        assert config.tokenizer.chat_template == "configs/chat_template.jinja"
+        assert (
+            ROOT / config.tokenizer.chat_template
+        ).read_text().rstrip("\n") == GLYPH_CHAT_TEMPLATE
     assert configs[0].optim == configs[1].optim
     assert configs[0].scheduler == configs[1].scheduler
 
@@ -50,7 +53,10 @@ def test_matched_rl_configs_differ_only_in_arm_and_algorithm() -> None:
     }
     assert arm_a.seq_len == 4096
     assert arm_a.orchestrator.train.sampling.max_completion_tokens == 512
-    assert arm_a.tokenizer.chat_template == GLYPH_CHAT_TEMPLATE
+    assert arm_a.tokenizer.chat_template == "configs/chat_template.jinja"
+    assert (
+        ROOT / arm_a.tokenizer.chat_template
+    ).read_text().rstrip("\n") == GLYPH_CHAT_TEMPLATE
     assert arm_a.trainer.loss.kl_tau == 0.0
     assert arm_a.deployment.num_train_gpus == 1
     assert arm_a.deployment.num_infer_gpus == 1

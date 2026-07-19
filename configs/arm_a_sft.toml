@@ -13,14 +13,7 @@ impl = "auto"
 seq_len = 768
 
 [tokenizer]
-chat_template = '''{%- for message in messages %}
-{%- set role = message['role'] %}
-{%- set content = message['content'] %}
-{{- '<|im_start|>' + role + '\n' + content.rstrip() + '\n<|im_end|>\n\n' }}
-{%- endfor %}
-{%- if add_generation_prompt %}
-{{- '<|im_start|>assistant\n' }}
-{%- endif %}'''
+chat_template = "configs/chat_template.jinja"
 
 [renderer]
 name = "default"
