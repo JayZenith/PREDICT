@@ -69,20 +69,28 @@ def test_predict_algorithm_uses_verified_label_ce_and_masks_sampled_label(
         "<PREDICTION>PASS</PREDICTION>\n"
         "<DECISION>KEEP</DECISION>"
     )
+    fallback_content = "<PREDICTION>RUNTIME_ERROR</PREDICTION>"
+    fallback_label = "RUNTIME_ERROR"
     node = SimpleNamespace(
         message=SimpleNamespace(role="assistant", content=content),
         sampled=True,
         token_ids=[99, *map(ord, content)],
     )
+    fallback_node = SimpleNamespace(
+        message=SimpleNamespace(role="assistant", content=fallback_content),
+        sampled=True,
+        token_ids=[55, *map(ord, fallback_label), 56],
+    )
+    token_ids = [*node.token_ids, *fallback_node.token_ids]
     sample = _TrainingSample(
-        token_ids=node.token_ids,
-        mask=[False, *([True] * len(content))],
-        logprobs=[0.0] * (len(content) + 1),
+        token_ids=token_ids,
+        mask=[False, *([True] * (len(token_ids) - 1))],
+        logprobs=[0.0] * len(token_ids),
         temperatures=[],
         env_name="arm-b",
     )
     rollout = SimpleNamespace(
-        branch=SimpleNamespace(nodes=[node]),
+        branch=SimpleNamespace(nodes=[node, fallback_node]),
         samples=[sample],
         info={
             "glyph": {
@@ -112,6 +120,11 @@ def test_predict_algorithm_uses_verified_label_ce_and_masks_sampled_label(
     pass_start = content.index("PASS") + 1
     assert raw.rl_weights[pass_start : pass_start + 4] == [0.0] * 4
     assert raw.rl_weights[1] == 1.0
+    fallback_start = len(node.token_ids) + 1
+    assert (
+        raw.rl_weights[fallback_start : fallback_start + len(fallback_label)]
+        == [0.0] * len(fallback_label)
+    )
     verified = "ASSERTION_FAILURE"
     assert sum(weight != 0 for weight in auxiliary.ce_weights) == len(verified)
     assert set(weight for weight in auxiliary.ce_weights if weight) == {0.25}

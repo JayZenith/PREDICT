@@ -38,6 +38,46 @@ def _encoding(tokenizer: Any, text: str) -> tuple[list[int], list[tuple[int, int
     ]
 
 
+def _mask_label_tokens(
+    tokenizer: Any,
+    node_ids: list[int],
+    content: str,
+    match: re.Match[str],
+    branch_offset: int,
+    rl_weights: list[float],
+) -> int:
+    label_start, label_end = match.span(1)
+    candidates = [
+        (content, label_start, label_end),
+        (
+            match.group(0),
+            label_start - match.start(0),
+            label_end - match.start(0),
+        ),
+        (match.group(1), 0, len(match.group(1))),
+    ]
+
+    for text, candidate_label_start, candidate_label_end in candidates:
+        candidate_ids, offsets = _encoding(tokenizer, text)
+        content_start = _find_subsequence(node_ids, candidate_ids)
+        if content_start is None:
+            continue
+
+        masked = 0
+        for token_idx, (start, end) in enumerate(offsets):
+            if end > candidate_label_start and start < candidate_label_end:
+                index = branch_offset + content_start + token_idx
+                if index >= len(rl_weights):
+                    raise RuntimeError(
+                        "PREDICTION label token exceeds its training sample"
+                    )
+                rl_weights[index] = 0.0
+                masked += 1
+        if masked:
+            return masked
+    return 0
+
+
 class PredictAlgorithm(GRPOAlgorithm):
     """GRPO actions plus CE on verified pre-execution outcome labels."""
 
@@ -63,24 +103,16 @@ class PredictAlgorithm(GRPOAlgorithm):
                 if node.sampled and node.message.role == "assistant":
                     matches = list(PREDICTION_LABEL_RE.finditer(content))
                     if matches:
-                        content_ids, offsets = _encoding(tokenizer, content)
                         node_ids = list(node.token_ids)
-                        content_start = _find_subsequence(node_ids, content_ids)
-                        if content_start is None:
-                            raise RuntimeError(
-                                "could not align a sampled PREDICTION label to rollout tokens"
-                            )
                         for match in matches:
-                            label_start, label_end = match.span(1)
-                            for token_idx, (start, end) in enumerate(offsets):
-                                if end > label_start and start < label_end:
-                                    index = branch_offset + content_start + token_idx
-                                    if index >= len(rl_weights):
-                                        raise RuntimeError(
-                                            "PREDICTION label token exceeds its training sample"
-                                        )
-                                    rl_weights[index] = 0.0
-                                    masked += 1
+                            masked += _mask_label_tokens(
+                                tokenizer,
+                                node_ids,
+                                content,
+                                match,
+                                branch_offset,
+                                rl_weights,
+                            )
                 branch_offset += len(node.token_ids)
             if masked:
                 sample.rl_weights = rl_weights
