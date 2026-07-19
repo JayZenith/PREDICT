@@ -18,6 +18,9 @@ if ! git -C "$PRIME_DIR" cat-file -e "${PRIME_RL_COMMIT}^{commit}" 2>/dev/null; 
   git -C "$PRIME_DIR" fetch --depth=1 origin "$PRIME_RL_COMMIT"
 fi
 git -C "$PRIME_DIR" checkout --detach "$PRIME_RL_COMMIT"
+# Upstream pins public submodules with SSH URLs. Fresh training instances do not
+# need GitHub SSH credentials, so resolve those URLs over HTTPS in this checkout.
+git -C "$PRIME_DIR" config url."https://github.com/".insteadOf "git@github.com:"
 git -C "$PRIME_DIR" submodule update --init --depth=1 \
   deps/verifiers deps/renderers deps/pydantic-config deps/research-environments
 
