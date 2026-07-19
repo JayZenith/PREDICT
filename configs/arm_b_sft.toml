@@ -1,7 +1,6 @@
-# Arm B: roughly four matched full-parameter SFT epochs.
-max_steps = 48
+# Arm B: roughly five matched full-parameter SFT epochs.
+max_steps = 60
 output_dir = "outputs/arm_b_sft"
-eos_token_loss_weight = 8.0
 
 [wandb]
 project = "predict-mbpp"
@@ -41,11 +40,11 @@ weight_decay = 0.01
 [scheduler]
 type = "linear"
 warmup_steps = 2
-decay_steps = 46
+decay_steps = 58
 min_lr = 0.0
 
 [ckpt]
-interval = 48
+interval = 60
 keep_last = 1
 
 [deployment]

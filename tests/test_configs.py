@@ -27,8 +27,7 @@ def test_matched_sft_configs_are_one_gpu_and_full_trace() -> None:
     ]
     for arm, config in zip(("a", "b"), configs, strict=True):
         assert config.model.name == "Qwen/Qwen3-4B-Base"
-        assert config.max_steps == 48
-        assert config.eos_token_loss_weight == 8.0
+        assert config.max_steps == 60
         assert config.deployment.num_gpus == 1
         assert config.model.seq_len == SFT_MAX_TOKENS
         assert config.data.seq_len == SFT_MAX_TOKENS
@@ -58,7 +57,8 @@ def test_matched_rl_configs_differ_only_in_arm_and_algorithm() -> None:
     assert arm_a.seq_len == 4096
     assert arm_a.orchestrator.train.sampling.max_completion_tokens == 512
     assert arm_a.orchestrator.train.sampling.extra_body == {
-        "stop_token_ids": [151645]
+        "stop_token_ids": [151645],
+        "top_k": 20,
     }
     assert arm_a.tokenizer.chat_template == "configs/chat_template.jinja"
     assert arm_a.tokenizer.eos_token == "<|im_end|>"
@@ -80,7 +80,8 @@ def test_matched_rl_configs_differ_only_in_arm_and_algorithm() -> None:
         assert train["harness"]["arm"] == arm
         assert train["harness"]["max_tool_calls"] == 8
         assert raw["orchestrator"]["train"]["sampling"]["extra_body"] == {
-            "stop_token_ids": [151645]
+            "stop_token_ids": [151645],
+            "top_k": 20,
         }
         assert raw["orchestrator"]["eval"]["sampling"]["extra_body"] == {
             "stop_token_ids": [151645]

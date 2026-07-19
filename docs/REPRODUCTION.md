@@ -27,15 +27,13 @@ bash scripts/train_sft.sh a
 bash scripts/train_sft.sh b
 ```
 
-Both start from `Qwen/Qwen3-4B-Base`, see the same 374 tasks for roughly four
+Both start from `Qwen/Qwen3-4B-Base`, see the same 374 tasks for roughly five
 epochs, and use `<|im_end|>` as both the ChatML turn boundary and model EOS.
-EOS targets receive `8x` cross-entropy weight so sampled policies learn the
-boundary rather than only producing it greedily. The trainer must not print a
-missing-EOS warning. Checkpoints write:
+The trainer must not print a missing-EOS warning. Checkpoints write:
 
 ```text
-outputs/arm_a_sft/weights/step_48
-outputs/arm_b_sft/weights/step_48
+outputs/arm_a_sft/weights/step_60
+outputs/arm_b_sft/weights/step_60
 ```
 
 ## 3. RL
@@ -68,8 +66,8 @@ Evaluate base, SFT, and RL checkpoints on the 90 validation tasks:
 ```bash
 bash scripts/evaluate.sh a Qwen/Qwen3-4B-Base validation
 bash scripts/evaluate.sh b Qwen/Qwen3-4B-Base validation
-bash scripts/evaluate.sh a outputs/arm_a_sft/weights/step_48 validation
-bash scripts/evaluate.sh b outputs/arm_b_sft/weights/step_48 validation
+bash scripts/evaluate.sh a outputs/arm_a_sft/weights/step_60 validation
+bash scripts/evaluate.sh b outputs/arm_b_sft/weights/step_60 validation
 bash scripts/evaluate.sh a ARM_A_RL_CHECKPOINT validation
 bash scripts/evaluate.sh b ARM_B_RL_CHECKPOINT validation
 ```
