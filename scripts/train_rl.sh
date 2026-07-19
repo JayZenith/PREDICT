@@ -18,4 +18,5 @@ test -d "outputs/arm_${arm}_sft/weights/step_24" || {
 uv run python -m data.validate data
 export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
 exec uv run --project .vendor/prime-rl \
+  --extra flash-attn \
   rl @ "$PWD/configs/arm_${arm}_rl.toml" "$@"

@@ -18,4 +18,5 @@ test -f "data/sft/arm_${arm}/train.jsonl" || {
 uv run python -m data.validate data
 export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
 exec uv run --project .vendor/prime-rl \
+  --extra flash-attn \
   sft @ "$PWD/configs/arm_${arm}_sft.toml" "$@"
