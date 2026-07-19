@@ -37,8 +37,9 @@ recovery.
 
 ## Train
 
-Requirements: Python 3.12, `uv`, one GPU for SFT, two GPUs for RL, and
-`PRIME_API_KEY` with Prime Sandbox credit.
+Requirements: Python 3.12, `uv`, one GPU for SFT, and two GPUs for RL.
+RL environments run as isolated host subprocess workspaces on the training
+instance; no Prime Sandbox access is required.
 
 ### Reproduce the published SFT models
 
@@ -71,6 +72,9 @@ peaked at 76.4 GiB.
 bash scripts/train_rl.sh a
 bash scripts/train_rl.sh b
 ```
+
+These start directly from `JayZenith/SFT_ARM_A` and
+`JayZenith/SFT_ARM_B`, respectively.
 
 SFT uses 768-token whole traces and aborts rather than truncating or excluding
 one. RL allows 512 new tokens inside a 4096-token full trace and hard-fails on

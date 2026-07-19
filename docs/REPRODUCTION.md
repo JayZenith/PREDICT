@@ -38,7 +38,8 @@ outputs/arm_b_sft/weights/step_60
 
 ## 3. RL
 
-Each run needs one training GPU, one inference GPU, and `PRIME_API_KEY`:
+Each run needs one training GPU and one inference GPU. Environments use fresh
+host subprocess workspaces, so no Prime Sandbox key is required:
 
 ```bash
 bash scripts/train_rl.sh a
@@ -47,7 +48,8 @@ bash scripts/train_rl.sh b
 
 Both run 94 updates over the same 374 tasks with group size 8, batch size 32,
 512 completion tokens, eight visible tool calls, binary final reward, and no
-reference KL. Arm B starts with `λ=0.1` (`alpha` in the config); override it
+reference KL. Arm A starts from `JayZenith/SFT_ARM_A`; Arm B starts from
+`JayZenith/SFT_ARM_B`. Arm B starts with `λ=0.1` (`alpha` in the config); override it
 only for validation-backed tuning:
 
 ```bash

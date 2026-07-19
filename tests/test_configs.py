@@ -49,6 +49,8 @@ def test_matched_rl_configs_differ_only_in_arm_and_algorithm() -> None:
     arm_a = RLConfig.model_validate(_read("arm_a_rl.toml"))
     arm_b_raw = _read("arm_b_rl.toml")
     assert arm_a.orchestrator.algo.type == "grpo"
+    assert arm_a.model.name == "JayZenith/SFT_ARM_A"
+    assert arm_b_raw["model"]["name"] == "JayZenith/SFT_ARM_B"
     assert arm_b_raw["orchestrator"]["algo"] == {
         "type": "predict",
         "alpha": 0.1,
@@ -86,9 +88,8 @@ def test_matched_rl_configs_differ_only_in_arm_and_algorithm() -> None:
         assert raw["orchestrator"]["eval"]["sampling"]["extra_body"] == {
             "stop_token_ids": [151645]
         }
-        assert train["harness"]["runtime"]["image"] == (
-            "python:3.12-slim-bookworm"
-        )
+        assert train["harness"]["runtime"] == {"type": "subprocess"}
+        assert validation["harness"]["runtime"] == {"type": "subprocess"}
 
 
 def test_patched_prime_rl_schema_accepts_predict_algorithm() -> None:

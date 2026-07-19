@@ -289,7 +289,7 @@ def test_taskset_metadata_and_runtime_defaults(tmp_path: Path) -> None:
     assert task.data.source_task_id == 601
     assert task.data.test_code == "assert answer() == 42\n"
     config = GlyphHarnessConfig(id="glyph")
-    assert config.runtime.image == "python:3.12-slim-bookworm"
+    assert config.runtime.type == "subprocess"
     assert config.max_tool_calls == 8
 
 

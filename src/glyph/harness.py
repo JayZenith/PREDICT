@@ -13,16 +13,7 @@ PROGRAM_SOURCE = (Path(__file__).resolve().parent / "program.py").read_text()
 
 
 class GlyphHarnessConfig(vf.HarnessConfig):
-    runtime: vf.RuntimeConfig = vf.PrimeConfig(
-        image="python:3.12-slim-bookworm",
-        workdir="/workspace",
-        network_access=True,
-        labels=["glyph", "verifiers-v1", "python", "mbpp"],
-        cpu=1.0,
-        memory=2.0,
-        disk=2.0,
-        idle_timeout=600,
-    )
+    runtime: vf.RuntimeConfig = vf.SubprocessConfig()
     max_tool_calls: int = 8
     tool_timeout: int = 30
     arm: Literal["a", "b"] = "a"

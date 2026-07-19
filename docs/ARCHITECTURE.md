@@ -2,8 +2,8 @@
 
 ## Shared agent
 
-`GlyphHarness` launches one Verifiers v1 program in a disposable Prime
-Sandbox. The policy sees structured ChatML and can:
+`GlyphHarness` launches one Verifiers v1 program in a fresh host subprocess
+workspace on the training instance. The policy sees structured ChatML and can:
 
 ```text
 read_file → apply_patch → python_test → FINAL

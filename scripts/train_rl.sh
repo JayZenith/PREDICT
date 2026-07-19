@@ -10,11 +10,6 @@ if [[ "$arm" != "a" && "$arm" != "b" ]]; then
 fi
 shift
 
-test -d "outputs/arm_${arm}_sft/weights/step_60" || {
-  echo "SFT checkpoint missing; run: bash scripts/train_sft.sh $arm" >&2
-  exit 1
-}
-
 uv run python -m data.validate data
 export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
 exec uv run --project .vendor/prime-rl \
