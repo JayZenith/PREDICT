@@ -160,6 +160,7 @@ def test_full_agent_loop_records_read_patch_test_and_final(tmp_path: Path) -> No
             length = int(self.headers["Content-Length"])
             body = json.loads(self.rfile.read(length))
             assert body["stop_token_ids"] == [151645]
+            assert body["stop"] == "\n"
             messages = body["messages"]
             last = messages[-1]
             if last["role"] == "user":
@@ -276,13 +277,14 @@ def test_arm_b_shadow_tests_rejected_candidate_without_exposing_result(
         ]
     )
     visible_requests: list[list[dict]] = []
+    stop_sequences: list[str | None] = []
 
     class Handler(BaseHTTPRequestHandler):
         def do_POST(self) -> None:  # noqa: N802
             length = int(self.headers["Content-Length"])
-            visible_requests.append(
-                json.loads(self.rfile.read(length))["messages"]
-            )
+            request = json.loads(self.rfile.read(length))
+            visible_requests.append(request["messages"])
+            stop_sequences.append(request.get("stop"))
             content = next(responses)
             body = json.dumps(
                 {
@@ -366,6 +368,7 @@ def test_arm_b_shadow_tests_rejected_candidate_without_exposing_result(
     )
     assert (kept["actual"], kept["shadow"]) == (PASS, False)
     assert record["final_verification"]["outcome"] == PASS
+    assert stop_sequences == ["\n", "\n", None, None, "\n"]
     assert all(
         "hidden tests failed"
         not in "\n".join(message.get("content", "") for message in messages)

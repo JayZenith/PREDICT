@@ -332,9 +332,11 @@ async def main() -> None:
     pending_candidate: str | None = None
 
     async def complete() -> str:
+        stop = None if args.arm == "b" and pending_candidate is not None else "\n"
         completion = await client.chat.completions.create(
             model=args.model,
             messages=messages,
+            stop=stop,
             extra_body={"stop_token_ids": [IM_END_TOKEN_ID]},
         )
         return completion.choices[0].message.content or ""
