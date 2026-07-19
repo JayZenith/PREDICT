@@ -1,5 +1,5 @@
-# Arm B: matched full-parameter SFT with verified consequence predictions.
-max_steps = 24
+# Arm B: roughly four matched full-parameter SFT epochs.
+max_steps = 48
 output_dir = "outputs/arm_b_sft"
 
 [wandb]
@@ -40,11 +40,11 @@ weight_decay = 0.01
 [scheduler]
 type = "linear"
 warmup_steps = 2
-decay_steps = 22
+decay_steps = 46
 min_lr = 0.0
 
 [ckpt]
-interval = 24
+interval = 48
 keep_last = 1
 
 [deployment]

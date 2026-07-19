@@ -4,7 +4,7 @@ seq_len = 4096
 output_dir = "outputs/arm_b_rl"
 
 [model]
-name = "outputs/arm_b_sft/weights/step_24"
+name = "outputs/arm_b_sft/weights/step_48"
 
 [tokenizer]
 chat_template = "configs/chat_template.jinja"
