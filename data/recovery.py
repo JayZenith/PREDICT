@@ -25,6 +25,20 @@ class RecoveryTrace:
 
 
 @dataclass(frozen=True)
+class TwoStepRecoveryTrace:
+    """Two independently-verified failing mutations of the same gold code,
+    fixed sequentially: blank -> first_code (fails) -> second_code (fails,
+    an unrelated wrong guess) -> gold (passes)."""
+
+    first_code: str
+    first_outcome: str
+    second_patch: Patch
+    second_code: str
+    second_outcome: str
+    final_patch: Patch
+
+
+@dataclass(frozen=True)
 class _Mutation:
     line: int
     original: str
@@ -109,4 +123,68 @@ def generate_recovery(
                 patch=Patch(mutation.changed, mutation.original),
                 outcome=result.outcome,
             )
+    return None
+
+
+def generate_two_step_recovery(
+    code: str,
+    test_code: str,
+    case_id: str,
+    *,
+    timeout: int = 5,
+    gold_verified: bool = False,
+) -> TwoStepRecoveryTrace | None:
+    """Find two distinct mutations that each independently fail alone against
+    gold, then chain them: first_code (mutation A) -> second_code (mutation
+    B, an unrelated wrong guess replacing A) -> gold. The middle patch reverts
+    A and applies B in one block-spanning find/replace; the final patch
+    reverts B alone, landing on the exact original gold text."""
+    with tempfile.TemporaryDirectory(prefix="predict-sft-recovery2-") as temporary:
+        project = Path(temporary)
+        solution = project / "solution.py"
+        if not gold_verified:
+            solution.write_text(code, encoding="utf-8")
+            gold = run_hidden_tests(project, test_code, timeout)
+            if gold.outcome != PASS:
+                raise RuntimeError(
+                    f"gold solution failed verification for {case_id}: {gold.outcome}"
+                )
+
+        lines = code.splitlines(keepends=True)
+        failing: list[tuple[_Mutation, str]] = []
+        for mutation in _mutations(code):
+            candidate = _apply(code, mutation)
+            if candidate.count(mutation.changed) != 1:
+                continue
+            solution.write_text(candidate, encoding="utf-8")
+            result = run_hidden_tests(project, test_code, timeout)
+            if result.outcome == PASS:
+                continue
+            failing.append((mutation, result.outcome))
+            if len(failing) < 2:
+                continue
+            mutation_a, outcome_a = failing[0]
+            for mutation_b, outcome_b in failing[1:]:
+                lo, hi = sorted((mutation_a.line, mutation_b.line))
+                first_code = _apply(code, mutation_a)
+                first_lines = first_code.splitlines(keepends=True)
+                second_lines = list(lines)
+                second_lines[mutation_b.line] = mutation_b.changed
+                second_code = "".join(second_lines)
+
+                first_block = "".join(first_lines[lo : hi + 1])
+                second_block = "".join(second_lines[lo : hi + 1])
+                if first_block == second_block or first_code.count(first_block) != 1:
+                    continue
+                if second_code.count(mutation_b.changed) != 1:
+                    continue
+
+                return TwoStepRecoveryTrace(
+                    first_code=first_code,
+                    first_outcome=outcome_a,
+                    second_patch=Patch(first_block, second_block),
+                    second_code=second_code,
+                    second_outcome=outcome_b,
+                    final_patch=Patch(mutation_b.changed, mutation_b.original),
+                )
     return None

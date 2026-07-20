@@ -43,9 +43,17 @@ Each task becomes a blank `solution.py` plus hidden tests.
 | Trace type | Count | Arm A | Arm B |
 |---|---:|---|---|
 | Direct success | 142 | patch → test passes | correct patch → predict PASS → KEEP → test passes |
-| One-step recovery | 70 | faulty patch → test fails → fix → test passes | 35 shadow: predict failure → REVISE → fix → predict PASS → KEEP → test passes; 35 visible: predict PASS (honest mistake) → KEEP → test fails → fix → predict PASS → KEEP → test passes |
+| One-step recovery | 50 | faulty patch → test fails → fix → test passes | 25 shadow: predict failure → REVISE → fix → predict PASS → KEEP → test passes; 25 visible: predict PASS (honest mistake) → KEEP → test fails → fix → predict PASS → KEEP → test passes |
+| Two-step recovery | 20 | faulty patch → fails → different faulty patch → fails → fix → test passes | 10 deep shadow: predict failure → REVISE → predict failure → REVISE → predict PASS → KEEP → test passes; 10 deep visible: predict PASS (mistake) → KEEP → fails → predict PASS (mistake again) → KEEP → fails → fix → predict PASS → KEEP → test passes |
 
-Total: 212 traces per arm.
+Total: 212 traces per arm (70 recovery, split 50 one-step / 20 two-step).
+
+Two-step recovery traces exist because RL exploration routinely revises more
+than once per task, a regime one-step SFT traces never demonstrate. Each
+two-step trace chains two independently sandbox-verified failing mutations of
+the gold code, fixed sequentially, so Arm B gets a genuine three-cycle
+prediction/decision example instead of learning the protocol only up to depth
+two.
 
 Assign tasks reproducibly with seed 42 and save the assignment manifest. Every
 faulty state must genuinely fail and every final state must pass. Dataset

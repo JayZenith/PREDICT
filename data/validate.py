@@ -20,6 +20,8 @@ from glyph.program import (
 )
 
 from .prepare import (
+    DEEP_SHADOW_RECOVERY_COUNT,
+    DEEP_VISIBLE_RECOVERY_COUNT,
     DIRECT_COUNT,
     DATA_ARTIFACTS,
     PLACEHOLDER,
@@ -191,14 +193,19 @@ def _verify_trace(
         raise ValueError(f"{row['case_id']}: final visible test did not pass")
 
     expected_first = row["candidate_outcome"]
+    expected_second = row.get("second_candidate_outcome")
+    mode = row.get("recovery_mode")
+    is_deep = mode in ("deep_shadow", "deep_visible")
     if arm == "a":
-        if visible_outcomes[0] != expected_first:
-            raise ValueError(f"{row['case_id']}: Arm A first outcome drifted")
-        expected = [PASS] if row["trace_type"] == "direct" else [expected_first, PASS]
+        if row["trace_type"] == "direct":
+            expected = [PASS]
+        elif is_deep:
+            expected = [expected_first, expected_second, PASS]
+        else:
+            expected = [expected_first, PASS]
         if visible_outcomes != expected:
             raise ValueError(f"{row['case_id']}: Arm A recovery sequence drifted")
     else:
-        mode = row.get("recovery_mode")
         if row["trace_type"] == "direct":
             expected = {
                 "predicted": [PASS],
@@ -222,6 +229,23 @@ def _verify_trace(
                 "verified": [expected_first, PASS],
                 "decisions": ["KEEP", "KEEP"],
                 "visible": [expected_first, PASS],
+            }
+        elif mode == "deep_shadow":
+            expected = {
+                "predicted": [expected_first, expected_second, PASS],
+                "verified": [expected_first, expected_second, PASS],
+                "decisions": ["REVISE", "REVISE", "KEEP"],
+                "visible": [PASS],
+            }
+        elif mode == "deep_visible":
+            # Both early predictions are honest mistakes; each is corrected
+            # only after a genuine visible failure, exactly like the shallow
+            # visible mode but with one more recovery cycle.
+            expected = {
+                "predicted": [PASS, PASS, PASS],
+                "verified": [expected_first, expected_second, PASS],
+                "decisions": ["KEEP", "KEEP", "KEEP"],
+                "visible": [expected_first, expected_second, PASS],
             }
         else:
             raise ValueError(f"{row['case_id']}: unknown recovery_mode {mode!r}")
@@ -377,6 +401,7 @@ def validate_prepared(
         for key in (
             "candidate_code_sha256",
             "candidate_outcome",
+            "second_candidate_outcome",
             "final_code_sha256",
             "final_outcome",
             "matched_key",
@@ -400,6 +425,8 @@ def validate_prepared(
         if mode_counts != {
             "shadow": SHADOW_RECOVERY_COUNT,
             "visible": VISIBLE_RECOVERY_COUNT,
+            "deep_shadow": DEEP_SHADOW_RECOVERY_COUNT,
+            "deep_visible": DEEP_VISIBLE_RECOVERY_COUNT,
         }:
             raise ValueError(
                 f"Arm {arm.upper()} recovery mode split drifted: {dict(mode_counts)}"

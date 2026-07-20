@@ -25,16 +25,16 @@
       "sha256": "1f2d5c35bb08c6eed94a82e8581de8a91c83c0aa64d799cfdaf433eb5d176064"
     },
     "assignments.json": {
-      "bytes": 31636,
-      "sha256": "bd640f0f5032eef60d53d42646ddb13893cd7188bd11ede174dd51cf17a980fc"
+      "bytes": 31736,
+      "sha256": "80c511833f5c5169dea58b2c75ba7d7a2e9a2e845b777c527531d6174fc5b319"
     },
     "sft/arm_a/train.jsonl": {
-      "bytes": 457867,
-      "sha256": "5bab63b2c953feab238bbef773a7ed5c4c5bcd13f7e2fa129993f2bf9f32468b"
+      "bytes": 476496,
+      "sha256": "2f38055c7800492db4561cba0ad5982658af58bc16689b85d9f121f1f850cb4d"
     },
     "sft/arm_b/train.jsonl": {
-      "bytes": 514083,
-      "sha256": "8aa2abb38ab8f3fcaf5c9bca1850a77300873f5467aff2b59903925c40585c43"
+      "bytes": 531842,
+      "sha256": "220f2eef1fa33ba6ce860bb6428326bc7f955ab159dcfff24a3f8be27d005906"
     }
   },
   "sources": {
@@ -64,8 +64,9 @@
     "official_train_ids": "601-974",
     "official_validation_ids": "511-600",
     "recovery_outcomes": {
-      "ASSERTION_FAILURE": 58,
-      "RUNTIME_ERROR": 12
+      "ASSERTION_FAILURE": 76,
+      "RUNTIME_ERROR": 13,
+      "TIMEOUT": 1
     },
     "rl_train_task_ids": [
       520,
@@ -286,8 +287,10 @@
     "sft_direct": 142,
     "sft_per_arm": 212,
     "sft_recovery": 70,
-    "sft_recovery_shadow": 35,
-    "sft_recovery_visible": 35,
+    "sft_recovery_deep_shadow": 10,
+    "sft_recovery_deep_visible": 10,
+    "sft_recovery_shadow": 25,
+    "sft_recovery_visible": 25,
     "sft_task_ids": [
       513,
       515,

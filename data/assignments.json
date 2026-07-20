@@ -9,7 +9,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_515",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 515,
     "trace_type": "recovery"
   },
@@ -58,14 +58,14 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_527",
-    "recovery_mode": "visible",
+    "recovery_mode": "deep_visible",
     "task_id": 527,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_529",
-    "recovery_mode": "shadow",
+    "recovery_mode": "deep_shadow",
     "task_id": 529,
     "trace_type": "recovery"
   },
@@ -149,7 +149,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_559",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 559,
     "trace_type": "recovery"
   },
@@ -212,7 +212,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_581",
-    "recovery_mode": "shadow",
+    "recovery_mode": "deep_shadow",
     "task_id": 581,
     "trace_type": "recovery"
   },
@@ -261,7 +261,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_589",
-    "recovery_mode": "shadow",
+    "recovery_mode": "deep_visible",
     "task_id": 589,
     "trace_type": "recovery"
   },
@@ -282,7 +282,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_599",
-    "recovery_mode": "shadow",
+    "recovery_mode": "deep_shadow",
     "task_id": 599,
     "trace_type": "recovery"
   },
@@ -296,7 +296,7 @@
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_601",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 601,
     "trace_type": "recovery"
   },
@@ -338,7 +338,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_613",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 613,
     "trace_type": "recovery"
   },
@@ -478,7 +478,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_681",
-    "recovery_mode": "visible",
+    "recovery_mode": "deep_visible",
     "task_id": 681,
     "trace_type": "recovery"
   },
@@ -506,7 +506,7 @@
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_691",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 691,
     "trace_type": "recovery"
   },
@@ -541,7 +541,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_700",
-    "recovery_mode": "shadow",
+    "recovery_mode": "deep_visible",
     "task_id": 700,
     "trace_type": "recovery"
   },
@@ -730,21 +730,21 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_764",
-    "recovery_mode": "visible",
+    "recovery_mode": "deep_visible",
     "task_id": 764,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_765",
-    "recovery_mode": "visible",
+    "recovery_mode": "deep_shadow",
     "task_id": 765,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_766",
-    "recovery_mode": "visible",
+    "recovery_mode": "deep_shadow",
     "task_id": 766,
     "trace_type": "recovery"
   },
@@ -898,7 +898,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_815",
-    "recovery_mode": "shadow",
+    "recovery_mode": "deep_shadow",
     "task_id": 815,
     "trace_type": "recovery"
   },
@@ -947,7 +947,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_830",
-    "recovery_mode": "shadow",
+    "recovery_mode": "deep_visible",
     "task_id": 830,
     "trace_type": "recovery"
   },
@@ -996,14 +996,14 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_837",
-    "recovery_mode": "shadow",
+    "recovery_mode": "deep_visible",
     "task_id": 837,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_838",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 838,
     "trace_type": "recovery"
   },
@@ -1024,7 +1024,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_843",
-    "recovery_mode": "shadow",
+    "recovery_mode": "deep_visible",
     "task_id": 843,
     "trace_type": "recovery"
   },
@@ -1115,7 +1115,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_874",
-    "recovery_mode": "shadow",
+    "recovery_mode": "deep_shadow",
     "task_id": 874,
     "trace_type": "recovery"
   },
@@ -1178,7 +1178,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_891",
-    "recovery_mode": "shadow",
+    "recovery_mode": "deep_shadow",
     "task_id": 891,
     "trace_type": "recovery"
   },
@@ -1227,14 +1227,14 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_901",
-    "recovery_mode": "visible",
+    "recovery_mode": "deep_visible",
     "task_id": 901,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_902",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 902,
     "trace_type": "recovery"
   },
@@ -1248,7 +1248,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_905",
-    "recovery_mode": "shadow",
+    "recovery_mode": "deep_visible",
     "task_id": 905,
     "trace_type": "recovery"
   },
@@ -1297,7 +1297,7 @@
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_914",
-    "recovery_mode": "shadow",
+    "recovery_mode": "deep_shadow",
     "task_id": 914,
     "trace_type": "recovery"
   },
@@ -1318,7 +1318,7 @@
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_923",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 923,
     "trace_type": "recovery"
   },
@@ -1430,14 +1430,14 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_960",
-    "recovery_mode": "visible",
+    "recovery_mode": "deep_shadow",
     "task_id": 960,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_961",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 961,
     "trace_type": "recovery"
   },

@@ -19,6 +19,7 @@ wandb/
 logs/
 *.log
 PREDICT_SFT_RESULTS/
+PREDICT_RL_RESULTS/
 
 # Editors and operating systems
 .idea/

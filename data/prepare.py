@@ -26,7 +26,12 @@ from glyph.program import (
     run_hidden_tests,
 )
 
-from .recovery import RecoveryTrace, generate_recovery
+from .recovery import (
+    RecoveryTrace,
+    TwoStepRecoveryTrace,
+    generate_recovery,
+    generate_two_step_recovery,
+)
 
 
 PLACEHOLDER = "# Write your function here.\n"
@@ -39,8 +44,10 @@ VALIDATION_COUNT = 40
 SFT_COUNT = 212
 RL_TRAIN_COUNT = 212
 RECOVERY_COUNT = 70
-SHADOW_RECOVERY_COUNT = 35
-VISIBLE_RECOVERY_COUNT = 35
+SHADOW_RECOVERY_COUNT = 25
+VISIBLE_RECOVERY_COUNT = 25
+DEEP_SHADOW_RECOVERY_COUNT = 10
+DEEP_VISIBLE_RECOVERY_COUNT = 10
 DIRECT_COUNT = 142
 SEED = 42
 SFT_MAX_TOKENS = 768
@@ -266,6 +273,14 @@ def _failed_result(call_id: str, outcome: str) -> str:
     return f"RESULT {call_id}:\nstatus: failed\nstderr:\n{detail}"
 
 
+def _candidate_outcome(recovery: RecoveryTrace | TwoStepRecoveryTrace | None) -> str:
+    if recovery is None:
+        return PASS
+    if isinstance(recovery, TwoStepRecoveryTrace):
+        return recovery.first_outcome
+    return recovery.outcome
+
+
 def _matched_key(task: MBPPTask, initial_code: str, initial_outcome: str) -> str:
     payload = json.dumps(
         {
@@ -280,20 +295,26 @@ def _matched_key(task: MBPPTask, initial_code: str, initial_outcome: str) -> str
     return _text_sha256(payload)
 
 
+DEEP_RECOVERY_MODES = ("deep_shadow", "deep_visible")
+
+
 def sft_row(
     task: MBPPTask,
     arm: str,
-    recovery: RecoveryTrace | None,
+    recovery: RecoveryTrace | TwoStepRecoveryTrace | None,
     recovery_mode: str | None = None,
 ) -> dict:
-    if recovery is not None and recovery_mode not in ("shadow", "visible"):
-        raise ValueError("recovery traces require recovery_mode 'shadow' or 'visible'")
+    is_deep = isinstance(recovery, TwoStepRecoveryTrace)
     if recovery is None and recovery_mode is not None:
         raise ValueError("direct traces cannot carry a recovery_mode")
+    if recovery is not None and is_deep and recovery_mode not in DEEP_RECOVERY_MODES:
+        raise ValueError("two-step recovery traces require recovery_mode 'deep_shadow' or 'deep_visible'")
+    if recovery is not None and not is_deep and recovery_mode not in ("shadow", "visible"):
+        raise ValueError("recovery traces require recovery_mode 'shadow' or 'visible'")
     trace_prefix = f"data/blueprints/{task.case_id}"
     file_path = f"{trace_prefix}/solution.py"
-    initial_code = recovery.initial_code if recovery else task.code
-    initial_outcome = recovery.outcome if recovery else PASS
+    initial_code = recovery.first_code if is_deep else (recovery.initial_code if recovery else task.code)
+    initial_outcome = _candidate_outcome(recovery)
     messages: list[dict[str, str]] = [
         *task_prompt(task, trace_prefix, arm),
         {
@@ -336,7 +357,55 @@ def sft_row(
                 ),
             }
         )
-        if recovery:
+        if is_deep:
+            messages.extend(
+                [
+                    {"role": "tool", "content": _failed_result("c3", recovery.first_outcome)},
+                    {
+                        "role": "assistant",
+                        "content": _call(
+                            "apply_patch",
+                            {
+                                "id": "c4",
+                                "file_path": file_path,
+                                "find": recovery.second_patch.find,
+                                "replace": recovery.second_patch.replace,
+                            },
+                        ),
+                    },
+                    {"role": "tool", "content": "RESULT c4:\nstatus: success\nstdout:\npatch applied"},
+                    {
+                        "role": "assistant",
+                        "content": _call(
+                            "python_test",
+                            {"id": "c5", "project_path": trace_prefix},
+                        ),
+                    },
+                    {"role": "tool", "content": _failed_result("c5", recovery.second_outcome)},
+                    {
+                        "role": "assistant",
+                        "content": _call(
+                            "apply_patch",
+                            {
+                                "id": "c6",
+                                "file_path": file_path,
+                                "find": recovery.final_patch.find,
+                                "replace": recovery.final_patch.replace,
+                            },
+                        ),
+                    },
+                    {"role": "tool", "content": "RESULT c6:\nstatus: success\nstdout:\npatch applied"},
+                    {
+                        "role": "assistant",
+                        "content": _call(
+                            "python_test",
+                            {"id": "c7", "project_path": trace_prefix},
+                        ),
+                    },
+                    {"role": "tool", "content": "RESULT c7:\nstatus: success\nstdout:\nhidden tests passed"},
+                ]
+            )
+        elif recovery:
             messages.extend(
                 [
                     {"role": "tool", "content": _failed_result("c3", recovery.outcome)},
@@ -383,7 +452,103 @@ def sft_row(
                 }
             )
     else:
-        if recovery and recovery_mode == "shadow":
+        if is_deep and recovery_mode == "deep_shadow":
+            messages.extend(
+                [
+                    {
+                        "role": "assistant",
+                        "content": (
+                            f"<PREDICTION>{recovery.first_outcome}</PREDICTION>\n"
+                            "<DECISION>REVISE</DECISION>\n"
+                            + _call(
+                                "apply_patch",
+                                {
+                                    "id": "c3",
+                                    "file_path": file_path,
+                                    "find": recovery.second_patch.find,
+                                    "replace": recovery.second_patch.replace,
+                                },
+                            )
+                        ),
+                    },
+                    {"role": "tool", "content": "RESULT c3:\nstatus: success\nstdout:\npatch applied"},
+                    {
+                        "role": "assistant",
+                        "content": (
+                            f"<PREDICTION>{recovery.second_outcome}</PREDICTION>\n"
+                            "<DECISION>REVISE</DECISION>\n"
+                            + _call(
+                                "apply_patch",
+                                {
+                                    "id": "c4",
+                                    "file_path": file_path,
+                                    "find": recovery.final_patch.find,
+                                    "replace": recovery.final_patch.replace,
+                                },
+                            )
+                        ),
+                    },
+                    {"role": "tool", "content": "RESULT c4:\nstatus: success\nstdout:\npatch applied"},
+                ]
+            )
+            test_call = "c5"
+        elif is_deep:
+            messages.extend(
+                [
+                    {
+                        "role": "assistant",
+                        "content": (
+                            "<PREDICTION>PASS</PREDICTION>\n"
+                            "<DECISION>KEEP</DECISION>\n"
+                            + _call(
+                                "python_test",
+                                {"id": "c3", "project_path": trace_prefix},
+                            )
+                        ),
+                    },
+                    {"role": "tool", "content": _failed_result("c3", recovery.first_outcome)},
+                    {
+                        "role": "assistant",
+                        "content": _call(
+                            "apply_patch",
+                            {
+                                "id": "c4",
+                                "file_path": file_path,
+                                "find": recovery.second_patch.find,
+                                "replace": recovery.second_patch.replace,
+                            },
+                        ),
+                    },
+                    {"role": "tool", "content": "RESULT c4:\nstatus: success\nstdout:\npatch applied"},
+                    {
+                        "role": "assistant",
+                        "content": (
+                            "<PREDICTION>PASS</PREDICTION>\n"
+                            "<DECISION>KEEP</DECISION>\n"
+                            + _call(
+                                "python_test",
+                                {"id": "c5", "project_path": trace_prefix},
+                            )
+                        ),
+                    },
+                    {"role": "tool", "content": _failed_result("c5", recovery.second_outcome)},
+                    {
+                        "role": "assistant",
+                        "content": _call(
+                            "apply_patch",
+                            {
+                                "id": "c6",
+                                "file_path": file_path,
+                                "find": recovery.final_patch.find,
+                                "replace": recovery.final_patch.replace,
+                            },
+                        ),
+                    },
+                    {"role": "tool", "content": "RESULT c6:\nstatus: success\nstdout:\npatch applied"},
+                ]
+            )
+            test_call = "c7"
+        elif recovery and recovery_mode == "shadow":
             messages.extend(
                 [
                     {
@@ -483,6 +648,7 @@ def sft_row(
         "case_id": task.case_id,
         "candidate_code_sha256": _text_sha256(initial_code),
         "candidate_outcome": initial_outcome,
+        "second_candidate_outcome": recovery.second_outcome if is_deep else None,
         "final_code_sha256": _text_sha256(task.code),
         "final_outcome": PASS,
         "matched_key": _matched_key(task, initial_code, initial_outcome),
@@ -515,42 +681,52 @@ def _verify_gold(tasks: list[MBPPTask], timeout: int) -> None:
 
 
 def _assign_recoveries(
-    train: list[MBPPTask], *, seed: int, count: int, timeout: int
-) -> dict[str, RecoveryTrace]:
+    train: list[MBPPTask], *, seed: int, count: int, deep_count: int, timeout: int
+) -> tuple[dict[str, RecoveryTrace], dict[str, TwoStepRecoveryTrace]]:
+    """Fill the deep (two-step) quota first, since a verified two-step chain
+    is the harder search; remaining recovery slots take a one-step trace.
+    Each task contributes at most one recovery (deep or shallow, never both)."""
     from transformers import AutoTokenizer
 
     tokenizer = AutoTokenizer.from_pretrained(DEFAULT_MODEL)
     ordered = sorted(train, key=lambda task: (_assignment_key(task, seed), task.task_id))
-    recoveries: dict[str, RecoveryTrace] = {}
-    for task in ordered:
-        trace = generate_recovery(
-            task.code,
-            task.test_code,
-            task.case_id,
-            timeout=timeout,
-            gold_verified=True,
-        )
-        if trace is not None:
-            # Gate on the visible-mode rendering: it is the longer of the two
-            # arm B recovery shapes, so either mode assignment stays in budget.
-            arm_b_tokens = len(
-                tokenizer.encode(
-                    render_messages(
-                        sft_row(task, "b", trace, recovery_mode="visible")["messages"]
-                    ),
-                    add_special_tokens=False,
-                )
+    shallow_count = count - deep_count
+
+    def _fits(task: MBPPTask, mode: str, trace: RecoveryTrace | TwoStepRecoveryTrace) -> bool:
+        tokens = len(
+            tokenizer.encode(
+                render_messages(sft_row(task, "b", trace, recovery_mode=mode)["messages"]),
+                add_special_tokens=False,
             )
-            if arm_b_tokens > SFT_MAX_TOKENS:
-                continue
-            recoveries[task.case_id] = trace
-        if len(recoveries) == count:
-            break
-    if len(recoveries) != count:
-        raise RuntimeError(
-            f"constructed {len(recoveries)} verified recoveries; {count} required"
         )
-    return recoveries
+        return tokens <= SFT_MAX_TOKENS
+
+    shallow: dict[str, RecoveryTrace] = {}
+    deep: dict[str, TwoStepRecoveryTrace] = {}
+    for task in ordered:
+        if len(deep) < deep_count:
+            deep_trace = generate_two_step_recovery(
+                task.code, task.test_code, task.case_id, timeout=timeout, gold_verified=True,
+            )
+            # Gate on deep_visible: the longer of the two deep shapes.
+            if deep_trace is not None and _fits(task, "deep_visible", deep_trace):
+                deep[task.case_id] = deep_trace
+                continue
+        if len(shallow) < shallow_count:
+            trace = generate_recovery(
+                task.code, task.test_code, task.case_id, timeout=timeout, gold_verified=True,
+            )
+            # Gate on visible: the longer of the two shallow shapes.
+            if trace is not None and _fits(task, "visible", trace):
+                shallow[task.case_id] = trace
+        if len(deep) == deep_count and len(shallow) == shallow_count:
+            break
+    if len(deep) != deep_count or len(shallow) != shallow_count:
+        raise RuntimeError(
+            f"constructed {len(deep)} deep + {len(shallow)} shallow recoveries; "
+            f"needed {deep_count} deep + {shallow_count} shallow"
+        )
+    return shallow, deep
 
 
 def prepare_data(
@@ -582,21 +758,38 @@ def prepare_data(
     sft_tasks, rl_train_tasks, validation_tasks = _split_experiment_tasks(
         official_train, official_validation, seed
     )
-    recoveries = _assign_recoveries(
-        sft_tasks, seed=seed, count=recovery_count, timeout=timeout
+    deep_recovery_count = DEEP_SHADOW_RECOVERY_COUNT + DEEP_VISIBLE_RECOVERY_COUNT
+    shallow_recoveries, deep_recoveries = _assign_recoveries(
+        sft_tasks,
+        seed=seed,
+        count=recovery_count,
+        deep_count=deep_recovery_count,
+        timeout=timeout,
     )
+    recoveries: dict[str, RecoveryTrace | TwoStepRecoveryTrace] = {
+        **shallow_recoveries,
+        **deep_recoveries,
+    }
     if len(sft_tasks) - len(recoveries) != DIRECT_COUNT:
         raise RuntimeError("SFT direct/recovery composition drifted")
-    # Alternate over the seeded selection order so both spec-required Arm B
-    # recovery modes are covered deterministically.
+    # Alternate over each seeded selection order so every spec-required Arm B
+    # recovery mode is covered deterministically.
     recovery_modes = {
-        case_id: "shadow" if index % 2 == 0 else "visible"
-        for index, case_id in enumerate(recoveries)
+        **{
+            case_id: "shadow" if index % 2 == 0 else "visible"
+            for index, case_id in enumerate(shallow_recoveries)
+        },
+        **{
+            case_id: "deep_shadow" if index % 2 == 0 else "deep_visible"
+            for index, case_id in enumerate(deep_recoveries)
+        },
     }
     mode_counts = Counter(recovery_modes.values())
     if mode_counts != {
         "shadow": SHADOW_RECOVERY_COUNT,
         "visible": VISIBLE_RECOVERY_COUNT,
+        "deep_shadow": DEEP_SHADOW_RECOVERY_COUNT,
+        "deep_visible": DEEP_VISIBLE_RECOVERY_COUNT,
     }:
         raise RuntimeError(f"recovery mode split drifted: {dict(mode_counts)}")
 
@@ -656,11 +849,7 @@ def prepare_data(
             "trace_type": (
                 "recovery" if task.case_id in recoveries else "direct"
             ),
-            "candidate_outcome": (
-                recoveries[task.case_id].outcome
-                if task.case_id in recoveries
-                else PASS
-            ),
+            "candidate_outcome": _candidate_outcome(recoveries.get(task.case_id)),
             "recovery_mode": recovery_modes.get(task.case_id),
         }
         for task in ordered_sft
@@ -670,9 +859,10 @@ def prepare_data(
         encoding="utf-8",
     )
 
-    outcome_counts = Counter(
-        trace.outcome for trace in recoveries.values()
-    )
+    outcome_counts = Counter(trace.outcome for trace in shallow_recoveries.values())
+    for trace in deep_recoveries.values():
+        outcome_counts[trace.first_outcome] += 1
+        outcome_counts[trace.second_outcome] += 1
     manifest = {
         "artifacts": {
             relative: {
@@ -709,6 +899,8 @@ def prepare_data(
             "sft_recovery": len(recoveries),
             "sft_recovery_shadow": mode_counts["shadow"],
             "sft_recovery_visible": mode_counts["visible"],
+            "sft_recovery_deep_shadow": mode_counts["deep_shadow"],
+            "sft_recovery_deep_visible": mode_counts["deep_visible"],
             "recovery_outcomes": dict(sorted(outcome_counts.items())),
         },
     }

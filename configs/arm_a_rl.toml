@@ -58,7 +58,7 @@ pool = { type = "elastic", max_workers = 16, multiplex = 4 }
 
 [trainer.loss]
 type = "default"
-kl_tau = 1e-3
+kl_tau = 0.0
 
 [trainer.optim]
 lr = 1e-6
