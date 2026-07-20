@@ -43,7 +43,7 @@ pool = { type = "elastic", max_workers = 16, multiplex = 4 }
 
 [[orchestrator.post_batch_filters]]
 type = "zero_advantage"
-enforce = false
+enforce = true
 
 [orchestrator.eval]
 interval = 24
