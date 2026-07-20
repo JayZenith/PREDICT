@@ -1,5 +1,5 @@
 # Arm B: matched GRPO plus verified-label prediction CE.
-max_steps = 94
+max_steps = 150
 seq_len = 4096
 output_dir = "outputs/arm_b_rl"
 
@@ -46,7 +46,7 @@ type = "zero_advantage"
 enforce = true
 
 [orchestrator.eval]
-interval = 24
+interval = 50
 num_examples = 40
 group_size = 1
 
@@ -70,8 +70,8 @@ lr = 1e-6
 weight_decay = 0.01
 
 [ckpt]
-interval = 94
-keep_last = 1
+interval = 50
+keep_last = 3
 
 [orchestrator.ckpt]
 wait_for_weights_timeout = 60
