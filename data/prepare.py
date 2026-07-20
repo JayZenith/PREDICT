@@ -39,6 +39,8 @@ VALIDATION_COUNT = 40
 SFT_COUNT = 212
 RL_TRAIN_COUNT = 212
 RECOVERY_COUNT = 70
+SHADOW_RECOVERY_COUNT = 35
+VISIBLE_RECOVERY_COUNT = 35
 DIRECT_COUNT = 142
 SEED = 42
 SFT_MAX_TOKENS = 768
@@ -278,7 +280,16 @@ def _matched_key(task: MBPPTask, initial_code: str, initial_outcome: str) -> str
     return _text_sha256(payload)
 
 
-def sft_row(task: MBPPTask, arm: str, recovery: RecoveryTrace | None) -> dict:
+def sft_row(
+    task: MBPPTask,
+    arm: str,
+    recovery: RecoveryTrace | None,
+    recovery_mode: str | None = None,
+) -> dict:
+    if recovery is not None and recovery_mode not in ("shadow", "visible"):
+        raise ValueError("recovery traces require recovery_mode 'shadow' or 'visible'")
+    if recovery is None and recovery_mode is not None:
+        raise ValueError("direct traces cannot carry a recovery_mode")
     trace_prefix = f"data/blueprints/{task.case_id}"
     file_path = f"{trace_prefix}/solution.py"
     initial_code = recovery.initial_code if recovery else task.code
@@ -372,13 +383,41 @@ def sft_row(task: MBPPTask, arm: str, recovery: RecoveryTrace | None) -> dict:
                 }
             )
     else:
-        if recovery:
+        if recovery and recovery_mode == "shadow":
             messages.extend(
                 [
                     {
                         "role": "assistant",
                         "content": (
                             f"<PREDICTION>{recovery.outcome}</PREDICTION>\n"
+                            "<DECISION>REVISE</DECISION>\n"
+                            + _call(
+                                "apply_patch",
+                                {
+                                    "id": "c3",
+                                    "file_path": file_path,
+                                    "find": recovery.patch.find,
+                                    "replace": recovery.patch.replace,
+                                },
+                            )
+                        ),
+                    },
+                    {
+                        "role": "tool",
+                        "content": (
+                            "RESULT c3:\nstatus: success\nstdout:\npatch applied"
+                        ),
+                    },
+                ]
+            )
+            test_call = "c4"
+        elif recovery:
+            messages.extend(
+                [
+                    {
+                        "role": "assistant",
+                        "content": (
+                            "<PREDICTION>PASS</PREDICTION>\n"
                             "<DECISION>KEEP</DECISION>\n"
                             + _call(
                                 "python_test",
@@ -448,6 +487,7 @@ def sft_row(task: MBPPTask, arm: str, recovery: RecoveryTrace | None) -> dict:
         "final_outcome": PASS,
         "matched_key": _matched_key(task, initial_code, initial_outcome),
         "messages": messages,
+        "recovery_mode": recovery_mode,
         "task_id": task.task_id,
         "test_code": task.test_code,
         "trace_type": "recovery" if recovery else "direct",
@@ -491,9 +531,13 @@ def _assign_recoveries(
             gold_verified=True,
         )
         if trace is not None:
+            # Gate on the visible-mode rendering: it is the longer of the two
+            # arm B recovery shapes, so either mode assignment stays in budget.
             arm_b_tokens = len(
                 tokenizer.encode(
-                    render_messages(sft_row(task, "b", trace)["messages"]),
+                    render_messages(
+                        sft_row(task, "b", trace, recovery_mode="visible")["messages"]
+                    ),
                     add_special_tokens=False,
                 )
             )
@@ -543,6 +587,18 @@ def prepare_data(
     )
     if len(sft_tasks) - len(recoveries) != DIRECT_COUNT:
         raise RuntimeError("SFT direct/recovery composition drifted")
+    # Alternate over the seeded selection order so both spec-required Arm B
+    # recovery modes are covered deterministically.
+    recovery_modes = {
+        case_id: "shadow" if index % 2 == 0 else "visible"
+        for index, case_id in enumerate(recoveries)
+    }
+    mode_counts = Counter(recovery_modes.values())
+    if mode_counts != {
+        "shadow": SHADOW_RECOVERY_COUNT,
+        "visible": VISIBLE_RECOVERY_COUNT,
+    }:
+        raise RuntimeError(f"recovery mode split drifted: {dict(mode_counts)}")
 
     output = output.expanduser().resolve()
     staging = output.with_name(f".{output.name}.staging")
@@ -556,10 +612,22 @@ def prepare_data(
         (project / "solution.py").write_text(PLACEHOLDER, encoding="utf-8")
 
     arm_a_sft = [
-        sft_row(task, "a", recoveries.get(task.case_id)) for task in sft_tasks
+        sft_row(
+            task,
+            "a",
+            recoveries.get(task.case_id),
+            recovery_mode=recovery_modes.get(task.case_id),
+        )
+        for task in sft_tasks
     ]
     arm_b_sft = [
-        sft_row(task, "b", recoveries.get(task.case_id)) for task in sft_tasks
+        sft_row(
+            task,
+            "b",
+            recoveries.get(task.case_id),
+            recovery_mode=recovery_modes.get(task.case_id),
+        )
+        for task in sft_tasks
     ]
     _write_jsonl(staging / "sft" / "arm_a" / "train.jsonl", arm_a_sft)
     _write_jsonl(staging / "sft" / "arm_b" / "train.jsonl", arm_b_sft)
@@ -593,6 +661,7 @@ def prepare_data(
                 if task.case_id in recoveries
                 else PASS
             ),
+            "recovery_mode": recovery_modes.get(task.case_id),
         }
         for task in ordered_sft
     ]
@@ -638,6 +707,8 @@ def prepare_data(
             "sft_per_arm": len(sft_tasks),
             "sft_direct": DIRECT_COUNT,
             "sft_recovery": len(recoveries),
+            "sft_recovery_shadow": mode_counts["shadow"],
+            "sft_recovery_visible": mode_counts["visible"],
             "recovery_outcomes": dict(sorted(outcome_counts.items())),
         },
     }

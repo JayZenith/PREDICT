@@ -100,27 +100,39 @@ def test_arm_sft_rows_are_task_and_candidate_matched() -> None:
         task.code, task.test_code, task.case_id
     )
     assert recovery is not None
-    arm_a = prepare.sft_row(task, "a", recovery)
-    arm_b = prepare.sft_row(task, "b", recovery)
-    for key in (
-        "candidate_code_sha256",
-        "candidate_outcome",
-        "final_code_sha256",
-        "final_outcome",
-        "matched_key",
-        "task_id",
-        "trace_type",
-    ):
-        assert arm_a[key] == arm_b[key]
-    assert "status: failed" in "\n".join(
-        message["content"] for message in arm_a["messages"]
-    )
-    arm_b_text = "\n".join(message["content"] for message in arm_b["messages"])
-    assert f"<PREDICTION>{recovery.outcome}</PREDICTION>" in arm_b_text
-    assert "<DECISION>KEEP</DECISION>" in arm_b_text
-    assert "status: failed" in arm_b_text
-    assert arm_a["messages"][-1]["content"].startswith("FINAL:")
-    assert arm_b["messages"][-1]["content"].startswith("FINAL:")
+    for mode in ("shadow", "visible"):
+        arm_a = prepare.sft_row(task, "a", recovery, recovery_mode=mode)
+        arm_b = prepare.sft_row(task, "b", recovery, recovery_mode=mode)
+        for key in (
+            "candidate_code_sha256",
+            "candidate_outcome",
+            "final_code_sha256",
+            "final_outcome",
+            "matched_key",
+            "recovery_mode",
+            "task_id",
+            "trace_type",
+        ):
+            assert arm_a[key] == arm_b[key]
+        assert "status: failed" in "\n".join(
+            message["content"] for message in arm_a["messages"]
+        )
+        arm_b_text = "\n".join(
+            message["content"]
+            for message in arm_b["messages"]
+            if message["role"] != "system"
+        )
+        if mode == "shadow":
+            assert f"<PREDICTION>{recovery.outcome}</PREDICTION>" in arm_b_text
+            assert "<DECISION>REVISE</DECISION>" in arm_b_text
+            assert "status: failed" not in arm_b_text
+        else:
+            assert f"<PREDICTION>{recovery.outcome}</PREDICTION>" not in arm_b_text
+            assert "<DECISION>REVISE</DECISION>" not in arm_b_text
+            assert "status: failed" in arm_b_text
+        assert "<DECISION>KEEP</DECISION>" in arm_b_text
+        assert arm_a["messages"][-1]["content"].startswith("FINAL:")
+        assert arm_b["messages"][-1]["content"].startswith("FINAL:")
 
 
 def test_sft_validation_rejects_truncation_and_incomplete_final(

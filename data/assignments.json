@@ -2,1272 +2,1484 @@
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_513",
+    "recovery_mode": null,
     "task_id": 513,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_515",
+    "recovery_mode": "shadow",
     "task_id": 515,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_517",
+    "recovery_mode": null,
     "task_id": 517,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_519",
+    "recovery_mode": null,
     "task_id": 519,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_521",
+    "recovery_mode": null,
     "task_id": 521,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_523",
+    "recovery_mode": "visible",
     "task_id": 523,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_525",
+    "recovery_mode": null,
     "task_id": 525,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_526",
+    "recovery_mode": null,
     "task_id": 526,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_527",
+    "recovery_mode": "visible",
     "task_id": 527,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_529",
+    "recovery_mode": "shadow",
     "task_id": 529,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_532",
+    "recovery_mode": "visible",
     "task_id": 532,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_534",
+    "recovery_mode": null,
     "task_id": 534,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_536",
+    "recovery_mode": null,
     "task_id": 536,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_540",
+    "recovery_mode": null,
     "task_id": 540,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_542",
+    "recovery_mode": null,
     "task_id": 542,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_547",
+    "recovery_mode": "visible",
     "task_id": 547,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_548",
+    "recovery_mode": "visible",
     "task_id": 548,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_551",
+    "recovery_mode": null,
     "task_id": 551,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_552",
+    "recovery_mode": null,
     "task_id": 552,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_553",
+    "recovery_mode": null,
     "task_id": 553,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_555",
+    "recovery_mode": null,
     "task_id": 555,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_559",
+    "recovery_mode": "visible",
     "task_id": 559,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_560",
+    "recovery_mode": "visible",
     "task_id": 560,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_562",
+    "recovery_mode": null,
     "task_id": 562,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_564",
+    "recovery_mode": null,
     "task_id": 564,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_565",
+    "recovery_mode": null,
     "task_id": 565,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_567",
+    "recovery_mode": null,
     "task_id": 567,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_570",
+    "recovery_mode": null,
     "task_id": 570,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_573",
+    "recovery_mode": null,
     "task_id": 573,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_575",
+    "recovery_mode": null,
     "task_id": 575,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_581",
+    "recovery_mode": "shadow",
     "task_id": 581,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_582",
+    "recovery_mode": null,
     "task_id": 582,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_583",
+    "recovery_mode": "visible",
     "task_id": 583,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_584",
+    "recovery_mode": null,
     "task_id": 584,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_586",
+    "recovery_mode": "shadow",
     "task_id": 586,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_587",
+    "recovery_mode": null,
     "task_id": 587,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_588",
+    "recovery_mode": null,
     "task_id": 588,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_589",
+    "recovery_mode": "shadow",
     "task_id": 589,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_592",
+    "recovery_mode": null,
     "task_id": 592,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_593",
+    "recovery_mode": null,
     "task_id": 593,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_599",
+    "recovery_mode": "shadow",
     "task_id": 599,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_600",
+    "recovery_mode": null,
     "task_id": 600,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_601",
+    "recovery_mode": "visible",
     "task_id": 601,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_604",
+    "recovery_mode": null,
     "task_id": 604,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_605",
+    "recovery_mode": null,
     "task_id": 605,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_606",
+    "recovery_mode": null,
     "task_id": 606,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_608",
+    "recovery_mode": "shadow",
     "task_id": 608,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_610",
+    "recovery_mode": "visible",
     "task_id": 610,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_613",
+    "recovery_mode": "visible",
     "task_id": 613,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_619",
+    "recovery_mode": null,
     "task_id": 619,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_620",
+    "recovery_mode": null,
     "task_id": 620,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_621",
+    "recovery_mode": null,
     "task_id": 621,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_623",
+    "recovery_mode": null,
     "task_id": 623,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_628",
+    "recovery_mode": "visible",
     "task_id": 628,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_629",
+    "recovery_mode": "shadow",
     "task_id": 629,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_638",
+    "recovery_mode": null,
     "task_id": 638,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_643",
+    "recovery_mode": null,
     "task_id": 643,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_644",
+    "recovery_mode": null,
     "task_id": 644,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_649",
+    "recovery_mode": "visible",
     "task_id": 649,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_652",
+    "recovery_mode": null,
     "task_id": 652,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_653",
+    "recovery_mode": null,
     "task_id": 653,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_656",
+    "recovery_mode": "visible",
     "task_id": 656,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_658",
+    "recovery_mode": null,
     "task_id": 658,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_659",
+    "recovery_mode": null,
     "task_id": 659,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_660",
+    "recovery_mode": null,
     "task_id": 660,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_662",
+    "recovery_mode": null,
     "task_id": 662,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_669",
+    "recovery_mode": null,
     "task_id": 669,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_678",
+    "recovery_mode": null,
     "task_id": 678,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_681",
+    "recovery_mode": "visible",
     "task_id": 681,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_684",
+    "recovery_mode": "visible",
     "task_id": 684,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_686",
+    "recovery_mode": null,
     "task_id": 686,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_689",
+    "recovery_mode": null,
     "task_id": 689,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_691",
+    "recovery_mode": "visible",
     "task_id": 691,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_692",
+    "recovery_mode": "shadow",
     "task_id": 692,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_694",
+    "recovery_mode": null,
     "task_id": 694,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_698",
+    "recovery_mode": null,
     "task_id": 698,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_699",
+    "recovery_mode": null,
     "task_id": 699,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_700",
+    "recovery_mode": "shadow",
     "task_id": 700,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_703",
+    "recovery_mode": null,
     "task_id": 703,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_707",
+    "recovery_mode": null,
     "task_id": 707,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_708",
+    "recovery_mode": null,
     "task_id": 708,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_709",
+    "recovery_mode": null,
     "task_id": 709,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_712",
+    "recovery_mode": null,
     "task_id": 712,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_714",
+    "recovery_mode": null,
     "task_id": 714,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_717",
+    "recovery_mode": null,
     "task_id": 717,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_719",
+    "recovery_mode": null,
     "task_id": 719,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_722",
+    "recovery_mode": null,
     "task_id": 722,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_724",
+    "recovery_mode": null,
     "task_id": 724,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_728",
+    "recovery_mode": null,
     "task_id": 728,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_730",
+    "recovery_mode": null,
     "task_id": 730,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_732",
+    "recovery_mode": null,
     "task_id": 732,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_734",
+    "recovery_mode": null,
     "task_id": 734,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_735",
+    "recovery_mode": "visible",
     "task_id": 735,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_736",
+    "recovery_mode": null,
     "task_id": 736,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_737",
+    "recovery_mode": null,
     "task_id": 737,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_740",
+    "recovery_mode": null,
     "task_id": 740,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_741",
+    "recovery_mode": "visible",
     "task_id": 741,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_749",
+    "recovery_mode": null,
     "task_id": 749,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_751",
+    "recovery_mode": null,
     "task_id": 751,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_753",
+    "recovery_mode": "visible",
     "task_id": 753,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_755",
+    "recovery_mode": null,
     "task_id": 755,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_756",
+    "recovery_mode": null,
     "task_id": 756,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_757",
+    "recovery_mode": "visible",
     "task_id": 757,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_762",
+    "recovery_mode": null,
     "task_id": 762,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_764",
+    "recovery_mode": "visible",
     "task_id": 764,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_765",
+    "recovery_mode": "visible",
     "task_id": 765,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_766",
+    "recovery_mode": "visible",
     "task_id": 766,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_768",
+    "recovery_mode": null,
     "task_id": 768,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_770",
+    "recovery_mode": "visible",
     "task_id": 770,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_772",
+    "recovery_mode": null,
     "task_id": 772,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_773",
+    "recovery_mode": null,
     "task_id": 773,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_780",
+    "recovery_mode": null,
     "task_id": 780,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_782",
+    "recovery_mode": "shadow",
     "task_id": 782,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_785",
+    "recovery_mode": null,
     "task_id": 785,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_791",
+    "recovery_mode": null,
     "task_id": 791,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_792",
+    "recovery_mode": null,
     "task_id": 792,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_793",
+    "recovery_mode": null,
     "task_id": 793,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_794",
+    "recovery_mode": null,
     "task_id": 794,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_795",
+    "recovery_mode": null,
     "task_id": 795,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_796",
+    "recovery_mode": "shadow",
     "task_id": 796,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_799",
+    "recovery_mode": null,
     "task_id": 799,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_800",
+    "recovery_mode": null,
     "task_id": 800,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_801",
+    "recovery_mode": null,
     "task_id": 801,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_802",
+    "recovery_mode": "shadow",
     "task_id": 802,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_803",
+    "recovery_mode": "shadow",
     "task_id": 803,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_804",
+    "recovery_mode": null,
     "task_id": 804,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_806",
+    "recovery_mode": "shadow",
     "task_id": 806,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_814",
+    "recovery_mode": null,
     "task_id": 814,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_815",
+    "recovery_mode": "shadow",
     "task_id": 815,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_817",
+    "recovery_mode": null,
     "task_id": 817,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_818",
+    "recovery_mode": "shadow",
     "task_id": 818,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_821",
+    "recovery_mode": null,
     "task_id": 821,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_822",
+    "recovery_mode": null,
     "task_id": 822,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_824",
+    "recovery_mode": null,
     "task_id": 824,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_826",
+    "recovery_mode": "visible",
     "task_id": 826,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_830",
+    "recovery_mode": "shadow",
     "task_id": 830,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_831",
+    "recovery_mode": null,
     "task_id": 831,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_832",
+    "recovery_mode": "shadow",
     "task_id": 832,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_833",
+    "recovery_mode": null,
     "task_id": 833,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_834",
+    "recovery_mode": null,
     "task_id": 834,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_835",
+    "recovery_mode": "shadow",
     "task_id": 835,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_836",
+    "recovery_mode": null,
     "task_id": 836,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_837",
+    "recovery_mode": "shadow",
     "task_id": 837,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_838",
+    "recovery_mode": "shadow",
     "task_id": 838,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_839",
+    "recovery_mode": null,
     "task_id": 839,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_842",
+    "recovery_mode": null,
     "task_id": 842,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_843",
+    "recovery_mode": "shadow",
     "task_id": 843,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_845",
+    "recovery_mode": null,
     "task_id": 845,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_847",
+    "recovery_mode": null,
     "task_id": 847,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_850",
+    "recovery_mode": "visible",
     "task_id": 850,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_851",
+    "recovery_mode": null,
     "task_id": 851,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_853",
+    "recovery_mode": null,
     "task_id": 853,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_859",
+    "recovery_mode": null,
     "task_id": 859,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_861",
+    "recovery_mode": null,
     "task_id": 861,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_865",
+    "recovery_mode": "shadow",
     "task_id": 865,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_866",
+    "recovery_mode": null,
     "task_id": 866,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_868",
+    "recovery_mode": null,
     "task_id": 868,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_869",
+    "recovery_mode": null,
     "task_id": 869,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_871",
+    "recovery_mode": null,
     "task_id": 871,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_874",
+    "recovery_mode": "shadow",
     "task_id": 874,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_877",
+    "recovery_mode": null,
     "task_id": 877,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_878",
+    "recovery_mode": null,
     "task_id": 878,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_879",
+    "recovery_mode": null,
     "task_id": 879,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_881",
+    "recovery_mode": null,
     "task_id": 881,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_884",
+    "recovery_mode": null,
     "task_id": 884,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_886",
+    "recovery_mode": null,
     "task_id": 886,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_887",
+    "recovery_mode": null,
     "task_id": 887,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_889",
+    "recovery_mode": "visible",
     "task_id": 889,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_891",
+    "recovery_mode": "shadow",
     "task_id": 891,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_892",
+    "recovery_mode": null,
     "task_id": 892,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_893",
+    "recovery_mode": null,
     "task_id": 893,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_895",
+    "recovery_mode": "shadow",
     "task_id": 895,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_897",
+    "recovery_mode": "shadow",
     "task_id": 897,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_898",
+    "recovery_mode": "shadow",
     "task_id": 898,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_900",
+    "recovery_mode": null,
     "task_id": 900,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_901",
+    "recovery_mode": "visible",
     "task_id": 901,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_902",
+    "recovery_mode": "visible",
     "task_id": 902,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_904",
+    "recovery_mode": null,
     "task_id": 904,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_905",
+    "recovery_mode": "shadow",
     "task_id": 905,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_906",
+    "recovery_mode": null,
     "task_id": 906,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_907",
+    "recovery_mode": "visible",
     "task_id": 907,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_908",
+    "recovery_mode": null,
     "task_id": 908,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_909",
+    "recovery_mode": null,
     "task_id": 909,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_911",
+    "recovery_mode": "visible",
     "task_id": 911,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_913",
+    "recovery_mode": null,
     "task_id": 913,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_914",
+    "recovery_mode": "shadow",
     "task_id": 914,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_916",
+    "recovery_mode": null,
     "task_id": 916,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_921",
+    "recovery_mode": null,
     "task_id": 921,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_923",
+    "recovery_mode": "visible",
     "task_id": 923,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_929",
+    "recovery_mode": null,
     "task_id": 929,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_931",
+    "recovery_mode": "shadow",
     "task_id": 931,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_936",
+    "recovery_mode": null,
     "task_id": 936,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_938",
+    "recovery_mode": null,
     "task_id": 938,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_939",
+    "recovery_mode": null,
     "task_id": 939,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_942",
+    "recovery_mode": null,
     "task_id": 942,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_943",
+    "recovery_mode": null,
     "task_id": 943,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_947",
+    "recovery_mode": "visible",
     "task_id": 947,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_948",
+    "recovery_mode": null,
     "task_id": 948,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_949",
+    "recovery_mode": null,
     "task_id": 949,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_950",
+    "recovery_mode": null,
     "task_id": 950,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_954",
+    "recovery_mode": null,
     "task_id": 954,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_956",
+    "recovery_mode": null,
     "task_id": 956,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_957",
+    "recovery_mode": "shadow",
     "task_id": 957,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_959",
+    "recovery_mode": null,
     "task_id": 959,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_960",
+    "recovery_mode": "visible",
     "task_id": 960,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_961",
+    "recovery_mode": "shadow",
     "task_id": 961,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_965",
+    "recovery_mode": null,
     "task_id": 965,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_967",
+    "recovery_mode": null,
     "task_id": 967,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_968",
+    "recovery_mode": null,
     "task_id": 968,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_969",
+    "recovery_mode": null,
     "task_id": 969,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
     "case_id": "mbpp_970",
+    "recovery_mode": null,
     "task_id": 970,
     "trace_type": "direct"
   },
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_974",
+    "recovery_mode": "shadow",
     "task_id": 974,
     "trace_type": "recovery"
   }

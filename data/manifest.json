@@ -25,16 +25,16 @@
       "sha256": "1f2d5c35bb08c6eed94a82e8581de8a91c83c0aa64d799cfdaf433eb5d176064"
     },
     "assignments.json": {
-      "bytes": 25597,
-      "sha256": "f98b9846e1009bcc964c61c69066d648cd0c9bd375af02ebf405409e69db480d"
+      "bytes": 31636,
+      "sha256": "bd640f0f5032eef60d53d42646ddb13893cd7188bd11ede174dd51cf17a980fc"
     },
     "sft/arm_a/train.jsonl": {
-      "bytes": 452676,
-      "sha256": "7bf5bddd2d0e45226ba8b4fb798038ac5e829023aa81c93ba54324e75daf60ab"
+      "bytes": 457867,
+      "sha256": "5bab63b2c953feab238bbef773a7ed5c4c5bcd13f7e2fa129993f2bf9f32468b"
     },
     "sft/arm_b/train.jsonl": {
-      "bytes": 516534,
-      "sha256": "5f6d89f9a94014acc140aa72254044f0b0d79917264b2fcb5367f8fa39900c0e"
+      "bytes": 514083,
+      "sha256": "8aa2abb38ab8f3fcaf5c9bca1850a77300873f5467aff2b59903925c40585c43"
     }
   },
   "sources": {
@@ -286,6 +286,8 @@
     "sft_direct": 142,
     "sft_per_arm": 212,
     "sft_recovery": 70,
+    "sft_recovery_shadow": 35,
+    "sft_recovery_visible": 35,
     "sft_task_ids": [
       513,
       515,

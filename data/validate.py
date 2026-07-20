@@ -25,10 +25,12 @@ from .prepare import (
     PLACEHOLDER,
     RECOVERY_COUNT,
     RL_TRAIN_COUNT,
+    SHADOW_RECOVERY_COUNT,
     SOURCES,
     SFT_COUNT,
     TEST_IDS,
     VALIDATION_COUNT,
+    VISIBLE_RECOVERY_COUNT,
 )
 
 
@@ -136,6 +138,7 @@ def _verify_trace(
     seen_ids: set[str] = set()
     visible_outcomes: list[str] = []
     predicted_outcomes: list[str] = []
+    verified_outcomes: list[str] = []
     decisions: list[str] = []
     first_candidate_code: str | None = None
     solution = project / "solution.py"
@@ -153,11 +156,8 @@ def _verify_trace(
                 )
             solution.write_text(code, encoding="utf-8")
             actual = run_hidden_tests(project, task["test_code"], timeout).outcome
-            if prediction != actual:
-                raise ValueError(
-                    f"{row['case_id']}: SFT prediction {prediction} != verified {actual}"
-                )
-            predicted_outcomes.append(actual or "")
+            predicted_outcomes.append(prediction or "")
+            verified_outcomes.append(actual or "")
             decisions.append(decision or "")
 
         calls, errors = parse_calls(content, seen_ids)
@@ -198,27 +198,43 @@ def _verify_trace(
         if visible_outcomes != expected:
             raise ValueError(f"{row['case_id']}: Arm A recovery sequence drifted")
     else:
-        expected_predictions = (
-            [PASS]
-            if row["trace_type"] == "direct"
-            else [expected_first, PASS]
-        )
-        expected_decisions = (
-            ["KEEP"]
-            if row["trace_type"] == "direct"
-            else ["KEEP", "KEEP"]
-        )
-        if predicted_outcomes != expected_predictions or decisions != expected_decisions:
-            raise ValueError(f"{row['case_id']}: Arm B prediction sequence drifted")
-        expected_visible = (
-            [PASS]
-            if row["trace_type"] == "direct"
-            else [expected_first, PASS]
-        )
-        if visible_outcomes != expected_visible:
+        mode = row.get("recovery_mode")
+        if row["trace_type"] == "direct":
+            expected = {
+                "predicted": [PASS],
+                "verified": [PASS],
+                "decisions": ["KEEP"],
+                "visible": [PASS],
+            }
+        elif mode == "shadow":
+            expected = {
+                "predicted": [expected_first, PASS],
+                "verified": [expected_first, PASS],
+                "decisions": ["REVISE", "KEEP"],
+                "visible": [PASS],
+            }
+        elif mode == "visible":
+            # The first prediction is an intentional honest mistake: the model
+            # keeps a bad candidate it expects to pass, then recovers from the
+            # visible failure. RL prediction CE targets the verified label.
+            expected = {
+                "predicted": [PASS, PASS],
+                "verified": [expected_first, PASS],
+                "decisions": ["KEEP", "KEEP"],
+                "visible": [expected_first, PASS],
+            }
+        else:
+            raise ValueError(f"{row['case_id']}: unknown recovery_mode {mode!r}")
+        if predicted_outcomes != expected["predicted"]:
+            raise ValueError(f"{row['case_id']}: Arm B predicted labels drifted")
+        if verified_outcomes != expected["verified"]:
+            raise ValueError(f"{row['case_id']}: Arm B verified outcomes drifted")
+        if decisions != expected["decisions"]:
+            raise ValueError(f"{row['case_id']}: Arm B decision sequence drifted")
+        if visible_outcomes != expected["visible"]:
             raise ValueError(f"{row['case_id']}: Arm B recovery sequence drifted")
 
-    return Counter(predicted_outcomes)
+    return Counter(verified_outcomes)
 
 
 def validate_prepared(
@@ -364,6 +380,7 @@ def validate_prepared(
             "final_code_sha256",
             "final_outcome",
             "matched_key",
+            "recovery_mode",
             "task_id",
             "test_code",
             "trace_type",
@@ -374,14 +391,35 @@ def validate_prepared(
     trace_counts = Counter(row["trace_type"] for row in sft["a"])
     if trace_counts != {"direct": DIRECT_COUNT, "recovery": RECOVERY_COUNT}:
         raise ValueError(f"SFT composition drifted: {dict(trace_counts)}")
+    for arm in ("a", "b"):
+        mode_counts = Counter(
+            row["recovery_mode"]
+            for row in sft[arm]
+            if row["trace_type"] == "recovery"
+        )
+        if mode_counts != {
+            "shadow": SHADOW_RECOVERY_COUNT,
+            "visible": VISIBLE_RECOVERY_COUNT,
+        }:
+            raise ValueError(
+                f"Arm {arm.upper()} recovery mode split drifted: {dict(mode_counts)}"
+            )
 
     assignments = json.loads((data_dir / "assignments.json").read_text())
     expected_assignments = {
-        row["case_id"]: (row["trace_type"], row["candidate_outcome"])
+        row["case_id"]: (
+            row["trace_type"],
+            row["candidate_outcome"],
+            row["recovery_mode"],
+        )
         for row in sft["a"]
     }
     actual_assignments = {
-        row["case_id"]: (row["trace_type"], row["candidate_outcome"])
+        row["case_id"]: (
+            row["trace_type"],
+            row["candidate_outcome"],
+            row.get("recovery_mode"),
+        )
         for row in assignments
     }
     if actual_assignments != expected_assignments:
