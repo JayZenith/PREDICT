@@ -68,6 +68,9 @@ weight_decay = 0.01
 interval = 94
 keep_last = 1
 
+[orchestrator.ckpt]
+wait_for_weights_timeout = 60
+
 [trainer.ckpt]
 weights_only = true
 
