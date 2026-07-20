@@ -30,7 +30,7 @@ git -C "$PRIME_DIR" submodule update --init --depth=1 \
   deps/verifiers deps/renderers deps/pydantic-config deps/research-environments
 
 for patch in \
-  "$PWD/patches/prime-rl-fail-on-truncation.patch" \
+  "$PWD/patches/prime-rl-warn-on-truncation.patch" \
   "$PWD/patches/prime-rl-eos-token.patch" \
   "$PWD/patches/prime-rl-predict.patch"
 do

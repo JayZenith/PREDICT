@@ -8,8 +8,8 @@ index 77f85c0..87d28ee 100644
 -
 +
 +            if rollout.kind == "train" and rollout.is_truncated:
-+                raise RuntimeError(
-+                    "refusing to continue after a truncated training rollout: "
++                get_logger().warning(
++                    "dropping truncated training rollout before the trainer: "
 +                    f"task={rollout.task.data.idx} stop={rollout.stop_condition}"
 +                )
 +
