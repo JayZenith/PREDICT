@@ -74,8 +74,8 @@ def test_arm_sft_rows_are_task_and_candidate_matched() -> None:
     )
     arm_b_text = "\n".join(message["content"] for message in arm_b["messages"])
     assert f"<PREDICTION>{recovery.outcome}</PREDICTION>" in arm_b_text
-    assert "<DECISION>REVISE</DECISION>" in arm_b_text
-    assert "status: failed" not in arm_b_text
+    assert "<DECISION>KEEP</DECISION>" in arm_b_text
+    assert "status: failed" in arm_b_text
     assert arm_a["messages"][-1]["content"].startswith("FINAL:")
     assert arm_b["messages"][-1]["content"].startswith("FINAL:")
 

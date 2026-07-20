@@ -41,7 +41,7 @@ Each task becomes a blank `solution.py` plus hidden tests.
 | Trace type | Count | Arm A | Arm B |
 |---|---:|---|---|
 | Direct success | 250 | patch → test passes | correct patch → predict PASS → KEEP → test passes |
-| One-step recovery | 124 | faulty patch → test fails → fix → test passes | faulty patch → predict failure → REVISE → corrected patch → predict PASS → KEEP → test passes |
+| One-step recovery | 124 | faulty patch → test fails → fix → test passes | faulty patch → predict failure or test it and observe failure → corrected patch → predict PASS → KEEP → test passes |
 
 Total: 374 traces per arm.
 
@@ -51,6 +51,12 @@ generation must fail if it cannot construct the required verified trace.
 
 The arms match on task, candidate code, final solution, and real outcomes—not
 exact ChatML. Arm B adds `PREDICTION` and `KEEP/REVISE`.
+
+Arm B recovery traces must cover both recovery modes:
+
+- hidden/shadow recovery: bad candidate → predict failure → `REVISE` → patch;
+- visible recovery: bad candidate → predict `PASS` or choose `KEEP` → visible
+  `python_test` fails → patch → predict the new candidate.
 
 ## Shared controls
 
@@ -87,6 +93,9 @@ read_file
 - `KEEP` → execute `python_test` → inspect the real result.
 - `REVISE` → snapshot the applied candidate for hidden shadow testing → apply
   another patch → predict again.
+- If a visible `KEEP` test fails, patch again. The new successful patch creates
+  a new pending candidate, so Arm B must predict that candidate before any
+  later test.
 
 The candidate is already applied to the task workspace before prediction. It has
 not yet been executed against the tests.

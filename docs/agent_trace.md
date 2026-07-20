@@ -81,7 +81,7 @@ FINAL: implemented is_even and passed the hidden tests.
 
 ```text
 <|im_start|>system
-You are a Python coding agent. Before testing an applied candidate, emit <PREDICTION>OUTCOME</PREDICTION>. OUTCOME is PASS, ASSERTION_FAILURE, RUNTIME_ERROR, SYNTAX_ERROR, TIMEOUT, or OTHER. Then emit <DECISION>KEEP</DECISION> to test or <DECISION>REVISE</DECISION> to patch again. After FINAL, stop.
+You are a Python coding agent. After apply_patch succeeds, predict before testing: emit <PREDICTION>OUTCOME</PREDICTION>, then <DECISION>KEEP</DECISION> to test or <DECISION>REVISE</DECISION> to patch. OUTCOME is PASS, ASSERTION_FAILURE, RUNTIME_ERROR, SYNTAX_ERROR, TIMEOUT, or OTHER. After FINAL, stop.
 <|im_end|>
 
 <|im_start|>user
@@ -157,18 +157,37 @@ The rejected `c2` candidate is copied into an isolated hidden test process:
 That shadow result is training metadata. It never enters the agent's visible
 ChatML and does not count as a visible tool call.
 
+Arm B must also learn visible failed-test recovery. If the agent chooses
+`KEEP`, executes `python_test`, and the visible result fails, the next useful
+action is another `apply_patch`. Once that patch succeeds, the new candidate is
+pending and must be predicted before it is tested:
+
+```text
+apply_patch bad candidate
+→ PREDICTION PASS
+→ DECISION KEEP
+→ python_test fails visibly
+→ apply_patch fix
+→ PREDICTION PASS
+→ DECISION KEEP
+→ python_test passes
+→ FINAL
+```
+
 ## Rules
 
 1. Use `<|im_start|>` and `<|im_end|>` around every system, user, assistant,
    and tool turn.
 2. Every `CALL` has a unique ID and exactly one matching runtime `RESULT`.
-3. Arm B predicts only after its concrete candidate has been applied but before
-   that candidate has been tested.
+3. Arm B predicts after every successful `apply_patch`, and only for the
+   concrete candidate currently applied in the workspace.
 4. Predictions use one verified class:
    `PASS`, `ASSERTION_FAILURE`, `RUNTIME_ERROR`, `SYNTAX_ERROR`, `TIMEOUT`, or
    `OTHER`.
 5. `KEEP` visibly executes `python_test`. `REVISE` snapshots and shadow-tests
-   the rejected candidate before applying the next patch.
+   the rejected candidate before applying the next patch. A failed visible
+   `python_test` should be followed by another patch; the resulting candidate
+   must then be predicted before any later test.
 6. Runtime executions are authoritative. Assistant text cannot claim a pass.
 7. `FINAL:` is valid only after a real visible passing test and must be the last
    assistant turn. A hidden final-state check must also pass.

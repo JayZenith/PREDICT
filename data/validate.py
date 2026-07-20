@@ -205,12 +205,17 @@ def _verify_trace(
         expected_decisions = (
             ["KEEP"]
             if row["trace_type"] == "direct"
-            else ["REVISE", "KEEP"]
+            else ["KEEP", "KEEP"]
         )
         if predicted_outcomes != expected_predictions or decisions != expected_decisions:
             raise ValueError(f"{row['case_id']}: Arm B prediction sequence drifted")
-        if visible_outcomes != [PASS]:
-            raise ValueError(f"{row['case_id']}: Arm B exposed a rejected test")
+        expected_visible = (
+            [PASS]
+            if row["trace_type"] == "direct"
+            else [expected_first, PASS]
+        )
+        if visible_outcomes != expected_visible:
+            raise ValueError(f"{row['case_id']}: Arm B recovery sequence drifted")
 
     return Counter(predicted_outcomes)
 

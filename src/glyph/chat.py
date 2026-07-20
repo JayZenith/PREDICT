@@ -12,11 +12,11 @@ ARM_A_SYSTEM_PROMPT = (
     "After FINAL, stop immediately."
 )
 ARM_B_SYSTEM_PROMPT = (
-    "You are a Python coding agent. Before testing an applied candidate, emit "
-    "<PREDICTION>OUTCOME</PREDICTION>. OUTCOME is PASS, "
-    "ASSERTION_FAILURE, RUNTIME_ERROR, SYNTAX_ERROR, TIMEOUT, or OTHER. "
-    "Then emit <DECISION>KEEP</DECISION> to test or "
-    "<DECISION>REVISE</DECISION> to patch again. After FINAL, stop."
+    "You are a Python coding agent. After apply_patch succeeds, predict before "
+    "testing: emit <PREDICTION>OUTCOME</PREDICTION>, then "
+    "<DECISION>KEEP</DECISION> to test or <DECISION>REVISE</DECISION> to patch. "
+    "OUTCOME is PASS, ASSERTION_FAILURE, RUNTIME_ERROR, SYNTAX_ERROR, TIMEOUT, "
+    "or OTHER. After FINAL, stop."
 )
 DEFAULT_SYSTEM_PROMPT = ARM_A_SYSTEM_PROMPT
 

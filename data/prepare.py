@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pyarrow.parquet as pq
 
-from glyph.chat import ARM_A_SYSTEM_PROMPT, ARM_B_SYSTEM_PROMPT
+from glyph.chat import ARM_A_SYSTEM_PROMPT, ARM_B_SYSTEM_PROMPT, render_messages
 from glyph.program import (
     ASSERTION_FAILURE,
     OTHER,
@@ -37,6 +37,8 @@ TEST_IDS = range(11, 511)
 RECOVERY_COUNT = 124
 DIRECT_COUNT = 250
 SEED = 42
+SFT_MAX_TOKENS = 768
+DEFAULT_MODEL = "Qwen/Qwen3-4B-Base"
 DATA_ARTIFACTS = (
     "sft/arm_a/train.jsonl",
     "sft/arm_b/train.jsonl",
@@ -339,27 +341,35 @@ def sft_row(task: MBPPTask, arm: str, recovery: RecoveryTrace | None) -> dict:
                         "role": "assistant",
                         "content": (
                             f"<PREDICTION>{recovery.outcome}</PREDICTION>\n"
-                            "<DECISION>REVISE</DECISION>\n"
+                            "<DECISION>KEEP</DECISION>\n"
                             + _call(
-                                "apply_patch",
-                                {
-                                    "id": "c3",
-                                    "file_path": file_path,
-                                    "find": recovery.patch.find,
-                                    "replace": recovery.patch.replace,
-                                },
+                                "python_test",
+                                {"id": "c3", "project_path": trace_prefix},
                             )
+                        ),
+                    },
+                    {"role": "tool", "content": _failed_result("c3", recovery.outcome)},
+                    {
+                        "role": "assistant",
+                        "content": _call(
+                            "apply_patch",
+                            {
+                                "id": "c4",
+                                "file_path": file_path,
+                                "find": recovery.patch.find,
+                                "replace": recovery.patch.replace,
+                            },
                         ),
                     },
                     {
                         "role": "tool",
                         "content": (
-                            "RESULT c3:\nstatus: success\nstdout:\npatch applied"
+                            "RESULT c4:\nstatus: success\nstdout:\npatch applied"
                         ),
                     },
                 ]
             )
-            test_call = "c4"
+            test_call = "c5"
         else:
             test_call = "c3"
         messages.extend(
@@ -428,6 +438,9 @@ def _verify_gold(tasks: list[MBPPTask], timeout: int) -> None:
 def _assign_recoveries(
     train: list[MBPPTask], *, seed: int, count: int, timeout: int
 ) -> dict[str, RecoveryTrace]:
+    from transformers import AutoTokenizer
+
+    tokenizer = AutoTokenizer.from_pretrained(DEFAULT_MODEL)
     ordered = sorted(train, key=lambda task: (_assignment_key(task, seed), task.task_id))
     recoveries: dict[str, RecoveryTrace] = {}
     for task in ordered:
@@ -439,6 +452,14 @@ def _assign_recoveries(
             gold_verified=True,
         )
         if trace is not None:
+            arm_b_tokens = len(
+                tokenizer.encode(
+                    render_messages(sft_row(task, "b", trace)["messages"]),
+                    add_special_tokens=False,
+                )
+            )
+            if arm_b_tokens > SFT_MAX_TOKENS:
+                continue
             recoveries[task.case_id] = trace
         if len(recoveries) == count:
             break

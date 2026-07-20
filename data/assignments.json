@@ -870,10 +870,10 @@
     "trace_type": "direct"
   },
   {
-    "candidate_outcome": "PASS",
+    "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_746",
     "task_id": 746,
-    "trace_type": "direct"
+    "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
@@ -2094,10 +2094,10 @@
     "trace_type": "direct"
   },
   {
-    "candidate_outcome": "ASSERTION_FAILURE",
+    "candidate_outcome": "PASS",
     "case_id": "mbpp_950",
     "task_id": 950,
-    "trace_type": "recovery"
+    "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
