@@ -43,7 +43,7 @@ Each task becomes a blank `solution.py` plus hidden tests.
 | Trace type | Count | Arm A | Arm B |
 |---|---:|---|---|
 | Direct success | 142 | patch → test passes | correct patch → predict PASS → KEEP → test passes |
-| One-step recovery | 70 | faulty patch → test fails → fix → test passes | faulty patch → predict failure or test it and observe failure → corrected patch → predict PASS → KEEP → test passes |
+| One-step recovery | 70 | faulty patch → test fails → fix → test passes | 35 shadow: predict failure → REVISE → fix → predict PASS → KEEP → test passes; 35 visible: predict PASS (honest mistake) → KEEP → test fails → fix → predict PASS → KEEP → test passes |
 
 Total: 212 traces per arm.
 
