@@ -72,6 +72,7 @@ weight_decay = 0.01
 [ckpt]
 interval = 94
 keep_last = 1
+weights_only = true
 
 [inference]
 gpu_memory_utilization = 0.85
