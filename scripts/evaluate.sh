@@ -13,7 +13,7 @@ if [[ ( "$arm" != "a" && "$arm" != "b" ) || -z "$model" ]] \
 fi
 shift 3
 
-count=90
+count=40
 [[ "$split" == "test" ]] && count=500
 
 uv run python -m data.validate data

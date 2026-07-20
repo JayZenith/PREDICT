@@ -1,4 +1,4 @@
-# Arm A: roughly five full-parameter SFT epochs on 374 verified traces.
+# Arm A: full-parameter SFT on 212 verified protocol traces.
 max_steps = 60
 output_dir = "outputs/arm_a_sft"
 

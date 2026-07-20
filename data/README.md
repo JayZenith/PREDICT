@@ -15,29 +15,34 @@ It also records the byte size and SHA-256 of every generated dataset artifact.
 
 | Generated file | Rows | Purpose |
 |---|---:|---|
-| `sft/arm_a/train.jsonl` | 374 | reactive full-trace SFT |
-| `sft/arm_b/train.jsonl` | 374 | matched prediction SFT |
-| `arm_{a,b}_train.jsonl` | 374 each | RL environments |
-| `arm_{a,b}_validation.jsonl` | 90 each | λ/development evaluation |
+| `sft/arm_a/train.jsonl` | 212 | reactive full-trace SFT |
+| `sft/arm_b/train.jsonl` | 212 | matched prediction SFT |
+| `arm_{a,b}_train.jsonl` | 212 each | RL environments |
+| `arm_{a,b}_validation.jsonl` | 40 each | λ/development evaluation |
 | `arm_{a,b}_test.jsonl` | 500 each | final evaluation |
-| `assignments.json` | 374 | direct/recovery assignment audit |
+| `assignments.json` | 212 | direct/recovery assignment audit |
 | `manifest.json` | — | source, hash, split, and outcome audit |
 
-The official split is unchanged:
+The official source files are unchanged:
 
 - Train: IDs 601–974.
 - Validation: IDs 511–600.
 - Test: IDs 11–510.
 
-Seed 42 deterministically chooses 124 training tasks where `recovery.py` can
-construct one real semantic failure. The other 250 are direct successes.
+Seed 42 deterministically moves 50 official-validation IDs into the train pool,
+then splits the 424 non-test tasks into 212 SFT IDs and 212 disjoint RL IDs.
+The remaining 40 official-validation IDs are validation. The 500 official test
+IDs stay untouched.
+
+Seed 42 also chooses 70 SFT tasks where `recovery.py` can construct one real
+semantic failure. The other 142 are direct successes.
 Every Arm A/Arm B pair uses the same task, candidate, corrected solution, and
 sandbox outcomes.
 
 `validate.py` is exhaustive. It:
 
 - executes all 964 official gold solutions;
-- replays all 748 SFT traces;
+- replays all 424 SFT traces;
 - verifies every failed candidate and final pass;
 - verifies every Arm B prediction label;
 - checks matched hashes, split IDs, hidden-test isolation, terminal `FINAL:`,

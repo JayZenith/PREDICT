@@ -10,7 +10,7 @@ import shutil
 import tempfile
 import urllib.request
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 import pyarrow.parquet as pq
@@ -31,11 +31,15 @@ from .recovery import RecoveryTrace, generate_recovery
 
 PLACEHOLDER = "# Write your function here.\n"
 MBPP_REVISION = "4bb6404fdc6cacfda99d4ac4205087b89d32030c"
-TRAIN_IDS = range(601, 975)
-VALIDATION_IDS = range(511, 601)
+OFFICIAL_TRAIN_IDS = range(601, 975)
+OFFICIAL_VALIDATION_IDS = range(511, 601)
 TEST_IDS = range(11, 511)
-RECOVERY_COUNT = 124
-DIRECT_COUNT = 250
+VALIDATION_TO_TRAIN_COUNT = 50
+VALIDATION_COUNT = 40
+SFT_COUNT = 212
+RL_TRAIN_COUNT = 212
+RECOVERY_COUNT = 70
+DIRECT_COUNT = 142
 SEED = 42
 SFT_MAX_TOKENS = 768
 DEFAULT_MODEL = "Qwen/Qwen3-4B-Base"
@@ -179,6 +183,40 @@ def _assignment_key(task: MBPPTask, seed: int) -> str:
     return hashlib.sha256(
         f"{seed}\0{task.task_id}\0{task.prompt}".encode()
     ).hexdigest()
+
+
+def _with_split(task: MBPPTask, split: str) -> MBPPTask:
+    return replace(task, split=split)
+
+
+def _split_experiment_tasks(
+    official_train: list[MBPPTask],
+    official_validation: list[MBPPTask],
+    seed: int,
+) -> tuple[list[MBPPTask], list[MBPPTask], list[MBPPTask]]:
+    ordered_validation = sorted(
+        official_validation,
+        key=lambda task: (_assignment_key(task, seed), task.task_id),
+    )
+    validation_to_train = ordered_validation[:VALIDATION_TO_TRAIN_COUNT]
+    heldout_validation = ordered_validation[VALIDATION_TO_TRAIN_COUNT:]
+    if len(heldout_validation) != VALIDATION_COUNT:
+        raise RuntimeError("validation split size drifted")
+
+    training_pool = [*official_train, *validation_to_train]
+    ordered_pool = sorted(
+        training_pool,
+        key=lambda task: (_assignment_key(task, seed), task.task_id),
+    )
+    sft_tasks = ordered_pool[:SFT_COUNT]
+    rl_train_tasks = ordered_pool[SFT_COUNT : SFT_COUNT + RL_TRAIN_COUNT]
+    if len(sft_tasks) != SFT_COUNT or len(rl_train_tasks) != RL_TRAIN_COUNT:
+        raise RuntimeError("SFT/RL split size drifted")
+    if {task.task_id for task in sft_tasks} & {
+        task.task_id for task in rl_train_tasks
+    }:
+        raise RuntimeError("SFT and RL train task IDs overlap")
+    return sft_tasks, rl_train_tasks, heldout_validation
 
 
 def task_prompt(
@@ -411,6 +449,7 @@ def sft_row(task: MBPPTask, arm: str, recovery: RecoveryTrace | None) -> dict:
         "matched_key": _matched_key(task, initial_code, initial_outcome),
         "messages": messages,
         "task_id": task.task_id,
+        "test_code": task.test_code,
         "trace_type": "recovery" if recovery else "direct",
     }
 
@@ -485,21 +524,24 @@ def prepare_data(
     paths = {
         name: download_source(source, cache_dir) for name, source in SOURCES.items()
     }
-    train = load_mbpp(paths["train"], "train")
-    validation = load_mbpp(paths["validation"], "validation")
+    official_train = load_mbpp(paths["train"], "train")
+    official_validation = load_mbpp(paths["validation"], "validation")
     final = load_mbpp(paths["test"], "test")
-    _require_ids(train, TRAIN_IDS, "train")
-    _require_ids(validation, VALIDATION_IDS, "validation")
+    _require_ids(official_train, OFFICIAL_TRAIN_IDS, "train")
+    _require_ids(official_validation, OFFICIAL_VALIDATION_IDS, "validation")
     _require_ids(final, TEST_IDS, "test")
-    all_tasks = [*train, *validation, *final]
+    all_tasks = [*official_train, *official_validation, *final]
     if len({task.task_id for task in all_tasks}) != len(all_tasks):
         raise RuntimeError("official MBPP splits overlap by task ID")
 
     _verify_gold(all_tasks, timeout)
-    recoveries = _assign_recoveries(
-        train, seed=seed, count=recovery_count, timeout=timeout
+    sft_tasks, rl_train_tasks, validation_tasks = _split_experiment_tasks(
+        official_train, official_validation, seed
     )
-    if len(train) - len(recoveries) != DIRECT_COUNT:
+    recoveries = _assign_recoveries(
+        sft_tasks, seed=seed, count=recovery_count, timeout=timeout
+    )
+    if len(sft_tasks) - len(recoveries) != DIRECT_COUNT:
         raise RuntimeError("SFT direct/recovery composition drifted")
 
     output = output.expanduser().resolve()
@@ -514,28 +556,31 @@ def prepare_data(
         (project / "solution.py").write_text(PLACEHOLDER, encoding="utf-8")
 
     arm_a_sft = [
-        sft_row(task, "a", recoveries.get(task.case_id)) for task in train
+        sft_row(task, "a", recoveries.get(task.case_id)) for task in sft_tasks
     ]
     arm_b_sft = [
-        sft_row(task, "b", recoveries.get(task.case_id)) for task in train
+        sft_row(task, "b", recoveries.get(task.case_id)) for task in sft_tasks
     ]
     _write_jsonl(staging / "sft" / "arm_a" / "train.jsonl", arm_a_sft)
     _write_jsonl(staging / "sft" / "arm_b" / "train.jsonl", arm_b_sft)
     for arm in ("a", "b"):
         _write_jsonl(
             staging / f"arm_{arm}_train.jsonl",
-            [task_row(task, arm) for task in train],
+            [task_row(_with_split(task, "train"), arm) for task in rl_train_tasks],
         )
         _write_jsonl(
             staging / f"arm_{arm}_validation.jsonl",
-            [task_row(task, arm) for task in validation],
+            [
+                task_row(_with_split(task, "validation"), arm)
+                for task in validation_tasks
+            ],
         )
         _write_jsonl(
             staging / f"arm_{arm}_test.jsonl",
             [task_row(task, arm) for task in final],
         )
 
-    ordered_train = sorted(train, key=lambda task: task.task_id)
+    ordered_sft = sorted(sft_tasks, key=lambda task: task.task_id)
     assignment = [
         {
             "task_id": task.task_id,
@@ -549,7 +594,7 @@ def prepare_data(
                 else PASS
             ),
         }
-        for task in ordered_train
+        for task in ordered_sft
     ]
     (staging / "assignments.json").write_text(
         json.dumps(assignment, indent=2, sort_keys=True) + "\n",
@@ -579,13 +624,18 @@ def prepare_data(
         },
         "split": {
             "seed": seed,
-            "train": len(train),
-            "validation": len(validation),
+            "sft": len(sft_tasks),
+            "train": len(rl_train_tasks),
+            "validation": len(validation_tasks),
             "test": len(final),
-            "train_ids": "601-974",
-            "validation_ids": "511-600",
+            "official_train_ids": "601-974",
+            "official_validation_ids": "511-600",
+            "validation_to_train": VALIDATION_TO_TRAIN_COUNT,
+            "sft_task_ids": sorted(task.task_id for task in sft_tasks),
+            "rl_train_task_ids": sorted(task.task_id for task in rl_train_tasks),
+            "validation_task_ids": sorted(task.task_id for task in validation_tasks),
             "test_ids": "11-510",
-            "sft_per_arm": len(train),
+            "sft_per_arm": len(sft_tasks),
             "sft_direct": DIRECT_COUNT,
             "sft_recovery": len(recoveries),
             "recovery_outcomes": dict(sorted(outcome_counts.items())),

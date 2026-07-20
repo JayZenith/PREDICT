@@ -18,20 +18,22 @@ Use official full MBPP:
 
 | Split | Task IDs | Purpose |
 |---|---:|---|
-| Train | 601–974 (374) | SFT traces and RL environments |
-| Validation | 511–600 (90) | Select checkpoints and λ; detect overfitting |
+| Train pool | 601–974 plus 50 seed-selected validation IDs (424) | Split into disjoint SFT and RL task IDs |
+| Validation | remaining 40 seed-selected IDs from 511–600 | Select checkpoints and λ; detect overfitting |
 | Final test | 11–510 (500) | Untouched final generalization result |
 
-No MBPP+, frontier screening, internal train split, or task-ID split between SFT
-and RL. The same 374 training tasks have different SFT-trace and RL-environment
-representations:
+No MBPP+, frontier screening, or two-step synthetic recovery. Seed 42 first
+moves 50 official-validation IDs into the train pool, then hashes the 424-task
+pool into disjoint SFT and RL task IDs:
 
 ```text
-374 train tasks
-├── Arm A SFT traces
-├── Arm B prediction-augmented SFT traces
-├── Arm A RL environments
-└── Arm B RL environments
+424 train-pool tasks
+├── 212 SFT task IDs
+│   ├── Arm A SFT traces
+│   └── Arm B prediction-augmented SFT traces
+└── 212 disjoint RL task IDs
+    ├── Arm A RL environments
+    └── Arm B RL environments
 ```
 
 Each task becomes a blank `solution.py` plus hidden tests.
@@ -40,10 +42,10 @@ Each task becomes a blank `solution.py` plus hidden tests.
 
 | Trace type | Count | Arm A | Arm B |
 |---|---:|---|---|
-| Direct success | 250 | patch → test passes | correct patch → predict PASS → KEEP → test passes |
-| One-step recovery | 124 | faulty patch → test fails → fix → test passes | faulty patch → predict failure or test it and observe failure → corrected patch → predict PASS → KEEP → test passes |
+| Direct success | 142 | patch → test passes | correct patch → predict PASS → KEEP → test passes |
+| One-step recovery | 70 | faulty patch → test fails → fix → test passes | faulty patch → predict failure or test it and observe failure → corrected patch → predict PASS → KEEP → test passes |
 
-Total: 374 traces per arm.
+Total: 212 traces per arm.
 
 Assign tasks reproducibly with seed 42 and save the assignment manifest. Every
 faulty state must genuinely fail and every final state must pass. Dataset
@@ -220,7 +222,7 @@ arm_b_rlvr
 
 The main comparison is `arm_a_rlvr` versus `arm_b_rlvr`.
 
-Use only the 90 validation tasks to select checkpoints and λ. Touch the 500-task
+Use only the 40 validation tasks to select checkpoints and λ. Touch the 500-task
 test split once, after freezing every choice.
 
 ## Final evaluation

@@ -24,10 +24,11 @@ from .prepare import (
     DATA_ARTIFACTS,
     PLACEHOLDER,
     RECOVERY_COUNT,
+    RL_TRAIN_COUNT,
     SOURCES,
+    SFT_COUNT,
     TEST_IDS,
-    TRAIN_IDS,
-    VALIDATION_IDS,
+    VALIDATION_COUNT,
 )
 
 
@@ -239,16 +240,39 @@ def validate_prepared(
         for arm in ("a", "b")
         for split in ("train", "validation", "test")
     }
+    manifest = json.loads((data_dir / "manifest.json").read_text())
+    split_manifest = manifest.get("split") or {}
 
-    expected_counts = {"train": 374, "validation": 90, "test": 500}
+    expected_counts = {
+        "train": RL_TRAIN_COUNT,
+        "validation": VALIDATION_COUNT,
+        "test": 500,
+    }
     expected_ids = {
-        "train": set(TRAIN_IDS),
-        "validation": set(VALIDATION_IDS),
+        "train": set(split_manifest.get("rl_train_task_ids") or []),
+        "validation": set(split_manifest.get("validation_task_ids") or []),
         "test": set(TEST_IDS),
     }
+    sft_ids = set(split_manifest.get("sft_task_ids") or [])
+    if len(sft_ids) != SFT_COUNT:
+        raise ValueError("manifest SFT task IDs are missing or wrong length")
+    if len(expected_ids["train"]) != RL_TRAIN_COUNT:
+        raise ValueError("manifest RL train task IDs are missing or wrong length")
+    if len(expected_ids["validation"]) != VALIDATION_COUNT:
+        raise ValueError("manifest validation task IDs are missing or wrong length")
+    if sft_ids & expected_ids["train"]:
+        raise ValueError("SFT and RL train task IDs overlap")
+    if sft_ids & expected_ids["validation"]:
+        raise ValueError("SFT and validation task IDs overlap")
+    if (sft_ids | expected_ids["train"] | expected_ids["validation"]) & set(
+        TEST_IDS
+    ):
+        raise ValueError("non-test task IDs overlap the 500-task test split")
     for arm in ("a", "b"):
-        if len(sft[arm]) != 374:
-            raise ValueError(f"Arm {arm.upper()} SFT must contain 374 traces")
+        if len(sft[arm]) != SFT_COUNT:
+            raise ValueError(f"Arm {arm.upper()} SFT must contain {SFT_COUNT} traces")
+        if {row.get("task_id") for row in sft[arm]} != sft_ids:
+            raise ValueError(f"Arm {arm.upper()} SFT task IDs differ from manifest")
         for split, expected in expected_counts.items():
             rows = tasks[(arm, split)]
             if len(rows) != expected:
@@ -257,7 +281,7 @@ def validate_prepared(
                 )
             if {row.get("task_id") for row in rows} != expected_ids[split]:
                 raise ValueError(
-                    f"Arm {arm.upper()} {split} task IDs differ from official MBPP"
+                    f"Arm {arm.upper()} {split} task IDs differ from manifest"
                 )
             for row in rows:
                 if row.get("arm") != arm or row.get("split") != split:
@@ -341,6 +365,7 @@ def validate_prepared(
             "final_outcome",
             "matched_key",
             "task_id",
+            "test_code",
             "trace_type",
         ):
             if left[key] != right[key]:
@@ -362,7 +387,6 @@ def validate_prepared(
     if actual_assignments != expected_assignments:
         raise ValueError("assignments.json differs from the generated SFT data")
 
-    manifest = json.loads((data_dir / "manifest.json").read_text())
     for relative in DATA_ARTIFACTS:
         path = data_dir / relative
         recorded = manifest["artifacts"].get(relative) or {}
@@ -389,10 +413,6 @@ def validate_prepared(
         )
         for arm in ("a", "b")
     }
-    train_tasks = {
-        arm: {row["case_id"]: row for row in tasks[(arm, "train")]}
-        for arm in ("a", "b")
-    }
     prediction_outcomes: Counter[str] = Counter()
     with tempfile.TemporaryDirectory(prefix="predict-dataset-audit-") as temporary:
         project = Path(temporary)
@@ -401,7 +421,7 @@ def validate_prepared(
                 prediction_outcomes.update(
                     _verify_trace(
                         row,
-                        train_tasks[arm][row["case_id"]],
+                        row,
                         project,
                         timeout,
                     )
@@ -411,10 +431,10 @@ def validate_prepared(
         "sft": token_summaries,
         "composition": dict(sorted(trace_counts.items())),
         "prediction_targets": dict(sorted(prediction_outcomes.items())),
-        "train": 374,
-        "validation": 90,
+        "train": RL_TRAIN_COUNT,
+        "validation": VALIDATION_COUNT,
         "test": 500,
-        "verified_sft_traces": 748,
+        "verified_sft_traces": SFT_COUNT * 2,
     }
 
 

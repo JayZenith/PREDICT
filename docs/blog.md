@@ -1,8 +1,7 @@
 # SFT complete: moving to RLVR
 
-Both arms were full-fine-tuned from `Qwen3-4B-Base` on 374 verified MBPP
-agent traces: 250 direct successes and 124 one-step recoveries. Each run used
-five epochs, 60 optimizer steps, and a 768-token sequence limit. No trace was
+Both arms were full-fine-tuned from `Qwen3-4B-Base` on verified MBPP
+agent traces. Each run used 60 optimizer steps and a 768-token sequence limit. No trace was
 truncated or excluded.
 
 | Checkpoint | Final loss | RL-style sampling check |
@@ -28,9 +27,9 @@ loss.
 
 ## Next
 
-Train both arms with identical tasks, seeds, sampling, and tool budgets. Arm A
+Train both arms with identical RL tasks, seeds, sampling, and tool budgets. Arm A
 uses binary final-task GRPO. Arm B adds verified-label prediction CE. Select
-checkpoints and λ on the 90-task validation split, then run the untouched
+checkpoints and λ on the 40-task validation split, then run the untouched
 500-task test split once.
 
 Local configs, logs, W&B runs, and raw sampling traces are archived under the

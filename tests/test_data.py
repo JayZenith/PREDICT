@@ -9,15 +9,58 @@ from glyph.program import PASS, run_hidden_tests
 
 
 def test_official_mbpp_split_contract_is_fixed() -> None:
-    assert list(prepare.TRAIN_IDS) == list(range(601, 975))
-    assert list(prepare.VALIDATION_IDS) == list(range(511, 601))
+    assert list(prepare.OFFICIAL_TRAIN_IDS) == list(range(601, 975))
+    assert list(prepare.OFFICIAL_VALIDATION_IDS) == list(range(511, 601))
     assert list(prepare.TEST_IDS) == list(range(11, 511))
-    assert prepare.DIRECT_COUNT == 250
-    assert prepare.RECOVERY_COUNT == 124
+    assert prepare.SFT_COUNT == 212
+    assert prepare.RL_TRAIN_COUNT == 212
+    assert prepare.VALIDATION_COUNT == 40
+    assert prepare.VALIDATION_TO_TRAIN_COUNT == 50
+    assert prepare.DIRECT_COUNT == 142
+    assert prepare.RECOVERY_COUNT == 70
     assert prepare.SEED == 42
     assert set(prepare.SOURCES) == {"train", "validation", "test"}
-    assert all(source.revision == prepare.MBPP_REVISION for source in prepare.SOURCES.values())
+    assert all(
+        source.revision == prepare.MBPP_REVISION
+        for source in prepare.SOURCES.values()
+    )
     assert all(len(source.sha256) == 64 for source in prepare.SOURCES.values())
+
+
+def test_sft_rl_validation_task_ids_are_disjoint() -> None:
+    tasks = [
+        prepare.MBPPTask(
+            task_id,
+            f"prompt {task_id}",
+            "def f():\n    pass\n",
+            "assert True\n",
+            "train",
+        )
+        for task_id in prepare.OFFICIAL_TRAIN_IDS
+    ]
+    validation = [
+        prepare.MBPPTask(
+            task_id,
+            f"prompt {task_id}",
+            "def f():\n    pass\n",
+            "assert True\n",
+            "validation",
+        )
+        for task_id in prepare.OFFICIAL_VALIDATION_IDS
+    ]
+    sft, rl_train, heldout = prepare._split_experiment_tasks(
+        tasks, validation, prepare.SEED
+    )
+    sft_ids = {task.task_id for task in sft}
+    rl_ids = {task.task_id for task in rl_train}
+    validation_ids = {task.task_id for task in heldout}
+    assert len(sft_ids) == prepare.SFT_COUNT
+    assert len(rl_ids) == prepare.RL_TRAIN_COUNT
+    assert len(validation_ids) == prepare.VALIDATION_COUNT
+    assert not sft_ids & rl_ids
+    assert not sft_ids & validation_ids
+    assert not rl_ids & validation_ids
+    assert not (sft_ids | rl_ids | validation_ids) & set(prepare.TEST_IDS)
 
 
 def test_recovery_is_real_one_step_and_patch_is_unambiguous(tmp_path: Path) -> None:

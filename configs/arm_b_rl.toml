@@ -47,7 +47,7 @@ enforce = false
 
 [orchestrator.eval]
 interval = 24
-num_examples = 90
+num_examples = 40
 group_size = 1
 
 [orchestrator.eval.sampling]

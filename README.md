@@ -27,13 +27,13 @@ Read the [experiment specification](docs/research_specs.md) and
 
 | Official MBPP split | IDs | Use |
 |---|---:|---|
-| Train | 601–974 (374) | matched SFT traces and RL environments |
-| Validation | 511–600 (90) | tune λ and check overfitting |
+| Train | 601–974 plus 50 seed-selected validation IDs (424) | split into disjoint SFT/RL task pools |
+| Validation | remaining 40 seed-selected IDs from 511–600 | tune λ and check overfitting |
 | Test | 11–510 (500) | one final pass@1 evaluation |
 
-Each arm gets 250 direct-success and 124 verified one-recovery SFT traces.
-There is no internal task split, frontier screen, MBPP+, or two-step synthetic
-recovery.
+Each arm gets 212 SFT traces (142 direct-success, 70 verified one-recovery).
+The 212 SFT task IDs and 212 RL task IDs are disjoint. There is no frontier
+screen, MBPP+, or two-step synthetic recovery.
 
 ## Train
 

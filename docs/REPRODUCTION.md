@@ -15,8 +15,8 @@ uv run python -m data.validate data
 uv run pytest
 ```
 
-The validator must report 374 tasks per training arm, 90 validation tasks, 500
-test tasks, and 748 verified SFT traces.
+The validator must report 212 RL tasks per training arm, 40 validation tasks,
+500 test tasks, and 424 verified SFT traces.
 
 ## 2. SFT
 
@@ -27,8 +27,8 @@ bash scripts/train_sft.sh a
 bash scripts/train_sft.sh b
 ```
 
-Both start from `Qwen/Qwen3-4B-Base`, see the same 374 tasks for roughly five
-epochs, and use `<|im_end|>` as both the ChatML turn boundary and model EOS.
+Both start from `Qwen/Qwen3-4B-Base`, see the same 212 SFT tasks for roughly
+nine epochs, and use `<|im_end|>` as both the ChatML turn boundary and model EOS.
 The trainer must not print a missing-EOS warning. Checkpoints write:
 
 ```text
@@ -46,9 +46,9 @@ bash scripts/train_rl.sh a
 bash scripts/train_rl.sh b
 ```
 
-Both run 94 updates over the same 374 tasks with group size 8, batch size 32,
-512 completion tokens, eight visible tool calls, binary final reward, and no
-reference KL. Arm A starts from `JayZenith/SFT_ARM_A`; Arm B starts from
+Both run 94 updates over the same 212 disjoint RL tasks with group size 8,
+batch size 32, 512 completion tokens, eight visible tool calls, binary final
+reward, and no reference KL. Arm A starts from `JayZenith/SFT_ARM_A`; Arm B starts from
 `JayZenith/SFT_ARM_B`. Arm B starts with `λ=0.1` (`alpha` in the config); override it
 only for validation-backed tuning:
 
@@ -63,7 +63,7 @@ Do not compare arms trained with different non-arm settings.
 
 ## 4. Select without touching test
 
-Evaluate base, SFT, and RL checkpoints on the 90 validation tasks:
+Evaluate base, SFT, and RL checkpoints on the 40 validation tasks:
 
 ```bash
 bash scripts/evaluate.sh a Qwen/Qwen3-4B-Base validation
