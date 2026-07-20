@@ -72,6 +72,8 @@ weight_decay = 0.01
 [ckpt]
 interval = 94
 keep_last = 1
+
+[trainer.ckpt]
 weights_only = true
 
 [inference]
