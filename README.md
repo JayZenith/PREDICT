@@ -32,8 +32,12 @@ Read the [experiment specification](docs/research_specs.md) and
 | Test | 11–510 (500) | one final pass@1 evaluation |
 
 Each arm gets 212 SFT traces (142 direct-success, 70 verified one-recovery).
-The 212 SFT task IDs and 212 RL task IDs are disjoint. There is no frontier
-screen, MBPP+, or two-step synthetic recovery.
+Arm B's 70 recovery traces split evenly across both recovery modes: 35 shadow
+(predict failure → `REVISE` → fix → predict `PASS` → `KEEP` → pass) and 35
+visible (predict `PASS` as an honest mistake → `KEEP` → visible failure → fix
+→ predict `PASS` → `KEEP` → pass). The 212 SFT task IDs and 212 RL task IDs
+are disjoint. There is no frontier screen, MBPP+, or two-step synthetic
+recovery.
 
 ## Train
 
@@ -46,12 +50,12 @@ instance; no Prime Sandbox access is required.
 The published [Arm A](https://huggingface.co/JayZenith/SFT_ARM_A) and
 [Arm B](https://huggingface.co/JayZenith/SFT_ARM_B) checkpoints were trained
 from commit
-[`8a4089ba21a205eb8085efb50825a2f2175621cf`](https://github.com/JayZenith/PREDICT/commit/8a4089ba21a205eb8085efb50825a2f2175621cf).
+[`0245ce3`](https://github.com/JayZenith/PREDICT/commit/0245ce3).
 
 ```bash
 git clone https://github.com/JayZenith/PREDICT.git
 cd PREDICT
-git checkout 8a4089ba21a205eb8085efb50825a2f2175621cf
+git checkout 0245ce3
 
 bash scripts/setup.sh
 uv run python -m data.prepare
@@ -61,10 +65,18 @@ bash scripts/train_sft.sh a
 bash scripts/train_sft.sh b
 ```
 
-Each command starts from `Qwen/Qwen3-4B-Base` and writes its final five-epoch
-checkpoint to `outputs/arm_a_sft/weights/step_60` or
-`outputs/arm_b_sft/weights/step_60`. The reference runs used one 96 GB GPU and
-peaked at 76.4 GiB.
+Each command starts from `Qwen/Qwen3-4B-Base` and writes its final nine-epoch
+checkpoint (60 steps × batch 32 over 212 traces) to
+`outputs/arm_a_sft/weights/step_60` or `outputs/arm_b_sft/weights/step_60`.
+Nine epochs is what it took for `<|im_end|>` to become the dominant sampled
+token at turn boundaries; at five epochs (step 30) the model still emitted
+malformed tokens under RL sampling temperature. `[ckpt] weights_only = true`
+keeps only the ~7.6 GB HF export, skipping the ~47 GB full optimizer-state
+checkpoint neither arm needs after a one-shot SFT run. The reference runs used
+one 96 GB GPU and peaked at 76.4 GiB. Validation-split (`val40`) greedy pass@1
+at step 60: Arm A 17%, Arm B 10% (see
+[`PREDICT_SFT_RESULTS/`](PREDICT_SFT_RESULTS/) for full training and eval
+artifacts).
 
 ### Continue to RLVR
 
@@ -77,9 +89,10 @@ These start directly from `JayZenith/SFT_ARM_A` and
 `JayZenith/SFT_ARM_B`, respectively.
 
 SFT uses 768-token whole traces and aborts rather than truncating or excluding
-one. RL allows 512 new tokens inside a 4096-token full trace and hard-fails on
-truncation. Arm A and B stay in one codebase; arm-specific data and configs
-prevent experimental drift.
+one. RL allows 512 new tokens inside a 4096-token full trace; a truncated
+training rollout is logged and dropped from its GRPO group rather than
+aborting the run. Arm A and B stay in one codebase; arm-specific data and
+configs prevent experimental drift.
 
 Run validation before freezing λ. Touch the official 500-task test set once:
 

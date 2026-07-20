@@ -1,36 +1,46 @@
 # SFT complete: moving to RLVR
 
-Both arms were full-fine-tuned from `Qwen3-4B-Base` on verified MBPP
-agent traces. Each run used 60 optimizer steps and a 768-token sequence limit. No trace was
-truncated or excluded.
+Both arms were full-fine-tuned from `Qwen3-4B-Base` on verified MBPP agent
+traces: 60 optimizer steps (nine epochs over 212 traces), 768-token sequence
+limit, no trace truncated or excluded.
 
-| Checkpoint | Final loss | RL-style sampling check |
-|---|---:|---|
-| [Arm A SFT](https://huggingface.co/JayZenith/SFT_ARM_A) | 0.0327 | 22/32 passed on 4 train tasks |
-| [Arm B SFT](https://huggingface.co/JayZenith/SFT_ARM_B) | 0.0334 | 74/128 passed on 16 train tasks |
+| Checkpoint | Final loss | val40 pass@1 (greedy) |
+|---|---:|---:|
+| [Arm A SFT](https://huggingface.co/JayZenith/SFT_ARM_A) | 0.0293 | 7/40 (17.5%) |
+| [Arm B SFT](https://huggingface.co/JayZenith/SFT_ARM_B) | 0.0277 | 4/40 (10.0%) |
 
-These are training-task readiness checks at `temperature=0.8`, `top_k=20`, and
-eight samples per task—not held-out results.
+Nine epochs was a deliberate choice, not the default: a five-epoch checkpoint
+(step 30) converged on loss but left `<|im_end|>` at only 0.5% probability at
+turn boundaries, so `temperature=0.8` sampling — the RL sampling config —
+produced malformed tokens on roughly 90% of turns and zero-reward rollouts
+everywhere. At step 60, `<|im_end|>` is the dominant sampled token (~27%
+probability) at the same position, and a 16-sample check at RL temperature
+produced zero malformed turns.
 
-Arm A produced one mixed-reward group, two all-pass groups, and one all-fail
-group. Seven of its ten invalid traces exhausted the tool budget on one hard
-task.
+Arm B's SFT set also needed a composition fix. An earlier version of the
+recovery traces trained "predict failure, `KEEP` anyway" on all 70 recovery
+examples — coherent predictions, an incoherent decision rule. The current set
+splits the 70 recovery traces into 35 shadow (predict failure → `REVISE` →
+fix → predict `PASS` → `KEEP` → pass) and 35 visible (predict `PASS` as an
+honest mistake → `KEEP` → visible failure → fix → predict `PASS` → `KEEP` →
+pass) traces, so every failure prediction in the data pairs with `REVISE` and
+every `PASS` prediction pairs with `KEEP`. Sampling the fixed checkpoint at
+RL temperature against an obviously-bad candidate now produces `REVISE`
+correctly paired with a failure prediction (3/16 samples); the old data made
+this pairing structurally impossible to learn.
 
-Arm B produced mixed rewards on 14/16 tasks, with no all-fail group or length
-truncation. Its prediction accuracy was 84/160 (52.5%). Its main remaining
-protocol error was extra text in a `CALL` turn: 41/128 rollouts.
-
-The SFT checkpoints learned enough of each agent loop to start RLVR, while
-leaving useful errors to optimize. Arm B especially has the mixed outcomes and
-imperfect consequence predictions needed to test the auxiliary prediction
-loss.
+Both checkpoints still solve MBPP tasks well below the base model's general
+capability and Arm B's prediction head still defaults to `PASS`/`KEEP` under
+greedy decoding — expected at this stage. The learning signal for
+consequence prediction (`λ`-weighted CE against verified sandbox labels) and
+for `REVISE` as a rewarded behavior (GRPO) only exists at the RL stage.
 
 ## Next
 
-Train both arms with identical RL tasks, seeds, sampling, and tool budgets. Arm A
-uses binary final-task GRPO. Arm B adds verified-label prediction CE. Select
-checkpoints and λ on the 40-task validation split, then run the untouched
-500-task test split once.
+Train both arms with identical RL tasks, seeds, sampling, and tool budgets.
+Arm A uses binary final-task GRPO. Arm B adds verified-label prediction CE.
+Select checkpoints and λ on the 40-task validation split, then run the
+untouched 500-task test split once.
 
 Local configs, logs, W&B runs, and raw sampling traces are archived under the
 gitignored `PREDICT_SFT_RESULTS/` directory.
