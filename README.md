@@ -51,12 +51,12 @@ instance; no Prime Sandbox access is required.
 The published [Arm A](https://huggingface.co/JayZenith/SFT_ARM_A) and
 [Arm B](https://huggingface.co/JayZenith/SFT_ARM_B) checkpoints were trained
 from commit
-[`0245ce3`](https://github.com/JayZenith/PREDICT/commit/0245ce3).
+[`6884983`](https://github.com/JayZenith/PREDICT/commit/6884983).
 
 ```bash
 git clone https://github.com/JayZenith/PREDICT.git
 cd PREDICT
-git checkout 0245ce3
+git checkout 6884983
 
 bash scripts/setup.sh
 uv run python -m data.prepare
@@ -73,11 +73,15 @@ Nine epochs is what it took for `<|im_end|>` to become the dominant sampled
 token at turn boundaries; at five epochs (step 30) the model still emitted
 malformed tokens under RL sampling temperature. `[ckpt] weights_only = true`
 keeps only the ~7.6 GB HF export, skipping the ~47 GB full optimizer-state
-checkpoint neither arm needs after a one-shot SFT run. The reference runs used
-one 96 GB GPU and peaked at 76.4 GiB. Validation-split (`val40`) greedy pass@1
-at step 60: Arm A 17%, Arm B 10% (see
-[`PREDICT_SFT_RESULTS/`](PREDICT_SFT_RESULTS/) for full training and eval
-artifacts).
+checkpoint neither arm needs after a one-shot SFT run. `seq_len = 1280` (not
+1024): on RTX PRO 6000 Blackwell, `seq_len=1024` specifically triggers a CUDA
+illegal-memory-access under `torch.compile`, bisected as a narrow bug in the
+pinned torch/PRIME-RL stack, not this repo — 768 and 1280 both run cleanly.
+The reference runs used one 96 GB GPU and peaked at 76.4 GiB. Validation-split
+(`val40`) greedy pass@1 at step 60: Arm A 60%, Arm B 53% (prediction accuracy
+48%) — both up sharply from an earlier blind-function-signature harness
+design (17%/10%); see [`PREDICT_SFT_RESULTS/`](PREDICT_SFT_RESULTS/) for full
+training and eval artifacts.
 
 ### Continue to RLVR
 
