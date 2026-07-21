@@ -1,3 +1,40 @@
+# RLVR results (commit 9eefac7)
+
+Both arms trained 100 GRPO steps (group size 16, batch 64, `zero_advantage`
+filter enforced) from their SFT checkpoints, with all four checkpoints
+(steps 25/50/75/100) retained and evaluated once on the full 500-task test
+set, standalone, after the weights save.
+
+| step | Arm A | Arm B |
+|---|---:|---:|
+| SFT | 51.6% | 48.2% |
+| 25 | 51.4% | 45.2% |
+| 50 | 52.2% | 50.0% |
+| 75 | 53.6% | 52.6% |
+| 100 | **56.4%** | **52.0%** |
+
+McNemar (continuity-corrected) + paired bootstrap CI on the per-task
+pass/fail outcomes ([`docs/stats.py`](stats.py)):
+
+- Arm B step75 vs its own SFT: +4.4 pts, p=0.010, CI [1.2, 7.6] — real.
+- Arm B step100 vs SFT: +3.8 pts, p=0.033, CI [0.4, 7.2] — real, weaker.
+- Arm B step25 vs SFT: −3.0 pts, p=0.033, CI [−5.6, −0.6] — early RL
+  regresses the model before it recovers.
+- Arm B step50 vs SFT: not significant, CI crosses zero.
+- Arm A vs Arm B, matched by step: Arm A leads at every checkpoint, but only
+  step25 clears significance (−6.2 pts, p=0.006). The step-100 headline gap
+  (−4.4 pts) does not: p=0.068, CI [−9.0, 0.2].
+
+Read as: RL measurably helps both arms over their SFT starting point by
+step 75, but at n=500 the Arm A vs Arm B comparison itself is still
+noise-dominated — more seeds or a larger test set are needed to confirm
+Arm A's apparent edge.
+
+Checkpoints: `JayZenith/RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0`. Raw traces,
+eval/serve logs, and training artifacts archived under the gitignored
+[`PREDICT_RL_RESULTS/`](../PREDICT_RL_RESULTS/) directory. Full reproduction
+steps: [`docs/REPRODUCTION.md`](REPRODUCTION.md).
+
 # SFT complete: moving to RLVR
 
 Both arms were full-fine-tuned from `Qwen3-4B-Base` on verified MBPP agent

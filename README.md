@@ -85,31 +85,40 @@ training and eval artifacts.
 
 ### Continue to RLVR
 
+The published RLVR checkpoints were trained from commit
+[`9eefac7`](https://github.com/JayZenith/PREDICT/commit/9eefac7):
+
 ```bash
+git checkout 9eefac7
 bash scripts/train_rl.sh a
 bash scripts/train_rl.sh b
 ```
 
-These start directly from `JayZenith/SFT_ARM_A` and
-`JayZenith/SFT_ARM_B`, respectively.
+These start directly from `JayZenith/SFT_ARM_A` and `JayZenith/SFT_ARM_B`.
+100 steps, group size 16, batch size 64, `zero_advantage` filter enforced,
+checkpoints every 25 steps with all four (25/50/75/100) retained and val40
+evaluated in-loop at each. SFT uses 1280-token whole traces and aborts rather
+than truncating or excluding one. RL allows 512 new tokens inside a
+4096-token full trace; a truncated training rollout is logged and dropped
+from its GRPO group rather than aborting the run. Arm A and B stay in one
+codebase; arm-specific data and configs prevent experimental drift.
 
-SFT uses 1280-token whole traces and aborts rather than truncating or excluding
-one. RL allows 512 new tokens inside a 4096-token full trace; a truncated
-training rollout is logged and dropped from its GRPO group rather than
-aborting the run. Arm A and B stay in one codebase; arm-specific data and
-configs prevent experimental drift.
-
-Run validation before freezing λ. Touch the official 500-task test set once:
+Run validation before freezing λ. Touch the official 500-task test set once
+per checkpoint, standalone after the weights save (not wired into the live
+RL loop):
 
 ```bash
 bash scripts/evaluate.sh a MODEL validation
-bash scripts/evaluate.sh b MODEL validation
-
-bash scripts/evaluate.sh a FINAL_MODEL test
-bash scripts/evaluate.sh b FINAL_MODEL test
+bash scripts/evaluate.sh a NAME test --client.base-url http://localhost:PORT/v1 --client.api-key-var HOME
 uv run glyph report TRACES_JSONL
 ```
 
-The main result is Arm A RLVR versus Arm B RLVR. Also report base and SFT
-checkpoints as controls. See [reproduction](docs/REPRODUCTION.md) for the exact
-checkpoint map and [architecture](docs/ARCHITECTURE.md) for the loss path.
+Published checkpoints:
+`JayZenith/RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0`. Final (step 100, n=500,
+greedy pass@1): **Arm A 56.4%, Arm B 52.0%** — Arm A leads at every
+checkpoint, but McNemar + bootstrap CI show only the step-25 gap is
+statistically solid (p=0.006); the step-100 headline gap is suggestive, not
+confirmed (p=0.068, CI crosses zero). See
+[reproduction](docs/REPRODUCTION.md) for the full per-checkpoint table, exact
+commands, and statistics, and [architecture](docs/ARCHITECTURE.md) for the
+loss path.
