@@ -9,9 +9,12 @@ workspace on the training instance. The policy sees structured ChatML and can:
 read_file → apply_patch → python_test → FINAL
 ```
 
-Hidden MBPP assertions never enter the prompt or editable project. Test output
-is reduced to an outcome class. Runtime-recorded calls and results—not model
-claims—determine success.
+The MBPP assertions are shown verbatim in the task prompt, so the agent knows
+the exact function signature and expected behavior up front; they are never
+added to the editable project files. The agent still must run `python_test`
+to find out whether its candidate satisfies them—test output is reduced to an
+outcome class, not an assertion diff. Runtime-recorded calls and results—not
+model claims—determine success.
 
 Reward is binary:
 
@@ -60,7 +63,7 @@ groups remain available because Arm B can still receive verified-label CE.
 
 ## Failure policy
 
-SFT preflight rejects any row over 768 tokens or without terminal `FINAL:`.
+SFT preflight rejects any row over 1024 tokens or without terminal `FINAL:`.
 Stack packing preserves whole traces. RL rejects truncated or over-4096-token
 traces before they reach the trainer.
 

@@ -9,7 +9,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_515",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 515,
     "trace_type": "recovery"
   },
@@ -58,7 +58,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_527",
-    "recovery_mode": "deep_visible",
+    "recovery_mode": "deep_shadow",
     "task_id": 527,
     "trace_type": "recovery"
   },
@@ -72,7 +72,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_532",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 532,
     "trace_type": "recovery"
   },
@@ -149,7 +149,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_559",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 559,
     "trace_type": "recovery"
   },
@@ -261,7 +261,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_589",
-    "recovery_mode": "deep_visible",
+    "recovery_mode": "deep_shadow",
     "task_id": 589,
     "trace_type": "recovery"
   },
@@ -296,7 +296,7 @@
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_601",
-    "recovery_mode": "shadow",
+    "recovery_mode": "deep_shadow",
     "task_id": 601,
     "trace_type": "recovery"
   },
@@ -331,7 +331,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_610",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 610,
     "trace_type": "recovery"
   },
@@ -373,7 +373,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_628",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 628,
     "trace_type": "recovery"
   },
@@ -408,7 +408,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_649",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 649,
     "trace_type": "recovery"
   },
@@ -429,7 +429,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_656",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 656,
     "trace_type": "recovery"
   },
@@ -485,7 +485,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_684",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 684,
     "trace_type": "recovery"
   },
@@ -506,14 +506,14 @@
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_691",
-    "recovery_mode": "shadow",
+    "recovery_mode": "deep_visible",
     "task_id": 691,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_692",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 692,
     "trace_type": "recovery"
   },
@@ -646,7 +646,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_735",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 735,
     "trace_type": "recovery"
   },
@@ -674,7 +674,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_741",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 741,
     "trace_type": "recovery"
   },
@@ -730,14 +730,14 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_764",
-    "recovery_mode": "deep_visible",
+    "recovery_mode": "deep_shadow",
     "task_id": 764,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_765",
-    "recovery_mode": "deep_shadow",
+    "recovery_mode": "visible",
     "task_id": 765,
     "trace_type": "recovery"
   },
@@ -756,11 +756,11 @@
     "trace_type": "direct"
   },
   {
-    "candidate_outcome": "ASSERTION_FAILURE",
+    "candidate_outcome": "PASS",
     "case_id": "mbpp_770",
-    "recovery_mode": "visible",
+    "recovery_mode": null,
     "task_id": 770,
-    "trace_type": "recovery"
+    "trace_type": "direct"
   },
   {
     "candidate_outcome": "PASS",
@@ -863,7 +863,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_802",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 802,
     "trace_type": "recovery"
   },
@@ -884,7 +884,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_806",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 806,
     "trace_type": "recovery"
   },
@@ -898,7 +898,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_815",
-    "recovery_mode": "deep_shadow",
+    "recovery_mode": "deep_visible",
     "task_id": 815,
     "trace_type": "recovery"
   },
@@ -912,7 +912,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_818",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 818,
     "trace_type": "recovery"
   },
@@ -940,14 +940,14 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_826",
-    "recovery_mode": "visible",
+    "recovery_mode": "deep_visible",
     "task_id": 826,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_830",
-    "recovery_mode": "deep_visible",
+    "recovery_mode": "shadow",
     "task_id": 830,
     "trace_type": "recovery"
   },
@@ -961,7 +961,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_832",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 832,
     "trace_type": "recovery"
   },
@@ -982,7 +982,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_835",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 835,
     "trace_type": "recovery"
   },
@@ -996,14 +996,14 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_837",
-    "recovery_mode": "deep_visible",
+    "recovery_mode": "shadow",
     "task_id": 837,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_838",
-    "recovery_mode": "visible",
+    "recovery_mode": "deep_visible",
     "task_id": 838,
     "trace_type": "recovery"
   },
@@ -1024,7 +1024,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_843",
-    "recovery_mode": "deep_visible",
+    "recovery_mode": "shadow",
     "task_id": 843,
     "trace_type": "recovery"
   },
@@ -1045,7 +1045,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_850",
-    "recovery_mode": "visible",
+    "recovery_mode": "deep_visible",
     "task_id": 850,
     "trace_type": "recovery"
   },
@@ -1080,7 +1080,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_865",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 865,
     "trace_type": "recovery"
   },
@@ -1115,7 +1115,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_874",
-    "recovery_mode": "deep_shadow",
+    "recovery_mode": "shadow",
     "task_id": 874,
     "trace_type": "recovery"
   },
@@ -1213,7 +1213,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_898",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 898,
     "trace_type": "recovery"
   },
@@ -1234,7 +1234,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_902",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 902,
     "trace_type": "recovery"
   },
@@ -1248,7 +1248,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_905",
-    "recovery_mode": "deep_visible",
+    "recovery_mode": "deep_shadow",
     "task_id": 905,
     "trace_type": "recovery"
   },
@@ -1297,7 +1297,7 @@
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_914",
-    "recovery_mode": "deep_shadow",
+    "recovery_mode": "shadow",
     "task_id": 914,
     "trace_type": "recovery"
   },
@@ -1318,7 +1318,7 @@
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_923",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 923,
     "trace_type": "recovery"
   },
@@ -1332,7 +1332,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_931",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 931,
     "trace_type": "recovery"
   },
@@ -1374,7 +1374,7 @@
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_947",
-    "recovery_mode": "visible",
+    "recovery_mode": "shadow",
     "task_id": 947,
     "trace_type": "recovery"
   },
@@ -1393,11 +1393,11 @@
     "trace_type": "direct"
   },
   {
-    "candidate_outcome": "PASS",
+    "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_950",
-    "recovery_mode": null,
+    "recovery_mode": "shadow",
     "task_id": 950,
-    "trace_type": "direct"
+    "trace_type": "recovery"
   },
   {
     "candidate_outcome": "PASS",
@@ -1416,7 +1416,7 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_957",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 957,
     "trace_type": "recovery"
   },
@@ -1430,14 +1430,14 @@
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_960",
-    "recovery_mode": "deep_shadow",
+    "recovery_mode": "deep_visible",
     "task_id": 960,
     "trace_type": "recovery"
   },
   {
     "candidate_outcome": "ASSERTION_FAILURE",
     "case_id": "mbpp_961",
-    "recovery_mode": "visible",
+    "recovery_mode": "deep_visible",
     "task_id": 961,
     "trace_type": "recovery"
   },
@@ -1479,7 +1479,7 @@
   {
     "candidate_outcome": "RUNTIME_ERROR",
     "case_id": "mbpp_974",
-    "recovery_mode": "shadow",
+    "recovery_mode": "visible",
     "task_id": 974,
     "trace_type": "recovery"
   }

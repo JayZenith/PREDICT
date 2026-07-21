@@ -1,8 +1,12 @@
 # Canonical Agent Traces
 
 Both arms use explicit ChatML, the same task, and matched candidate patches.
-Arm A reacts to test output. Arm B predicts the outcome before testing and uses
-that prediction to choose `KEEP` or `REVISE`.
+The task prompt shows the exact assertions the implementation must satisfy—
+this is a test-driven workflow, not blind-signature guessing—but the
+assertions are never written into the editable project; the agent must still
+run `python_test` to learn whether its candidate satisfies them. Arm A reacts
+to test output. Arm B predicts the outcome before testing and uses that
+prediction to choose `KEEP` or `REVISE`.
 
 ## Arm A — reactive recovery
 
@@ -13,6 +17,10 @@ You are a Python coding agent. Use tools when needed. After FINAL, stop immediat
 
 <|im_start|>user
 Implement is_even(n) in solution.py. Run the tests.
+
+Your code must pass these tests:
+assert is_even(4) == True
+assert is_even(7) == False
 
 The project is at data/blueprints/mbpp_example.
 <|im_end|>
@@ -47,7 +55,7 @@ CALL python_test {"id":"c3","project_path":"data/blueprints/mbpp_example"}
 RESULT c3:
 status: failed
 stderr:
-hidden tests failed
+tests failed
 <|im_end|>
 
 <|im_start|>assistant
@@ -69,11 +77,11 @@ CALL python_test {"id":"c5","project_path":"data/blueprints/mbpp_example"}
 RESULT c5:
 status: success
 stdout:
-hidden tests passed
+tests passed
 <|im_end|>
 
 <|im_start|>assistant
-FINAL: implemented is_even and passed the hidden tests.
+FINAL: implemented is_even and passed the tests.
 <|im_end|>
 ```
 
@@ -86,6 +94,10 @@ You are a Python coding agent. After apply_patch succeeds, predict before testin
 
 <|im_start|>user
 Implement is_even(n) in solution.py. Run the tests.
+
+Your code must pass these tests:
+assert is_even(4) == True
+assert is_even(7) == False
 
 The project is at data/blueprints/mbpp_example.
 <|im_end|>
@@ -135,11 +147,11 @@ CALL python_test {"id":"c4","project_path":"data/blueprints/mbpp_example"}
 RESULT c4:
 status: success
 stdout:
-hidden tests passed
+tests passed
 <|im_end|>
 
 <|im_start|>assistant
-FINAL: implemented is_even and passed the hidden tests.
+FINAL: implemented is_even and passed the tests.
 <|im_end|>
 ```
 

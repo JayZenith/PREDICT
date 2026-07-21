@@ -215,7 +215,7 @@ def run_hidden_tests(project: Path, test_code: str, timeout: int) -> Result:
                 return Result(
                     False,
                     "",
-                    f"hidden tests timed out after {timeout}s",
+                    f"tests timed out after {timeout}s",
                     -1,
                     timed_out=True,
                     outcome=TIMEOUT,
@@ -224,14 +224,14 @@ def run_hidden_tests(project: Path, test_code: str, timeout: int) -> Result:
             return Result(False, "", str(exc), exc.errno or -1, outcome=OTHER)
 
     if process.returncode == 0 and stdout.strip().splitlines()[-1:] == [marker]:
-        return Result(True, "hidden tests passed", "", 0, outcome=PASS)
+        return Result(True, "tests passed", "", 0, outcome=PASS)
 
     outcome = _failed_outcome(stderr)
     detail = {
-        ASSERTION_FAILURE: "hidden tests failed",
+        ASSERTION_FAILURE: "tests failed",
         RUNTIME_ERROR: "generated solution raised a runtime error",
         SYNTAX_ERROR: "generated solution has a syntax error",
-        OTHER: "hidden tests failed",
+        OTHER: "tests failed",
     }[outcome]
     return Result(False, "", detail, process.returncode, outcome=outcome)
 

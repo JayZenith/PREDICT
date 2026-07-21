@@ -115,7 +115,7 @@ def test_python_agent_tools_patch_and_run_hidden_tests(tmp_path: Path) -> None:
         "assert add(2, 3) == 5\n",
         2,
     )
-    assert passed.success and passed.stdout == "hidden tests passed"
+    assert passed.success and passed.stdout == "tests passed"
 
 
 def test_failed_tests_do_not_reveal_hidden_assertions(tmp_path: Path) -> None:
@@ -129,7 +129,7 @@ def test_failed_tests_do_not_reveal_hidden_assertions(tmp_path: Path) -> None:
         2,
     )
     assert not result.success
-    assert result.stderr == "hidden tests failed"
+    assert result.stderr == "tests failed"
     assert "42" not in result.stderr
 
 
@@ -370,7 +370,7 @@ def test_arm_b_shadow_tests_rejected_candidate_without_exposing_result(
     assert (kept["actual"], kept["shadow"]) == (PASS, False)
     assert record["final_verification"]["outcome"] == PASS
     assert all(
-        "hidden tests failed"
+        "tests failed"
         not in "\n".join(message.get("content", "") for message in messages)
         for messages in visible_requests
     )

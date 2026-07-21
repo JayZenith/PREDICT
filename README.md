@@ -8,7 +8,8 @@ It extends the MBPP unit-test GRPO experiment in
 generation to a verified multi-turn agent.
 
 Both agents solve the same official MBPP tasks with the same Qwen3-4B base,
-ChatML protocol, budgets, optimizer, hidden tests, and binary final reward.
+ChatML protocol, budgets, optimizer, visible test assertions in the task
+prompt, and binary final reward.
 
 | Arm | Agent loop | Training |
 |---|---|---|
@@ -88,7 +89,7 @@ bash scripts/train_rl.sh b
 These start directly from `JayZenith/SFT_ARM_A` and
 `JayZenith/SFT_ARM_B`, respectively.
 
-SFT uses 768-token whole traces and aborts rather than truncating or excluding
+SFT uses 1024-token whole traces and aborts rather than truncating or excluding
 one. RL allows 512 new tokens inside a 4096-token full trace; a truncated
 training rollout is logged and dropped from its GRPO group rather than
 aborting the run. Arm A and B stay in one codebase; arm-specific data and

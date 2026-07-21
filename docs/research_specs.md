@@ -36,7 +36,11 @@ pool into disjoint SFT and RL task IDs:
     └── Arm B RL environments
 ```
 
-Each task becomes a blank `solution.py` plus hidden tests.
+Each task becomes a blank `solution.py`. The task prompt shows the exact
+assertions the implementation must satisfy—this is a test-driven workflow,
+not blind-signature guessing—but the assertions are never written into the
+editable project; the agent must still run `python_test` to find out whether
+its candidate actually satisfies them.
 
 ## SFT composition
 

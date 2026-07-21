@@ -1,4 +1,4 @@
-"""Load Python function tasks and score real hidden-test execution."""
+"""Load Python function tasks and score real test execution."""
 
 from __future__ import annotations
 

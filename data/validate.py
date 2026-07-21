@@ -37,7 +37,7 @@ from .prepare import (
 
 
 DEFAULT_MODEL = "Qwen/Qwen3-4B-Base"
-SFT_MAX_TOKENS = 768
+SFT_MAX_TOKENS = 1024
 
 
 def _rows(path: Path) -> list[dict]:
@@ -367,8 +367,8 @@ def validate_prepared(
                     f"{arm_a['case_id']}: task arms have different user prompts"
                 )
         for row in [*tasks[("a", split)], *tasks[("b", split)]]:
-            if row["test_code"] in row["prompt"][-1]["content"]:
-                raise ValueError(f"{row['case_id']}: hidden tests leaked into prompt")
+            if row["test_code"].rstrip() not in row["prompt"][-1]["content"]:
+                raise ValueError(f"{row['case_id']}: tests missing from prompt")
 
     split_ids = {
         split: {row["task_id"] for row in tasks[("a", split)]}

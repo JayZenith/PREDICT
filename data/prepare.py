@@ -50,7 +50,7 @@ DEEP_SHADOW_RECOVERY_COUNT = 10
 DEEP_VISIBLE_RECOVERY_COUNT = 10
 DIRECT_COUNT = 142
 SEED = 42
-SFT_MAX_TOKENS = 768
+SFT_MAX_TOKENS = 1024
 DEFAULT_MODEL = "Qwen/Qwen3-4B-Base"
 DATA_ARTIFACTS = (
     "sft/arm_a/train.jsonl",
@@ -234,7 +234,10 @@ def task_prompt(
     system = ARM_A_SYSTEM_PROMPT if arm == "a" else ARM_B_SYSTEM_PROMPT
     user = (
         "Implement the requested Python function in solution.py. Run the tests.\n\n"
-        f"{task.prompt}\n\nThe project is at {trace_prefix}."
+        f"{task.prompt}\n\n"
+        "Your code must pass these tests:\n"
+        f"{task.test_code.rstrip()}\n\n"
+        f"The project is at {trace_prefix}."
     )
     return [
         {"role": "system", "content": system},
@@ -264,11 +267,11 @@ def _call(tool: str, payload: dict[str, str]) -> str:
 
 def _failed_result(call_id: str, outcome: str) -> str:
     detail = {
-        ASSERTION_FAILURE: "hidden tests failed",
+        ASSERTION_FAILURE: "tests failed",
         RUNTIME_ERROR: "generated solution raised a runtime error",
         SYNTAX_ERROR: "generated solution has a syntax error",
-        TIMEOUT: "hidden tests timed out",
-        OTHER: "hidden tests failed",
+        TIMEOUT: "tests timed out",
+        OTHER: "tests failed",
     }[outcome]
     return f"RESULT {call_id}:\nstatus: failed\nstderr:\n{detail}"
 
@@ -402,7 +405,7 @@ def sft_row(
                             {"id": "c7", "project_path": trace_prefix},
                         ),
                     },
-                    {"role": "tool", "content": "RESULT c7:\nstatus: success\nstdout:\nhidden tests passed"},
+                    {"role": "tool", "content": "RESULT c7:\nstatus: success\nstdout:\ntests passed"},
                 ]
             )
         elif recovery:
@@ -437,7 +440,7 @@ def sft_row(
                     {
                         "role": "tool",
                         "content": (
-                            "RESULT c5:\nstatus: success\nstdout:\nhidden tests passed"
+                            "RESULT c5:\nstatus: success\nstdout:\ntests passed"
                         ),
                     },
                 ]
@@ -447,7 +450,7 @@ def sft_row(
                 {
                     "role": "tool",
                     "content": (
-                        "RESULT c3:\nstatus: success\nstdout:\nhidden tests passed"
+                        "RESULT c3:\nstatus: success\nstdout:\ntests passed"
                     ),
                 }
             )
@@ -631,7 +634,7 @@ def sft_row(
                     "role": "tool",
                     "content": (
                         f"RESULT {test_call}:\n"
-                        "status: success\nstdout:\nhidden tests passed"
+                        "status: success\nstdout:\ntests passed"
                     ),
                 },
             ]
@@ -640,7 +643,7 @@ def sft_row(
     messages.append(
         {
             "role": "assistant",
-            "content": "FINAL: implemented the function and passed the hidden tests.",
+            "content": "FINAL: implemented the function and passed the tests.",
         }
     )
     return {

@@ -1,40 +1,40 @@
 {
   "artifacts": {
     "arm_a_test.jsonl": {
-      "bytes": 374345,
-      "sha256": "db117756fe55cd5f53a0b3f6ecd707a2df01455c1aaf951a81abdd5d638b2e59"
+      "bytes": 490796,
+      "sha256": "bf9f4383f7fda732c8f2552c0e54c257f98565dc1fa0e1cb85c9e305254b4ba6"
     },
     "arm_a_train.jsonl": {
-      "bytes": 155532,
-      "sha256": "f56709f747065043fd74dfe99c453f5a2f8e2bb53695a394c8204becff323a77"
+      "bytes": 201265,
+      "sha256": "0501f3d0940b6b65eb844af8bb7c9c8af859d3bae7c2e1cecd297a9e54303a66"
     },
     "arm_a_validation.jsonl": {
-      "bytes": 30301,
-      "sha256": "d5fbc3d789b578d4701fda5b4b280d5bc1dadb85cede37ae950682f4434b70c9"
+      "bytes": 39812,
+      "sha256": "123f9db9f5200e3fcc7a2a9f2e55063ed874028e810a845865ed5417bcdd4d53"
     },
     "arm_b_test.jsonl": {
-      "bytes": 484345,
-      "sha256": "eba0cbc5d9a6ac319f17d3b820dcfb304eb278421641711f99e59d0ebfe62a67"
+      "bytes": 600796,
+      "sha256": "252f1aca4dcb92426eb6a17d2ab3774817113dfb833c82439461081f80762f08"
     },
     "arm_b_train.jsonl": {
-      "bytes": 202172,
-      "sha256": "9101e20ba5b56b3fee48c6e1a71e898efa992c13acc6cbdb0cd2ae431bafd2c0"
+      "bytes": 247905,
+      "sha256": "de44df645b856c8a602c00074d4164a42c7346d903108b4077aaab367aba0941"
     },
     "arm_b_validation.jsonl": {
-      "bytes": 39101,
-      "sha256": "1f2d5c35bb08c6eed94a82e8581de8a91c83c0aa64d799cfdaf433eb5d176064"
+      "bytes": 48612,
+      "sha256": "ae85b8a2ead9a4756c5c5fd1a97b0afc12d21ba2f43c24dbb929699d5ca6c4cc"
     },
     "assignments.json": {
       "bytes": 31736,
-      "sha256": "80c511833f5c5169dea58b2c75ba7d7a2e9a2e845b777c527531d6174fc5b319"
+      "sha256": "b28cce32927611beaa1a33a2e87250b7883773811c96cc02109a55189376df6a"
     },
     "sft/arm_a/train.jsonl": {
-      "bytes": 476496,
-      "sha256": "2f38055c7800492db4561cba0ad5982658af58bc16689b85d9f121f1f850cb4d"
+      "bytes": 521482,
+      "sha256": "8916778376eaf43ed18aab3a50590088e872fce7497dcdc8510841a88d540fb6"
     },
     "sft/arm_b/train.jsonl": {
-      "bytes": 531842,
-      "sha256": "220f2eef1fa33ba6ce860bb6428326bc7f955ab159dcfff24a3f8be27d005906"
+      "bytes": 577139,
+      "sha256": "4eddbf4173013a14c5ac3c56749326b543c9d25beeba87594f915ed2a812d1dd"
     }
   },
   "sources": {
@@ -64,8 +64,8 @@
     "official_train_ids": "601-974",
     "official_validation_ids": "511-600",
     "recovery_outcomes": {
-      "ASSERTION_FAILURE": 76,
-      "RUNTIME_ERROR": 13,
+      "ASSERTION_FAILURE": 75,
+      "RUNTIME_ERROR": 14,
       "TIMEOUT": 1
     },
     "rl_train_task_ids": [
