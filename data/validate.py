@@ -37,7 +37,7 @@ from .prepare import (
 
 
 DEFAULT_MODEL = "Qwen/Qwen3-4B-Base"
-SFT_MAX_TOKENS = 1024
+SFT_MAX_TOKENS = 1280
 
 
 def _rows(path: Path) -> list[dict]:

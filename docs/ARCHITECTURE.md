@@ -63,7 +63,7 @@ groups remain available because Arm B can still receive verified-label CE.
 
 ## Failure policy
 
-SFT preflight rejects any row over 1024 tokens or without terminal `FINAL:`.
+SFT preflight rejects any row over 1280 tokens or without terminal `FINAL:`.
 Stack packing preserves whole traces. RL rejects truncated or over-4096-token
 traces before they reach the trainer.
 
