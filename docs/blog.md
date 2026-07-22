@@ -26,12 +26,16 @@ McNemar (continuity-corrected) + paired bootstrap CI on per-task pass/fail
 - **Each arm, seed 42 vs seed 43, same step**: no significant difference for
   either arm at any of the 4 checkpoints (p=0.20–0.74 for Arm A, p=0.055–0.44
   for Arm B). Both arms' training is reasonably reproducible.
-- **Arm B RL vs its own SFT baseline, both seeds**: step 100 is now a solid,
-  two-seed-replicated result — seed 42 gave +3.8 pts (p=0.033, weak alone),
-  seed 43 gave +5.4 pts (p=0.0017, clears correction on its own). The step-25
-  "regression" reported from seed 42 (−3.0 pts, p=0.033) did **not**
-  replicate in seed 43 (−0.4 pts, p=0.88) — that was noise, not a real early
-  RL effect.
+- **Each arm's RL vs its own SFT baseline, both seeds** (Arm A's SFT baseline
+  was re-evaluated fresh for this — 50.6%, matching the earlier 51.6% point
+  estimate within eval noise): **step 100 is significant for both arms in
+  both seeds** — Arm A gave p=0.0003 (seed 42) and p=0.028 (seed 43); Arm B
+  gave p=0.033 (seed 42) and p=0.0017 (seed 43). Arm A's step 75 is
+  significant in both seeds too (p=0.041, p=0.0035). The step-25
+  "regression" reported from Arm B's seed 42 alone (−3.0 pts, p=0.033) did
+  **not** replicate in seed 43 (−0.4 pts, p=0.88) — that was noise, not a
+  real early RL effect, and neither arm shows a significant step-25 result in
+  both seeds.
 - **Arm A vs Arm B, matched by step, all four seed combinations**: at step
   100, none of the four pairings are significant (p=0.068–0.86) — the
   seed43-vs-seed43 pairing is a near dead heat (54.2% vs 53.6%, p=0.86). At
@@ -42,13 +46,15 @@ McNemar (continuity-corrected) + paired bootstrap CI on per-task pass/fail
   significance (p=0.11, p=0.27). **No checkpoint step shows a difference
   between Arm A and Arm B that holds up across seed combinations.**
 
-Read plainly: the RL training itself works — Arm B reliably improves over its
-own SFT starting point, backed now by two independent runs. Whether Arm A's
-reactive design or Arm B's predictive design is *better* remains unconfirmed
-at every step, across every seed combination tested. The one number that once
-suggested Arm A had an edge (step 25) traced back to a single outlier
-training run on Arm B's side, not a reproducible arm-level effect. Both arms
-show good within-arm reproducibility of their own.
+Read plainly: the RL training itself works for **both** arms — each reliably
+improves over its own SFT starting point by step 100, backed by two
+independent runs per arm. Whether Arm A's reactive design or Arm B's
+predictive design is *better than the other* is a different, separate
+question, and it remains unconfirmed at every step, across every seed
+combination tested. The one number that once suggested Arm A had an edge
+(step 25) traced back to a single outlier training run on Arm B's side, not
+a reproducible arm-level effect. Both arms show good within-arm
+reproducibility of their own.
 
 Efficiency (from the original seed-42 traces): Arm B does not use fewer tool
 calls or turns (5.4–5.7 vs Arm A's 5.3–5.5) — it uses slightly more. It does

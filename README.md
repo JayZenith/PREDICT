@@ -51,11 +51,12 @@ seed combinations, no checkpoint step shows a statistically confirmed
 difference between Arm A and Arm B** (McNemar, p=0.026-0.86) — the step-100
 gap shrinks to a coin flip in the seed43-vs-seed43 pairing (54.2% vs 53.6%,
 p=0.86), and the step-25 "win" traces back to Arm B's seed-42 run being its
-own outlier, not a reproducible effect. What *is* solid: RL improves Arm B
-over its own SFT baseline by step 100, replicated across both seeds (p=0.033
-and p=0.0017). Both arms show good within-arm reproducibility (seed 42 vs
-seed 43 never significantly differ, either arm, any step). Full stats and
-efficiency numbers: [REPRODUCTION.md](docs/REPRODUCTION.md),
+own outlier, not a reproducible effect. What *is* solid: **RLVR improves both
+arms over their own SFT baseline by step 100**, replicated across both seeds
+for each arm (Arm A: p=0.0003 and p=0.028; Arm B: p=0.033 and p=0.0017). Both
+arms show good within-arm reproducibility (seed 42 vs seed 43 never
+significantly differ, either arm, any step). Full stats and efficiency
+numbers: [REPRODUCTION.md](docs/REPRODUCTION.md),
 [`PREDICT_RL_RESULTS/`](PREDICT_RL_RESULTS/).
 
 Checkpoints: [`SFT_ARM_A`](https://huggingface.co/JayZenith/SFT_ARM_A),

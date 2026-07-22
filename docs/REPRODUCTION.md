@@ -129,8 +129,9 @@ Raw traces, eval/serve logs, and training artifacts (configs, W&B, trainer
 logs) for both arms are archived under the gitignored
 [`PREDICT_RL_RESULTS/`](../PREDICT_RL_RESULTS/) directory
 (`RL_ARM_{A,B}_{25,50,75,100}/eval/` for seed 42,
-`RL_ARM_{A,B}_V1_{25,50,75,100}/eval/` for seed 43, and the four `*_shared/`
-dirs). HF: `RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0` (seed 42), `..._V1` (seed 43).
+`RL_ARM_{A,B}_V1_{25,50,75,100}/eval/` for seed 43, `RL_ARM_A_sft/eval/` for
+the freshly re-evaluated Arm A SFT baseline, and the four `*_shared/` dirs).
+HF: `RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0` (seed 42), `..._V1` (seed 43).
 
 ## 6. Statistics
 
@@ -158,6 +159,17 @@ reproducible?):**
 No step shows a significant difference between either arm's two independent
 training runs — both arms' RL training is reasonably stable across seeds.
 
+**Arm A RL vs its own SFT baseline, both seeds** (SFT re-evaluated fresh —
+50.6% here vs the 51.6% point estimate used earlier, same fixed checkpoint,
+within eval noise):
+
+| step | seed 42 diff (p) | seed 43 diff (p) |
+|---|---|---|
+| 25 | +0.8 (p=0.54) | −0.2 (p=1.0) |
+| 50 | +1.6 (p=0.23) | +2.2 (p=0.091) |
+| 75 | +3.0 (p=0.041) | **+4.2 (p=0.0035)** |
+| 100 | **+5.8 (p=0.0003)** | +3.6 (p=0.028) |
+
 **Arm B RL vs its own SFT baseline, both seeds:**
 
 | step | seed 42 diff (p) | seed 43 diff (p) |
@@ -167,11 +179,13 @@ training runs — both arms' RL training is reasonably stable across seeds.
 | 75 | +4.4 (p=0.010) | +3.0 (p=0.064) |
 | 100 | +3.8 (p=0.033) | **+5.4 (p=0.0017)** |
 
-The step-25 "regression" reported from seed 42 alone did not replicate — it
-was noise. Step 100 is now a solid, two-seed-replicated finding: RL improves
-Arm B over its SFT starting point (seed 43's result alone clears Bonferroni
-correction). Step 75 points the same direction in both seeds though only
-seed 42 individually clears p<0.05.
+For both arms, step 100 vs SFT is significant in both seeds — the most
+solid result in this whole project, and Arm A's is the strongest single
+number here (p=0.0003). Arm A's step 75 is significant in both seeds too;
+Arm B's is significant in one and marginal in the other (p=0.064). Neither
+arm shows a significant step-25 effect in both seeds — the step-25
+"regression" reported from Arm B's seed 42 alone did not replicate (p=0.88
+in seed 43) and was noise, not a real early-RL effect.
 
 **Arm A vs Arm B, matched by step, all four seed combinations:**
 
@@ -197,19 +211,16 @@ across seed combinations.** The step-100 headline gap that first looked like
 Arm A leading (56.4% vs 52.0%) shrinks to a coin flip once both arms have a
 second independent training run (54.2% vs 53.6%).
 
-Arm A's SFT baseline (51.6%) has no significance test against its own RL
-checkpoints: those raw eval traces were on the original training instance,
-deleted before the seed-42 RL rerun that produced the rest of this data. Only
-the point estimate exists.
-
-**Bottom line.** RLVR reliably improves Arm B over its own SFT baseline by
-step 100 — replicated across two independent training runs, strong evidence
-(p=0.0017 in the cleaner replication). Whether Arm A's reactive design or
-Arm B's predictive design performs better is **unconfirmed** at every
-checkpoint, across every seed combination tested. The one result that once
-suggested Arm A's edge traced back to a single outlier training run, not a
-reproducible arm-level effect. Both arms show good within-arm reproducibility
-(seed 42 vs seed 43 never significantly differ, for either arm, at any step).
+**Bottom line.** RLVR reliably improves *both* arms over their own SFT
+baseline by step 100 — replicated across two independent training runs per
+arm, strong evidence for each (Arm A p=0.0003 seed42 / p=0.028 seed43; Arm B
+p=0.033 seed42 / p=0.0017 seed43). Whether Arm A's reactive design or Arm B's
+predictive design performs *better than the other* is a separate question and
+remains **unconfirmed** at every checkpoint, across every seed combination
+tested — the one result that once suggested Arm A's edge traced back to a
+single outlier training run, not a reproducible arm-level effect. Both arms
+show good within-arm reproducibility (seed 42 vs seed 43 never significantly
+differ, for either arm, at any step).
 
 Report final pass@1, first-patch success, executed-failure recovery, visible
 tests per solved task, tokens, and tool calls. For Arm B also report prediction
