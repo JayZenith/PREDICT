@@ -132,3 +132,52 @@ the one-step shadow/visible split (25/25).
 Local configs, logs, W&B runs, and raw sampling traces for the SFT stage are
 archived under the gitignored `PREDICT_SFT_RESULTS/` directory (RLVR
 artifacts are in `PREDICT_RL_RESULTS/`, see the results section above).
+
+## What was actually hindering Arm B
+
+The stats above establish that Arm A vs Arm B is unsettled — not that
+prediction-before-execution doesn't work, just that this run doesn't prove it
+does. Digging into what Arm B's prediction head actually learned narrows down
+why.
+
+Decision-following is solid: `KEEP` follows a `PASS` prediction 100% of the
+time, `REVISE` follows a non-`PASS` prediction 97-99% of the time, in both
+seeds. That's not the problem.
+
+The problem is prediction coverage, by outcome class (step 100, both seeds):
+
+| actual outcome | share of failures | recall |
+|---|---:|---:|
+| ASSERTION_FAILURE | 57-59% | **0%** |
+| RUNTIME_ERROR | 15-16% | 50-63% |
+| PASS | — | 92-96% |
+
+The model predicts only `PASS` or `RUNTIME_ERROR`, ever. It has not once
+correctly predicted `ASSERTION_FAILURE` — the dominant failure mode, code
+that runs but fails the assertion — at step 50, 75, or 100, in either
+independent run. The trajectory: 100% `PASS` at SFT (fully collapsed), a
+brief ~1-2% `ASSERTION_FAILURE` recall at step 25, extinguished back to 0% by
+step 50 and never recovering.
+
+Likely cause: correctly predicting `ASSERTION_FAILURE` and choosing `REVISE`
+saves at most one turn over just testing and reacting — the real
+`python_test` catches wrong logic for free either way, and final task reward
+is identical either path. GRPO has no reward gradient pushing toward that
+discrimination skill; only the auxiliary CE loss (`λ=0.1`) could teach it,
+and it isn't strong enough to survive against GRPO's pull. `RUNTIME_ERROR` is
+detectable from surface code features (undefined vars, index risk) without
+simulating the algorithm against the test cases — a cheaper pattern, and the
+only one that stuck.
+
+Net: Arm B pays the full token overhead of predicting on every turn (see
+efficiency numbers above) but the mechanism only covers ~15% of real
+failures and is blind to the other ~57%. That's sufficient on its own to
+explain why Arm B never pulled ahead, independent of the arm-vs-arm
+significance question.
+
+**Where to go next**: sweep `λ` (`orchestrator.algo.alpha` in
+`configs/arm_b_rl.toml`, currently `0.1`) upward, or reweight the auxiliary
+CE loss toward the rare/hard classes instead of uniform per-token weighting.
+That would tell you whether the `ASSERTION_FAILURE` collapse is a
+loss-weight problem or a harder ceiling on what this SFT curriculum can
+teach the model to generalize to its own generated code.
