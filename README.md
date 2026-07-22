@@ -33,26 +33,30 @@ MBPP+, no frontier screening.
 
 ## Results (n=500, greedy pass@1)
 
-| step | Arm A | Arm B |
-|---|---:|---:|
-| SFT | 51.6% | 48.2% |
-| RL 25 | 51.4% | 45.2% |
-| RL 50 | 52.2% | 50.0% |
-| RL 75 | 53.6% | 52.6% |
-| RL 100 | **56.4%** | **52.0%** |
+Arm B was trained twice from the same SFT checkpoint with different seeds, to
+check whether any Arm A vs Arm B difference replicates:
 
-Arm A leads at every RL checkpoint, but of 8 McNemar tests run (corrected for
-multiple comparisons, BH-FDR 5%), only 2 survive: Arm A beats Arm B at step 25
-(p=0.006), and Arm B's RL beats its own SFT by step 75 (p=0.010). The step-100
-headline gap above is **not** statistically significant (p=0.068, CI crosses
-0) — and Arm B has only one training run, so none of this has been checked
-against training-seed variance. Full stats, corrections, and efficiency
-numbers: [REPRODUCTION.md](docs/REPRODUCTION.md),
+| step | Arm A | Arm B (seed 42) | Arm B (seed 43) |
+|---|---:|---:|---:|
+| SFT | 51.6% | 48.2% | 48.2% (same checkpoint) |
+| RL 25 | 51.4% | 45.2% | 47.8% |
+| RL 50 | 52.2% | 50.0% | 48.6% |
+| RL 75 | 53.6% | 52.6% | 51.2% |
+| RL 100 | **56.4%** | 52.0% | 53.6% |
+
+Arm A leads at every checkpoint against both Arm B seeds, but **no step is
+statistically significant once the second Arm B run is included** (McNemar,
+p=0.11-0.32). A step-25 result that looked significant against the first Arm B
+run (p=0.006) did not replicate against the second (p=0.11) — that was noise.
+What *is* solid: RL improves Arm B over its own SFT baseline by step 100,
+replicated across both seeds (p=0.033 and p=0.0017). Full stats and
+efficiency numbers: [REPRODUCTION.md](docs/REPRODUCTION.md),
 [`PREDICT_RL_RESULTS/`](PREDICT_RL_RESULTS/).
 
 Checkpoints: [`SFT_ARM_A`](https://huggingface.co/JayZenith/SFT_ARM_A),
 [`SFT_ARM_B`](https://huggingface.co/JayZenith/SFT_ARM_B),
-`JayZenith/RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0`.
+`JayZenith/RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0` (seed 42), plus
+`RLVR_ARM_B_STEP{25,50,75,100}_V1` (seed-43 replication run).
 
 ## Reproduce
 

@@ -1,50 +1,65 @@
-# RLVR results (commit 9eefac7)
+# RLVR results, now with a second Arm B seed (commit 9eefac7)
 
 Both arms trained 100 GRPO steps (group size 16, batch 64, `zero_advantage`
 filter enforced) from their SFT checkpoints, with all four checkpoints
 (steps 25/50/75/100) retained and evaluated once on the full 500-task test
-set, standalone, after the weights save.
+set, standalone, after the weights save. A first pass turned up exactly one
+significance result that survived correcting for multiple comparisons: "Arm A
+beats Arm B at step 25." That's the kind of claim that shouldn't rest on one
+training run, so Arm B was retrained from scratch with a different seed
+(same SFT checkpoint, same everything else) to see if it held up.
 
-| step | Arm A | Arm B |
-|---|---:|---:|
-| SFT | 51.6% | 48.2% |
-| 25 | 51.4% | 45.2% |
-| 50 | 52.2% | 50.0% |
-| 75 | 53.6% | 52.6% |
-| 100 | **56.4%** | **52.0%** |
+It didn't.
 
-McNemar (continuity-corrected) + paired bootstrap CI on the per-task
-pass/fail outcomes ([`docs/stats.py`](stats.py)), 8 comparisons total. At
-uncorrected p<0.05 five of them look significant; correcting for running 8
-tests (Benjamini-Hochberg, FDR 5%) leaves exactly two:
+| step | Arm A | Arm B (seed 42) | Arm B (seed 43) |
+|---|---:|---:|---:|
+| SFT | 51.6% | 48.2% | 48.2% (same checkpoint) |
+| 25 | 51.4% | 45.2% | 47.8% |
+| 50 | 52.2% | 50.0% | 48.6% |
+| 75 | 53.6% | 52.6% | 51.2% |
+| 100 | **56.4%** | 52.0% | 53.6% |
 
-- **Arm A step25 vs Arm B step25: −6.2 pts, p=0.006 — survives correction.**
-- **Arm B step75 vs its own SFT: +4.4 pts, p=0.010 — survives correction.**
-- Arm B step100 vs SFT (+3.8, p=0.033), Arm B step25 vs SFT (−3.0, p=0.033),
-  and Arm A step100 vs Arm B step100 (−4.4, p=0.068, the headline gap) do
-  **not** survive correction — indistinguishable from test-set sampling noise.
-- Arm A's own SFT-vs-RL was never tested: those raw traces lived on the
-  original training instance, deleted before the rerun that produced
-  everything else here. Only the point estimate (51.6% → 56.4%) exists.
+McNemar (continuity-corrected) + paired bootstrap CI on per-task pass/fail
+([`docs/stats.py`](stats.py)):
 
-Read as: the step-100 headline (Arm A ahead by 4.4 pts) is not something you
-can hang a claim on yet. Also worth saying plainly — Arm A has two
-independent training runs (56%, 56.4%, consistent); Arm B has exactly one,
-because its original run stalled on disk-full mid-training. Nothing here has
-been checked against training-seed variance for Arm B.
+- **Arm B seed 42 vs seed 43, same step**: no significant difference at any
+  of the 4 checkpoints (p=0.055–0.44). Arm B's own training is reasonably
+  reproducible across seeds.
+- **Arm B RL vs its own SFT baseline, both seeds**: step 100 is now a solid,
+  two-seed-replicated result — seed 42 gave +3.8 pts (p=0.033, weak alone),
+  seed 43 gave +5.4 pts (p=0.0017, clears correction on its own). The step-25
+  "regression" reported from seed 42 (−3.0 pts, p=0.033) did **not**
+  replicate in seed 43 (−0.4 pts, p=0.88) — that was noise, not a real early
+  RL effect.
+- **Arm A vs Arm B, matched by step, against each Arm B seed**: the step-25
+  gap that survived correction against seed 42 (−6.2 pts, p=0.006) shrinks and
+  loses significance against seed 43 (−3.6 pts, p=0.11). Every other step was
+  already non-significant against seed 42, and stays that way against seed 43
+  (p=0.13–0.32). **No checkpoint step shows a confirmed Arm A vs Arm B
+  difference once a second Arm B training run is in the picture.**
 
-Efficiency, same traces: Arm B does not use fewer tool calls or turns
-(5.4–5.7 vs Arm A's 5.3–5.5) — it uses slightly more. It does use fewer
-visible test executions (1.62–1.99 vs 1.94–1.99), since shadow-testing on
-`REVISE` moves some test cycles off the visible ledger, but spends ~20-30%
-more assistant-turn generation length per task on `<PREDICTION>`/`<DECISION>`
-tags (996–1124 vs 835–856 chars). Not a clean efficiency win — a trade.
+Read plainly: the RL training itself works — Arm B reliably improves over its
+own SFT starting point, and that's now backed by two independent runs, not
+one. Whether Arm A's reactive design or Arm B's predictive design is
+*better* remains unconfirmed at every step tested. The one number that once
+suggested Arm A had an edge (step 25) turned out to be exactly the kind of
+single-run noise a second seed exists to catch. Arm A has two independent
+training runs of its own (step100: 56%, 56.4% — consistent); a second Arm A
+seed hasn't been run yet.
 
-Checkpoints: `JayZenith/RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0`. Raw traces,
-eval/serve logs, and training artifacts archived under the gitignored
+Efficiency (from the original seed-42 traces): Arm B does not use fewer tool
+calls or turns (5.4–5.7 vs Arm A's 5.3–5.5) — it uses slightly more. It does
+use fewer visible test executions (1.62–1.99 vs 1.94–1.99), since
+shadow-testing on `REVISE` moves some test cycles off the visible ledger, but
+spends ~20-30% more assistant-turn generation length per task on
+`<PREDICTION>`/`<DECISION>` tags (996–1124 vs 835–856 chars). Not a clean
+efficiency win — a trade.
+
+Checkpoints: `JayZenith/RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0` (seed 42),
+`RLVR_ARM_B_STEP{25,50,75,100}_V1` (seed 43). Raw traces, eval/serve logs, and
+training artifacts archived under the gitignored
 [`PREDICT_RL_RESULTS/`](../PREDICT_RL_RESULTS/) directory. Full reproduction
-steps, correction method, and the full comparison table:
-[`docs/REPRODUCTION.md`](REPRODUCTION.md).
+steps and the complete comparison tables: [`docs/REPRODUCTION.md`](REPRODUCTION.md).
 
 # SFT complete: moving to RLVR
 
