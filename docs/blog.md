@@ -14,26 +14,37 @@ set, standalone, after the weights save.
 | 100 | **56.4%** | **52.0%** |
 
 McNemar (continuity-corrected) + paired bootstrap CI on the per-task
-pass/fail outcomes ([`docs/stats.py`](stats.py)):
+pass/fail outcomes ([`docs/stats.py`](stats.py)), 8 comparisons total. At
+uncorrected p<0.05 five of them look significant; correcting for running 8
+tests (Benjamini-Hochberg, FDR 5%) leaves exactly two:
 
-- Arm B step75 vs its own SFT: +4.4 pts, p=0.010, CI [1.2, 7.6] — real.
-- Arm B step100 vs SFT: +3.8 pts, p=0.033, CI [0.4, 7.2] — real, weaker.
-- Arm B step25 vs SFT: −3.0 pts, p=0.033, CI [−5.6, −0.6] — early RL
-  regresses the model before it recovers.
-- Arm B step50 vs SFT: not significant, CI crosses zero.
-- Arm A vs Arm B, matched by step: Arm A leads at every checkpoint, but only
-  step25 clears significance (−6.2 pts, p=0.006). The step-100 headline gap
-  (−4.4 pts) does not: p=0.068, CI [−9.0, 0.2].
+- **Arm A step25 vs Arm B step25: −6.2 pts, p=0.006 — survives correction.**
+- **Arm B step75 vs its own SFT: +4.4 pts, p=0.010 — survives correction.**
+- Arm B step100 vs SFT (+3.8, p=0.033), Arm B step25 vs SFT (−3.0, p=0.033),
+  and Arm A step100 vs Arm B step100 (−4.4, p=0.068, the headline gap) do
+  **not** survive correction — indistinguishable from test-set sampling noise.
+- Arm A's own SFT-vs-RL was never tested: those raw traces lived on the
+  original training instance, deleted before the rerun that produced
+  everything else here. Only the point estimate (51.6% → 56.4%) exists.
 
-Read as: RL measurably helps both arms over their SFT starting point by
-step 75, but at n=500 the Arm A vs Arm B comparison itself is still
-noise-dominated — more seeds or a larger test set are needed to confirm
-Arm A's apparent edge.
+Read as: the step-100 headline (Arm A ahead by 4.4 pts) is not something you
+can hang a claim on yet. Also worth saying plainly — Arm A has two
+independent training runs (56%, 56.4%, consistent); Arm B has exactly one,
+because its original run stalled on disk-full mid-training. Nothing here has
+been checked against training-seed variance for Arm B.
+
+Efficiency, same traces: Arm B does not use fewer tool calls or turns
+(5.4–5.7 vs Arm A's 5.3–5.5) — it uses slightly more. It does use fewer
+visible test executions (1.62–1.99 vs 1.94–1.99), since shadow-testing on
+`REVISE` moves some test cycles off the visible ledger, but spends ~20-30%
+more assistant-turn generation length per task on `<PREDICTION>`/`<DECISION>`
+tags (996–1124 vs 835–856 chars). Not a clean efficiency win — a trade.
 
 Checkpoints: `JayZenith/RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0`. Raw traces,
 eval/serve logs, and training artifacts archived under the gitignored
 [`PREDICT_RL_RESULTS/`](../PREDICT_RL_RESULTS/) directory. Full reproduction
-steps: [`docs/REPRODUCTION.md`](REPRODUCTION.md).
+steps, correction method, and the full comparison table:
+[`docs/REPRODUCTION.md`](REPRODUCTION.md).
 
 # SFT complete: moving to RLVR
 
@@ -94,12 +105,6 @@ degraded into malformed tags. 20 of the 70 recovery traces (10 `deep_shadow`,
 the gold code, giving a genuine three-cycle example; the remaining 50 keep
 the one-step shadow/visible split (25/25).
 
-## Next
-
-Train both arms with identical RL tasks, seeds, sampling, and tool budgets.
-Arm A uses binary final-task GRPO. Arm B adds verified-label prediction CE.
-Select checkpoints and λ on the 40-task validation split, then run the
-untouched 500-task test split once.
-
-Local configs, logs, W&B runs, and raw sampling traces are archived under the
-gitignored `PREDICT_SFT_RESULTS/` directory.
+Local configs, logs, W&B runs, and raw sampling traces for the SFT stage are
+archived under the gitignored `PREDICT_SFT_RESULTS/` directory (RLVR
+artifacts are in `PREDICT_RL_RESULTS/`, see the results section above).

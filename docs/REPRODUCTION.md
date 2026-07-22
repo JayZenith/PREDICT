@@ -7,7 +7,7 @@ archive each selected checkpoint before starting the next arm.
 ## 1. Prepare
 
 ```bash
-git clone git@github.com:JayZenith/PREDICT.git
+git clone https://github.com/JayZenith/PREDICT.git
 cd PREDICT
 bash scripts/setup.sh
 uv run python -m data.prepare
@@ -99,17 +99,18 @@ convenient no-op choice, not a real credential).
 
 The full 500-task test set is evaluated once per checkpoint, after the weights
 save, outside the live RL loop (keeps training fast and keeps "test set
-touched once for the final report" honest):
+touched once for the final report" honest). Serve one checkpoint, evaluate it,
+move to the next port:
 
 ```bash
-for step in 25 50 75 100; do
-  vllm serve outputs/arm_a_rl/weights/step_${step} \
-    --served-model-name arm_a_step${step} --port 802${step:0:1} &
-  bash scripts/evaluate.sh a arm_a_step${step} test \
-    --client.base-url http://localhost:802${step:0:1}/v1 --client.api-key-var HOME
-done
-# repeat for arm b
+vllm serve outputs/arm_a_rl/weights/step_25 \
+  --served-model-name arm_a_step25 --port 8021 &
+bash scripts/evaluate.sh a arm_a_step25 test \
+  --client.base-url http://localhost:8021/v1 --client.api-key-var HOME
 ```
+
+Repeat per checkpoint (steps 25/50/75/100 and the SFT baseline) and per arm,
+each on its own port.
 
 Results from the runs at commit `9eefac7` (n=500, greedy pass@1):
 
@@ -133,14 +134,39 @@ Compare paired per-task pass/fail outcomes with McNemar's test
 never trust the raw percentage gap alone at n=500. Script:
 [`docs/stats.py`](stats.py) (`python3 docs/stats.py TRACES_A.jsonl TRACES_B.jsonl`).
 
-Confirmed (p<0.05, CI excludes 0) at commit `9eefac7`:
-- Arm B step75 vs Arm B SFT: +4.4 pts (p=0.010, CI [1.2, 7.6])
-- Arm B step100 vs Arm B SFT: +3.8 pts (p=0.033, CI [0.4, 7.2])
-- Arm B step25 vs Arm B SFT: −3.0 pts (p=0.033, CI [−5.6, −0.6]) — early RL regresses
-- Arm A step25 vs Arm B step25: −6.2 pts (p=0.006, CI [−10.6, −2.0]) — A ahead
+8 comparisons were run at commit `9eefac7` (4 checkpoints × {vs Arm B's own
+SFT, vs Arm A at the same step}). Running 8 tests inflates the false-positive
+rate, so a raw p<0.05 is not enough — the table below applies
+Benjamini-Hochberg (FDR 5%):
 
-Not significant (CI crosses 0): Arm B step50 vs SFT; Arm A vs Arm B at steps
-50, 75, 100 (including the final step-100 headline gap, p=0.068).
+| comparison | diff | p (raw) | survives BH-FDR 5%? | 95% CI |
+|---|---:|---:|---|---|
+| Arm A step25 vs Arm B step25 | −6.2 | 0.006 | **yes** | [−10.6, −2.0] |
+| Arm B step75 vs Arm B SFT | +4.4 | 0.010 | **yes** | [1.2, 7.6] |
+| Arm B step100 vs Arm B SFT | +3.8 | 0.033 | no | [0.4, 7.2] |
+| Arm B step25 vs Arm B SFT | −3.0 | 0.033 | no | [−5.6, −0.6] |
+| Arm A step100 vs Arm B step100 | −4.4 | 0.068 | no | [−9.0, 0.2] |
+| Arm B step50 vs Arm B SFT | +1.8 | 0.30 | no | [−1.2, 4.8] |
+| Arm A step50 vs Arm B step50 | −2.2 | 0.37 | no | [−6.6, 2.0] |
+| Arm A step75 vs Arm B step75 | −1.0 | 0.71 | no | [−5.2, 3.2] |
+
+Only two rows are robust: Arm A beats Arm B at step 25, and Arm B's RL beats
+its own SFT by step 75. Everything else — including the step-100 headline
+(Arm A 56.4% vs Arm B 52.0%) — is not distinguishable from test-set sampling
+noise at this n.
+
+Arm A's SFT baseline (51.6%) has no equivalent test: those raw eval traces
+were on the original training instance, deleted before the RL rerun that
+produced the rest of this data. Only the point estimate exists for Arm A
+SFT-vs-RL, not a McNemar/CI comparison.
+
+**Training-seed coverage is thin.** Arm A has two independent training runs
+(original step100 pass@1: 56%, rerun: 56.4% — consistent). Arm B has exactly
+one — its original run stalled on disk-full and was never completed. None of
+the tests above capture training-seed variance; they only ask whether two
+specific trained checkpoints differ beyond which 500 tasks land in the test
+set. Whether the Arm A vs Arm B ranking holds under a different training seed
+is untested.
 
 Report final pass@1, first-patch success, executed-failure recovery, visible
 tests per solved task, tokens, and tool calls. For Arm B also report prediction
@@ -149,3 +175,27 @@ of good patches.
 
 The primary comparison is Arm A RLVR versus Arm B RLVR. Base and SFT results
 show where each training stage changed behavior.
+
+## 7. Efficiency
+
+Same eval traces, from the harness's own `visible_tool_calls` /
+`visible_test_calls` metrics plus assistant-turn character counts (a token
+proxy, not exact tokenization):
+
+| | tool calls | visible tests | assistant chars* |
+|---|---:|---:|---:|
+| Arm A (25/50/75/100) | 5.3–5.5 | 1.94–1.99 | 835–856 |
+| Arm B (SFT/25/50/75/100) | 5.4–5.7 | 1.62–1.99 | 996–1124 |
+
+Arm B does not use fewer turns or tool calls — slightly more. It does use
+fewer visible test executions (shadow-testing on `REVISE` moves some test
+cycles off the visible ledger, as designed), but spends ~20-30% more
+generation length per task on `<PREDICTION>`/`<DECISION>` tags. Not a clean
+efficiency win either direction — fewer visible failures, more tokens to get
+there.
+
+A related data-quality note: 3 of 2500 Arm B eval rows (steps 25/50/75, a
+different task each time) hit a harness turn/token-budget truncation and
+scored as fails with empty metrics; 0 of 2000 Arm A rows did. Moves no
+reported number by more than 0.2 points, but is a real, Arm-B-specific
+overhead signature consistent with the token-cost finding above.
