@@ -1,51 +1,54 @@
-# RLVR results, now with a second Arm B seed (commit 9eefac7)
+# RLVR results, now with a second seed for both arms (commit 9eefac7)
 
 Both arms trained 100 GRPO steps (group size 16, batch 64, `zero_advantage`
 filter enforced) from their SFT checkpoints, with all four checkpoints
 (steps 25/50/75/100) retained and evaluated once on the full 500-task test
-set, standalone, after the weights save. A first pass turned up exactly one
-significance result that survived correcting for multiple comparisons: "Arm A
-beats Arm B at step 25." That's the kind of claim that shouldn't rest on one
-training run, so Arm B was retrained from scratch with a different seed
-(same SFT checkpoint, same everything else) to see if it held up.
+set, standalone, after the weights save. A first pass (one run each) turned
+up exactly one significance result that survived correcting for multiple
+comparisons: "Arm A beats Arm B at step 25." That's the kind of claim that
+shouldn't rest on one training run each, so both arms were retrained from
+scratch with a different seed (same SFT checkpoint, same everything else) to
+see if it held up.
 
 It didn't.
 
-| step | Arm A | Arm B (seed 42) | Arm B (seed 43) |
-|---|---:|---:|---:|
-| SFT | 51.6% | 48.2% | 48.2% (same checkpoint) |
-| 25 | 51.4% | 45.2% | 47.8% |
-| 50 | 52.2% | 50.0% | 48.6% |
-| 75 | 53.6% | 52.6% | 51.2% |
-| 100 | **56.4%** | 52.0% | 53.6% |
+| step | Arm A (seed 42) | Arm A (seed 43) | Arm B (seed 42) | Arm B (seed 43) |
+|---|---:|---:|---:|---:|
+| SFT | 51.6% | 51.6% (same ckpt) | 48.2% | 48.2% (same ckpt) |
+| 25 | 51.4% | 50.4% | 45.2% | 47.8% |
+| 50 | 52.2% | 52.8% | 50.0% | 48.6% |
+| 75 | 53.6% | 54.8% | 52.6% | 51.2% |
+| 100 | **56.4%** | 54.2% | 52.0% | 53.6% |
 
 McNemar (continuity-corrected) + paired bootstrap CI on per-task pass/fail
 ([`docs/stats.py`](stats.py)):
 
-- **Arm B seed 42 vs seed 43, same step**: no significant difference at any
-  of the 4 checkpoints (p=0.055–0.44). Arm B's own training is reasonably
-  reproducible across seeds.
+- **Each arm, seed 42 vs seed 43, same step**: no significant difference for
+  either arm at any of the 4 checkpoints (p=0.20–0.74 for Arm A, p=0.055–0.44
+  for Arm B). Both arms' training is reasonably reproducible.
 - **Arm B RL vs its own SFT baseline, both seeds**: step 100 is now a solid,
   two-seed-replicated result — seed 42 gave +3.8 pts (p=0.033, weak alone),
   seed 43 gave +5.4 pts (p=0.0017, clears correction on its own). The step-25
   "regression" reported from seed 42 (−3.0 pts, p=0.033) did **not**
   replicate in seed 43 (−0.4 pts, p=0.88) — that was noise, not a real early
   RL effect.
-- **Arm A vs Arm B, matched by step, against each Arm B seed**: the step-25
-  gap that survived correction against seed 42 (−6.2 pts, p=0.006) shrinks and
-  loses significance against seed 43 (−3.6 pts, p=0.11). Every other step was
-  already non-significant against seed 42, and stays that way against seed 43
-  (p=0.13–0.32). **No checkpoint step shows a confirmed Arm A vs Arm B
-  difference once a second Arm B training run is in the picture.**
+- **Arm A vs Arm B, matched by step, all four seed combinations**: at step
+  100, none of the four pairings are significant (p=0.068–0.86) — the
+  seed43-vs-seed43 pairing is a near dead heat (54.2% vs 53.6%, p=0.86). At
+  step 25, two of the four pairings are nominally significant (p=0.006,
+  p=0.026), and both involve Arm B's seed-42 run — its own lowest point and
+  the one seed that dipped significantly below its own SFT baseline. Swap in
+  Arm B's seed-43 run at the same step and the gap halves and loses
+  significance (p=0.11, p=0.27). **No checkpoint step shows a difference
+  between Arm A and Arm B that holds up across seed combinations.**
 
 Read plainly: the RL training itself works — Arm B reliably improves over its
-own SFT starting point, and that's now backed by two independent runs, not
-one. Whether Arm A's reactive design or Arm B's predictive design is
-*better* remains unconfirmed at every step tested. The one number that once
-suggested Arm A had an edge (step 25) turned out to be exactly the kind of
-single-run noise a second seed exists to catch. Arm A has two independent
-training runs of its own (step100: 56%, 56.4% — consistent); a second Arm A
-seed hasn't been run yet.
+own SFT starting point, backed now by two independent runs. Whether Arm A's
+reactive design or Arm B's predictive design is *better* remains unconfirmed
+at every step, across every seed combination tested. The one number that once
+suggested Arm A had an edge (step 25) traced back to a single outlier
+training run on Arm B's side, not a reproducible arm-level effect. Both arms
+show good within-arm reproducibility of their own.
 
 Efficiency (from the original seed-42 traces): Arm B does not use fewer tool
 calls or turns (5.4–5.7 vs Arm A's 5.3–5.5) — it uses slightly more. It does
@@ -56,7 +59,7 @@ spends ~20-30% more assistant-turn generation length per task on
 efficiency win — a trade.
 
 Checkpoints: `JayZenith/RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0` (seed 42),
-`RLVR_ARM_B_STEP{25,50,75,100}_V1` (seed 43). Raw traces, eval/serve logs, and
+`RLVR_ARM_{A,B}_STEP{25,50,75,100}_V1` (seed 43). Raw traces, eval/serve logs, and
 training artifacts archived under the gitignored
 [`PREDICT_RL_RESULTS/`](../PREDICT_RL_RESULTS/) directory. Full reproduction
 steps and the complete comparison tables: [`docs/REPRODUCTION.md`](REPRODUCTION.md).

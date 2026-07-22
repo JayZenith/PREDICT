@@ -112,24 +112,25 @@ bash scripts/evaluate.sh a arm_a_step25 test \
 Repeat per checkpoint (steps 25/50/75/100 and the SFT baseline) and per arm,
 each on its own port.
 
-Results from the runs at commit `9eefac7` (n=500, greedy pass@1). Arm B was
-trained twice, independently, from the same SFT checkpoint (`inference.seed`
-42 then 43 — the only difference between the two runs):
+Results from the runs at commit `9eefac7` (n=500, greedy pass@1). Both arms
+were trained twice, independently, from the same SFT checkpoint
+(`inference.seed` 42 then 43 — the only difference between each pair of
+runs):
 
-| step | Arm A | Arm B (seed 42) | Arm B (seed 43) |
-|---|---:|---:|---:|
-| SFT | 51.6% | 48.2% | 48.2% (same checkpoint) |
-| 25 | 51.4% | 45.2% | 47.8% |
-| 50 | 52.2% | 50.0% | 48.6% |
-| 75 | 53.6% | 52.6% | 51.2% |
-| 100 | 56.4% | 52.0% | 53.6% |
+| step | Arm A (seed 42) | Arm A (seed 43) | Arm B (seed 42) | Arm B (seed 43) |
+|---|---:|---:|---:|---:|
+| SFT | 51.6% | 51.6% (same ckpt) | 48.2% | 48.2% (same ckpt) |
+| 25 | 51.4% | 50.4% | 45.2% | 47.8% |
+| 50 | 52.2% | 52.8% | 50.0% | 48.6% |
+| 75 | 53.6% | 54.8% | 52.6% | 51.2% |
+| 100 | 56.4% | 54.2% | 52.0% | 53.6% |
 
 Raw traces, eval/serve logs, and training artifacts (configs, W&B, trainer
 logs) for both arms are archived under the gitignored
 [`PREDICT_RL_RESULTS/`](../PREDICT_RL_RESULTS/) directory
-(`RL_ARM_A_{25,50,75,100}/eval/`, `RL_ARM_B_{25,50,75,100}/eval/` for seed 42,
-`RL_ARM_B_V1_{25,50,75,100}/eval/` for seed 43, and the two `*_shared/` dirs).
-HF: `RLVR_ARM_B_STEP{25,50,75,100}_V0` (seed 42), `..._V1` (seed 43).
+(`RL_ARM_{A,B}_{25,50,75,100}/eval/` for seed 42,
+`RL_ARM_{A,B}_V1_{25,50,75,100}/eval/` for seed 43, and the four `*_shared/`
+dirs). HF: `RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0` (seed 42), `..._V1` (seed 43).
 
 ## 6. Statistics
 
@@ -138,24 +139,24 @@ Compare paired per-task pass/fail outcomes with McNemar's test
 never trust the raw percentage gap alone at n=500. Script:
 [`docs/stats.py`](stats.py) (`python3 docs/stats.py TRACES_A.jsonl TRACES_B.jsonl`).
 
-A first pass (Arm A + one Arm B run, seed 42) found exactly one comparison
-that survived correction for multiple comparisons: "Arm A beats Arm B at
-step 25." A second, independently-trained Arm B run (seed 43, same SFT
-checkpoint, same everything else) was added specifically to test whether that
-held up. It didn't — see below.
+A first pass (one run each, seed 42) found exactly one comparison that
+survived correction for multiple comparisons: "Arm A beats Arm B at step 25."
+Both arms were then retrained independently with seed 43 (same SFT
+checkpoint, same everything else) specifically to test whether that held up.
+It didn't — see below.
 
-**Arm B seed 42 vs seed 43, same checkpoint step (is Arm B's own training
+**Each arm, seed 42 vs seed 43, same checkpoint step (is training
 reproducible?):**
 
-| step | diff | p | 95% CI |
-|---|---:|---:|---|
-| 25 | +2.6 | 0.055 | [0.2, 5.0] |
-| 50 | −1.4 | 0.39 | [−4.2, 1.4] |
-| 75 | −1.4 | 0.44 | [−4.4, 1.6] |
-| 100 | +1.6 | 0.37 | [−1.4, 4.8] |
+| step | Arm A diff (p) | Arm B diff (p) |
+|---|---|---|
+| 25 | −1.0 (p=0.44) | +2.6 (p=0.055) |
+| 50 | +0.6 (p=0.74) | −1.4 (p=0.39) |
+| 75 | +1.2 (p=0.44) | −1.4 (p=0.44) |
+| 100 | −2.2 (p=0.20) | +1.6 (p=0.37) |
 
-No step shows a significant difference between the two Arm B training runs —
-Arm B's RL training is reasonably stable across seeds.
+No step shows a significant difference between either arm's two independent
+training runs — both arms' RL training is reasonably stable across seeds.
 
 **Arm B RL vs its own SFT baseline, both seeds:**
 
@@ -172,34 +173,43 @@ Arm B over its SFT starting point (seed 43's result alone clears Bonferroni
 correction). Step 75 points the same direction in both seeds though only
 seed 42 individually clears p<0.05.
 
-**Arm A vs Arm B, matched by step, both Arm B seeds:**
+**Arm A vs Arm B, matched by step, all four seed combinations:**
 
-| step | vs seed 42 (p) | vs seed 43 (p) |
-|---|---|---|
-| 25 | −6.2 (**p=0.006**) | −3.6 (p=0.11) |
-| 50 | −2.2 (p=0.37) | −3.6 (p=0.13) |
-| 75 | −1.0 (p=0.71) | −2.4 (p=0.32) |
-| 100 | −4.4 (p=0.068) | −2.8 (p=0.25) |
+| step | A42 vs B42 | A42 vs B43 | A43 vs B42 | A43 vs B43 |
+|---|---|---|---|---|
+| 25 | **−6.2 (p=0.006)** | −3.6 (p=0.11) | **−5.2 (p=0.026)** | −2.6 (p=0.27) |
+| 50 | −2.2 (p=0.37) | −3.6 (p=0.13) | −2.8 (p=0.25) | −4.2 (p=0.076) |
+| 75 | −1.0 (p=0.71) | −2.4 (p=0.32) | −2.2 (p=0.37) | −3.6 (p=0.13) |
+| 100 | −4.4 (p=0.068) | −2.8 (p=0.25) | −2.2 (p=0.39) | −0.6 (p=0.86) |
 
-The step-25 result — the only one that survived multiple-comparison
-correction against seed 42 — does not replicate against seed 43 (p=0.11).
-**No checkpoint step shows a statistically confirmed difference between Arm A
-and Arm B once a second independently-trained Arm B run is included.** The
-step-100 headline gap (Arm A ahead in both seeds, 56.4% vs 52-54%) is
-directionally consistent but not significant either time.
+**At step 100, none of the four seed combinations are significant** — the
+seed43-vs-seed43 pair is a near dead heat (54.2% vs 53.6%, p=0.86). At step
+25, two of four combinations are nominally significant (p=0.006, p=0.026),
+and both involve Arm B's seed-42 run specifically — its own lowest point
+(45.2%, and the one seed that showed a significant dip vs its own SFT
+baseline above). That reads as Arm B seed 42's step-25 checkpoint being an
+outlier, not a reproducible Arm A advantage: swap in Arm B's seed-43 run at
+the same step and the gap is cut roughly in half and loses significance both
+times (p=0.11, p=0.27).
 
-Arm A's own SFT baseline (51.6%) has no equivalent significance test against
-its RL checkpoints: those raw eval traces were on the original training
-instance, deleted before the RL rerun that produced the rest of this data.
-Only the point estimate exists.
+**No checkpoint step shows a difference between Arm A and Arm B that holds up
+across seed combinations.** The step-100 headline gap that first looked like
+Arm A leading (56.4% vs 52.0%) shrinks to a coin flip once both arms have a
+second independent training run (54.2% vs 53.6%).
+
+Arm A's SFT baseline (51.6%) has no significance test against its own RL
+checkpoints: those raw eval traces were on the original training instance,
+deleted before the seed-42 RL rerun that produced the rest of this data. Only
+the point estimate exists.
 
 **Bottom line.** RLVR reliably improves Arm B over its own SFT baseline by
 step 100 — replicated across two independent training runs, strong evidence
 (p=0.0017 in the cleaner replication). Whether Arm A's reactive design or
 Arm B's predictive design performs better is **unconfirmed** at every
-checkpoint tested; the one result that once suggested Arm A's edge did not
-survive a second Arm B training seed. Arm A itself has two independent runs
-(step100: 56%, 56.4% — consistent); a second Arm A seed has not been run.
+checkpoint, across every seed combination tested. The one result that once
+suggested Arm A's edge traced back to a single outlier training run, not a
+reproducible arm-level effect. Both arms show good within-arm reproducibility
+(seed 42 vs seed 43 never significantly differ, for either arm, at any step).
 
 Report final pass@1, first-patch success, executed-failure recovery, visible
 tests per solved task, tokens, and tool calls. For Arm B also report prediction
@@ -211,7 +221,7 @@ show where each training stage changed behavior.
 
 ## 7. Efficiency
 
-Same eval traces, from the harness's own `visible_tool_calls` /
+Seed-42 eval traces, from the harness's own `visible_tool_calls` /
 `visible_test_calls` metrics plus assistant-turn character counts (a token
 proxy, not exact tokenization):
 

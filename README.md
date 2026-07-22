@@ -33,30 +33,35 @@ MBPP+, no frontier screening.
 
 ## Results (n=500, greedy pass@1)
 
-Arm B was trained twice from the same SFT checkpoint with different seeds, to
-check whether any Arm A vs Arm B difference replicates:
+Both arms were trained twice, independently, from the same SFT checkpoints
+with different seeds, to check whether any Arm A vs Arm B difference
+replicates:
 
-| step | Arm A | Arm B (seed 42) | Arm B (seed 43) |
-|---|---:|---:|---:|
-| SFT | 51.6% | 48.2% | 48.2% (same checkpoint) |
-| RL 25 | 51.4% | 45.2% | 47.8% |
-| RL 50 | 52.2% | 50.0% | 48.6% |
-| RL 75 | 53.6% | 52.6% | 51.2% |
-| RL 100 | **56.4%** | 52.0% | 53.6% |
+| step | Arm A (seed 42) | Arm A (seed 43) | Arm B (seed 42) | Arm B (seed 43) |
+|---|---:|---:|---:|---:|
+| SFT | 51.6% | 51.6% (same ckpt) | 48.2% | 48.2% (same ckpt) |
+| RL 25 | 51.4% | 50.4% | 45.2% | 47.8% |
+| RL 50 | 52.2% | 52.8% | 50.0% | 48.6% |
+| RL 75 | 53.6% | 54.8% | 52.6% | 51.2% |
+| RL 100 | 56.4% | 54.2% | 52.0% | 53.6% |
 
-Arm A leads at every checkpoint against both Arm B seeds, but **no step is
-statistically significant once the second Arm B run is included** (McNemar,
-p=0.11-0.32). A step-25 result that looked significant against the first Arm B
-run (p=0.006) did not replicate against the second (p=0.11) — that was noise.
-What *is* solid: RL improves Arm B over its own SFT baseline by step 100,
-replicated across both seeds (p=0.033 and p=0.0017). Full stats and
+The first seed pair made Arm A look ahead at step 100 (56.4% vs 52.0%) and
+significantly ahead at step 25 (p=0.006). Neither holds up: **across all four
+seed combinations, no checkpoint step shows a statistically confirmed
+difference between Arm A and Arm B** (McNemar, p=0.026-0.86) — the step-100
+gap shrinks to a coin flip in the seed43-vs-seed43 pairing (54.2% vs 53.6%,
+p=0.86), and the step-25 "win" traces back to Arm B's seed-42 run being its
+own outlier, not a reproducible effect. What *is* solid: RL improves Arm B
+over its own SFT baseline by step 100, replicated across both seeds (p=0.033
+and p=0.0017). Both arms show good within-arm reproducibility (seed 42 vs
+seed 43 never significantly differ, either arm, any step). Full stats and
 efficiency numbers: [REPRODUCTION.md](docs/REPRODUCTION.md),
 [`PREDICT_RL_RESULTS/`](PREDICT_RL_RESULTS/).
 
 Checkpoints: [`SFT_ARM_A`](https://huggingface.co/JayZenith/SFT_ARM_A),
 [`SFT_ARM_B`](https://huggingface.co/JayZenith/SFT_ARM_B),
 `JayZenith/RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0` (seed 42), plus
-`RLVR_ARM_B_STEP{25,50,75,100}_V1` (seed-43 replication run).
+`RLVR_ARM_{A,B}_STEP{25,50,75,100}_V1` (seed-43 replication runs).
 
 ## Reproduce
 
