@@ -227,14 +227,37 @@ significance question.
 
 1. **Sweep `λ`** (`orchestrator.algo.alpha` in `configs/arm_b_rl.toml`,
    currently `0.1`) upward, or reweight the auxiliary CE loss toward the
-   rare/hard classes instead of uniform per-token weighting. Tells you
-   whether the `ASSERTION_FAILURE` collapse is a loss-weight problem or a
-   harder ceiling on what this SFT curriculum can teach the model to
-   generalize to its own generated code.
+   rare/hard classes instead of uniform per-token weighting. "Rare" is a
+   claim about the *SFT set*, not RL: counting the 212 Arm B SFT traces
+   directly, `<PREDICTION>` labels split 257 PASS : 37 `ASSERTION_FAILURE` :
+   8 `RUNTIME_ERROR` — only 37 real examples, ever, none with any reasoning
+   shown before the label (the tag is emitted immediately after
+   `apply_patch`, no scratchpad). During RL itself `ASSERTION_FAILURE` is
+   *not* rare — it's routinely a third to half of every step's real outcomes
+   (118 of 236 at step 1, 72 of 103 at step 50) — so the model isn't short
+   on raw exposure during RL, it just never learns from it. That points at
+   *hard*, not just *rare*. Reweighting raises the gradient on examples the
+   model already sees; it doesn't add a missing demonstration of *how* to
+   simulate. Tells you whether this is a fixable weighting problem or a real
+   ceiling on one-shot, no-scratchpad code simulation at this model size.
 2. **Reward shaping.** Final task reward pays out identically regardless of
    whether the prediction was right, so GRPO itself has no gradient toward
    good decisions — only the weaker CE term does. Hypothesis: prediction
    improves decisions, so give extra reward when
    `true failure + predicted failure + REVISE` and when
-   `true PASS + predicted PASS + KEEP`. Puts the discrimination skill
-   directly in GRPO's reward, not just the auxiliary loss.
+   `true PASS + predicted PASS + KEEP`. One catch, verified in
+   `src/glyph/prime_rl.py`: GRPO already masks sampled `<PREDICTION>` label
+   tokens out of its own loss (`rl_weights=0`), so a shaped reward's
+   gradient reaches the surrounding `<DECISION>`/action tokens, not the
+   prediction content itself — and decision-following is already 97-99%
+   consistent, so there's little room left there. Making this experiment
+   actually touch the prediction tokens means lifting that mask too, not
+   just adding a reward term.
+
+The actual crux: two separate, non-overlapping pathways touch these traces —
+GRPO trains everything *except* the prediction label (masked out by
+design), and the auxiliary CE trains *only* the prediction label, uniformly
+weighted, fully decoupled from reward. Reweighting CE fixes the weighting
+half; reward shaping, as scoped today, can't reach the label tokens at all
+without also lifting GRPO's mask on them. Neither alone closes the loop
+between "predicted correctly" and "rewarded for it" — that requires both.

@@ -680,28 +680,45 @@ patch applied</code></div>
     <div class="next-card">
       <div class="next-num">01 &middot; try first</div>
       <div class="next-title" style="color:#3987e5">Sweep &lambda;</div>
-      <p>Sweep <code>orchestrator.algo.alpha</code> in <code>configs/arm_b_rl.toml</code> (currently
-      <code>0.1</code>) upward, or change how the CE loss counts each label. Right now every
-      <code>&lt;PREDICTION&gt;</code> token counts the same in that loss's average, and ~85% of all
-      labels are <code>PASS</code>, so the average is mostly &ldquo;get PASS right&rdquo; &mdash;
-      <code style="color:#d03b3b">ASSERTION_FAILURE</code> is <i>rare</i> (~15% of labels, so it
-      barely moves that average even when wrong) and separately <i>hard</i> (getting it right
-      requires simulating the candidate's logic against the test, unlike
-      <code style="color:#c98500">RUNTIME_ERROR</code>, which surface code features like undefined
-      names or index risk can flag without that simulation). Giving rare/hard-class labels a bigger
-      multiplier in the loss &mdash; so the optimizer pays for ignoring them, not just proportionally
-      &mdash; tests whether this is a fixable weighting problem or a harder ceiling on what the model
-      can learn to simulate at all.</p>
+      <p>Rare is a claim about the <b>SFT set</b>, not RL: counting the actual 212 Arm B SFT traces
+      directly, <code>&lt;PREDICTION&gt;</code> labels split 257 PASS : 37
+      <code style="color:#d03b3b">ASSERTION_FAILURE</code> : 8
+      <code style="color:#c98500">RUNTIME_ERROR</code> &mdash; only 37 real examples, ever, and
+      none of them show any reasoning before the label; the tag is emitted immediately after
+      <code>apply_patch</code>, no scratchpad. During RL itself <code>ASSERTION_FAILURE</code> is
+      <i>not</i> rare &mdash; it's routinely a third to half of every step's real outcomes (118 of
+      236 at step 1, 72 of 103 at step 50) &mdash; so the model isn't short on raw exposure during
+      RL, it just never learns from it. That points at <i>hard</i>, not just <i>rare</i>:
+      correctly calling it requires simulating the candidate's logic against the test, unlike
+      <code style="color:#c98500">RUNTIME_ERROR</code>, which surface features (undefined names,
+      index risk) can flag without simulating anything. Reweighting the CE loss toward this class
+      raises the gradient on examples the model already sees &mdash; it doesn't add a missing
+      demonstration of <i>how</i> to simulate. Tests whether this is a fixable weighting problem or
+      a real ceiling on one-shot, no-scratchpad code simulation at this model size.</p>
     </div>
     <div class="next-card">
       <div class="next-num">02 &middot; then</div>
       <div class="next-title" style="color:#c98500">Reward shaping</div>
       <p>Final task reward pays out identically regardless of whether the prediction was right, so
-      GRPO itself has no gradient toward good decisions. Hypothesis: prediction improves decisions,
-      so give extra reward for <code>true failure + predicted failure + REVISE</code> and
-      <code>true PASS + predicted PASS + KEEP</code> &mdash; puts the discrimination skill directly
-      in GRPO's reward, not just the auxiliary loss.</p>
+      GRPO itself has no gradient toward good decisions. Hypothesis: give extra reward for
+      <code>true failure + predicted failure + REVISE</code> and
+      <code>true PASS + predicted PASS + KEEP</code>. One catch, verified in
+      <code>src/glyph/prime_rl.py</code>: GRPO already masks sampled
+      <code>&lt;PREDICTION&gt;</code> label tokens out of its own loss (<code>rl_weights=0</code>),
+      so a shaped reward's gradient reaches the surrounding <code>&lt;DECISION&gt;</code>/action
+      tokens, not the prediction content itself &mdash; and decision-following is already
+      97&ndash;99% consistent, so there's little room left there. Making this experiment actually
+      touch the prediction tokens means lifting that mask too, not just adding a reward term.</p>
     </div>
+  </div>
+  <div class="callout warn" style="margin-top:20px">
+    <div class="callout-label">The actual crux</div>
+    Two separate, non-overlapping pathways touch these traces: GRPO trains everything
+    <i>except</i> the prediction label (masked out by design), and the auxiliary CE trains
+    <i>only</i> the prediction label, uniformly weighted, fully decoupled from reward. Reweighting
+    CE fixes the weighting half; reward shaping, as scoped today, can't reach the label tokens at
+    all without also lifting GRPO's mask on them. Neither alone closes the loop between
+    &ldquo;predicted correctly&rdquo; and &ldquo;rewarded for it&rdquo; &mdash; that requires both.
   </div>
 </section>
 
