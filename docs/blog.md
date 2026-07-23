@@ -56,6 +56,12 @@ combination tested. The one number that once suggested Arm A had an edge
 a reproducible arm-level effect. Both arms show good within-arm
 reproducibility of their own.
 
+**Scope**: none of this isolates "prediction" as a single causal variable —
+Arm B bundles the predict/decide protocol, an added action space, the
+auxiliary CE loss, and a different SFT trace format together, so this is a
+system-vs-system comparison. Detail:
+[research_specs.md § Limits to report](research_specs.md#limits-to-report).
+
 Efficiency (from the original seed-42 traces): Arm B does not use fewer tool
 calls or turns (5.4–5.7 vs Arm A's 5.3–5.5) — it uses slightly more. It does
 use fewer visible test executions (1.62–1.99 vs 1.94–1.99), since
