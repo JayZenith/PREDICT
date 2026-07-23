@@ -60,7 +60,7 @@ replicates:
 
 | step | Arm A (seed 42) | Arm A (seed 43) | Arm B (seed 42) | Arm B (seed 43) |
 |---|---:|---:|---:|---:|
-| SFT | 51.6% | 51.6% (same ckpt) | 48.2% | 48.2% (same ckpt) |
+| SFT | 50.6% | 50.6% (same ckpt) | 48.2% | 48.2% (same ckpt) |
 | RL 25 | 51.4% | 50.4% | 45.2% | 47.8% |
 | RL 50 | 52.2% | 52.8% | 50.0% | 48.6% |
 | RL 75 | 53.6% | 54.8% | 52.6% | 51.2% |

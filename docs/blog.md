@@ -14,7 +14,7 @@ It didn't.
 
 | step | Arm A (seed 42) | Arm A (seed 43) | Arm B (seed 42) | Arm B (seed 43) |
 |---|---:|---:|---:|---:|
-| SFT | 51.6% | 51.6% (same ckpt) | 48.2% | 48.2% (same ckpt) |
+| SFT | 50.6% | 50.6% (same ckpt) | 48.2% | 48.2% (same ckpt) |
 | 25 | 51.4% | 50.4% | 45.2% | 47.8% |
 | 50 | 52.2% | 52.8% | 50.0% | 48.6% |
 | 75 | 53.6% | 54.8% | 52.6% | 51.2% |
@@ -27,8 +27,9 @@ McNemar (continuity-corrected) + paired bootstrap CI on per-task pass/fail
   either arm at any of the 4 checkpoints (p=0.20–0.74 for Arm A, p=0.055–0.44
   for Arm B). Both arms' training is reasonably reproducible.
 - **Each arm's RL vs its own SFT baseline, both seeds** (Arm A's SFT baseline
-  was re-evaluated fresh for this — 50.6%, matching the earlier 51.6% point
-  estimate within eval noise): **step 100 is significant for both arms in
+  is 50.6% — the only archived 500-task Arm A SFT eval in this repo; an
+  earlier 51.6% figure had no corresponding raw eval file and has been
+  corrected): **step 100 is significant for both arms in
   both seeds** — Arm A gave p=0.0003 (seed 42) and p=0.028 (seed 43); Arm B
   gave p=0.033 (seed 42) and p=0.0017 (seed 43). Arm A's step 75 is
   significant in both seeds too (p=0.041, p=0.0035). The step-25
@@ -167,17 +168,17 @@ prediction-before-execution doesn't work, just that this run doesn't prove it
 does. Digging into what Arm B's prediction head actually learned narrows down
 why.
 
-Decision-following is solid: `KEEP` follows a `PASS` prediction 100% of the
-time, `REVISE` follows a non-`PASS` prediction 97-99% of the time, in both
-seeds. That's not the problem.
+Decision-following is solid: `REVISE` follows a non-`PASS` prediction 100% of
+the time in both seeds; `KEEP` follows a `PASS` prediction 96.4% of the time
+(seed 42) and 99.4% of the time (seed 43). That's not the problem.
 
 The problem is prediction coverage, by outcome class (step 100, both seeds):
 
-| actual outcome | share of failures | recall |
+| actual outcome | share of verified outcomes | recall |
 |---|---:|---:|
 | ASSERTION_FAILURE | 57-59% | **0%** |
 | RUNTIME_ERROR | 15-16% | 50-63% |
-| PASS | — | 92-96% |
+| PASS | 22-23% | 92-96% |
 
 The model predicts only `PASS` or `RUNTIME_ERROR`, ever. It has not once
 correctly predicted `ASSERTION_FAILURE` — the dominant failure mode, code
@@ -320,7 +321,7 @@ from digging into why the results looked the way they did.
    shares the same transformer weights, that's not nothing — reward tied
    to the decision can still reshape the hidden states feeding the label
    positions indirectly — but it isn't a term that directly grades the
-   label choice, and decision-following is already 97-99% consistent,
+   label choice, and decision-following is already 96-100% consistent,
    so there's limited headroom on the direct side. Making this experiment
    squarely target prediction correctness likely still means lifting the
    mask, not just adding a reward term.

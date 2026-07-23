@@ -123,7 +123,7 @@ runs):
 
 | step | Arm A (seed 42) | Arm A (seed 43) | Arm B (seed 42) | Arm B (seed 43) |
 |---|---:|---:|---:|---:|
-| SFT | 51.6% | 51.6% (same ckpt) | 48.2% | 48.2% (same ckpt) |
+| SFT | 50.6% | 50.6% (same ckpt) | 48.2% | 48.2% (same ckpt) |
 | 25 | 51.4% | 50.4% | 45.2% | 47.8% |
 | 50 | 52.2% | 52.8% | 50.0% | 48.6% |
 | 75 | 53.6% | 54.8% | 52.6% | 51.2% |
@@ -163,9 +163,10 @@ reproducible?):**
 No step shows a significant difference between either arm's two independent
 training runs — both arms' RL training is reasonably stable across seeds.
 
-**Arm A RL vs its own SFT baseline, both seeds** (SFT re-evaluated fresh —
-50.6% here vs the 51.6% point estimate used earlier, same fixed checkpoint,
-within eval noise):
+**Arm A RL vs its own SFT baseline, both seeds** (50.6%, `RL_ARM_A_sft/eval/`
+— the only archived 500-task Arm A SFT eval; an earlier 51.6% figure appeared
+in prior report drafts with no corresponding raw eval file anywhere in this
+repo, so it has been corrected to this one, single, reproducible number):
 
 | step | seed 42 diff (p) | seed 43 diff (p) |
 |---|---|---|

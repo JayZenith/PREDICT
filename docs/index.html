@@ -49,13 +49,16 @@ code { font-family: var(--mono); font-size: 0.86em; }
 .chip b { color: var(--ink); font-weight: 600; }
 
 /* ---- sections ---- */
-.section { padding: 56px 0; border-bottom: 1px solid var(--border); }
+.section { padding: 56px 0; border-bottom: 1px solid var(--border); scroll-margin-top: 54px; }
 .section:last-of-type { border-bottom: none; }
 .section-kicker { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 8px;
   color: var(--mute); font-weight: 600; }
 .section-title { font-size: 24px; font-weight: 600; margin: 0 0 14px; letter-spacing: -0.01em; }
-.section-lede { color: #cfcfcf; max-width: 760px; margin: 0 0 28px; font-size: 15px; }
+.section-lede { color: #cfcfcf; max-width: 760px; margin: 0 0 20px; font-size: 15px; }
+.section-lede:last-child { margin-bottom: 0; }
 .lede-narrow { max-width: 640px; }
+.mt-md { margin-top: 20px; }
+.mt-lg { margin-top: 32px; }
 
 /* ---- cards / grid ---- */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 22px 24px; }
@@ -102,6 +105,8 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 14px; marg
 .callout-label { font-weight: 600; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase;
   color: var(--c); margin-bottom: 5px; display: flex; align-items: center; gap: 7px; }
 .good { --c: var(--green); } .warn { --c: var(--yellow); } .crit { --c: var(--red); } .info { --c: var(--blue); }
+.transcript-grid + .callout { margin-top: 20px; }
+.callout + .callout { margin-top: 16px; }
 
 /* ---- transcripts ---- */
 .transcript-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -163,10 +168,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="kicker">PREDICT &middot; RLVR on MBPP &middot; commit <a href="https://github.com/JayZenith/PREDICT/commit/9eefac7"><code>9eefac7</code></a></p>
   <h1 class="h1">PREDICT &mdash; Training a Coding Agent to Judge Its Own Patches Before Execution</h1>
   <p class="tagline">How does adding explicit outcome prediction and keep-or-revise control change a
-    long-horizon coding agent? Arm A is a standard test-and-recover system trained with SFT and
-    RLVR. Arm B adds a custom prediction-and-decision trace trained with verified-label
-    cross-entropy alongside RLVR. The arms are comparative systems, not a single-variable
-    ablation.</p>
+    long-horizon coding agent? Arm A tests and reacts (SFT + RLVR). Arm B predicts the outcome
+    first, then commits to KEEP or REVISE, trained with an added verified-label cross-entropy
+    loss.</p>
   <div class="meta-row">
     <span class="chip"><b>n=500</b> held-out test</span>
     <span class="chip"><b>2&times;2</b> seed matrix, both arms</span>
@@ -222,7 +226,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <text x="412" y="500" text-anchor="middle" class="diagram-edge" fill="#d03b3b">test still fails &rarr; apply_patch</text>
 </svg></div>
 
-  <p class="section-lede" style="margin-top:34px">That harness runs inside PRIME-RL's training
+  <p class="section-lede mt-lg">That harness runs inside PRIME-RL's training
     loop: the orchestrator dispatches each rollout into a separate Verifiers subprocess execution
     environment, scores it, forms GRPO groups, and sends batches to the trainer &mdash; which broadcasts
     updated policy weights straight back to the inference server every step.</p>
@@ -333,15 +337,15 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <text x="343.0" y="290" text-anchor="middle" class="axis-label">step 50</text>
 <text x="494.5" y="290" text-anchor="middle" class="axis-label">step 75</text>
 <text x="646.0" y="290" text-anchor="middle" class="axis-label">step 100</text>
-<path d="M40.0,128.0 L191.5,130.3 L343.0,120.8 L494.5,104.2 L646.0,70.8" fill="none" stroke="#3987e5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
-<circle cx="40.0" cy="128.0" r="3.4" fill="#0a0a0a" stroke="#3987e5" stroke-width="2"/>
+<path d="M40.0,139.9 L191.5,130.3 L343.0,120.8 L494.5,104.2 L646.0,70.8" fill="none" stroke="#3987e5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+<circle cx="40.0" cy="139.9" r="3.4" fill="#0a0a0a" stroke="#3987e5" stroke-width="2"/>
 <circle cx="191.5" cy="130.3" r="3.4" fill="#0a0a0a" stroke="#3987e5" stroke-width="2"/>
 <circle cx="343.0" cy="120.8" r="3.4" fill="#0a0a0a" stroke="#3987e5" stroke-width="2"/>
 <circle cx="494.5" cy="104.2" r="3.4" fill="#0a0a0a" stroke="#3987e5" stroke-width="2"/>
 <circle cx="646.0" cy="70.8" r="3.4" fill="#0a0a0a" stroke="#3987e5" stroke-width="2"/>
 <text x="654.0" y="74.8" class="line-end-label" fill="#3987e5">56.4%</text>
-<path d="M40.0,128.0 L191.5,142.2 L343.0,113.7 L494.5,89.9 L646.0,97.0" fill="none" stroke="#3987e5" stroke-width="2.5" stroke-dasharray="6 5" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
-<circle cx="40.0" cy="128.0" r="3.4" fill="#0a0a0a" stroke="#3987e5" stroke-width="2"/>
+<path d="M40.0,139.9 L191.5,142.2 L343.0,113.7 L494.5,89.9 L646.0,97.0" fill="none" stroke="#3987e5" stroke-width="2.5" stroke-dasharray="6 5" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+<circle cx="40.0" cy="139.9" r="3.4" fill="#0a0a0a" stroke="#3987e5" stroke-width="2"/>
 <circle cx="191.5" cy="142.2" r="3.4" fill="#0a0a0a" stroke="#3987e5" stroke-width="2"/>
 <circle cx="343.0" cy="113.7" r="3.4" fill="#0a0a0a" stroke="#3987e5" stroke-width="2"/>
 <circle cx="494.5" cy="89.9" r="3.4" fill="#0a0a0a" stroke="#3987e5" stroke-width="2"/>
@@ -383,7 +387,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <table class="data-table">
     <thead><tr><th>step</th><th>Arm A seed42</th><th>Arm A seed43</th><th>Arm B seed42</th><th>Arm B seed43</th></tr></thead>
     <tbody>
-      <tr><td>SFT</td><td>51.6%</td><td>51.6%</td><td>48.2%</td><td>48.2%</td></tr>
+      <tr><td>SFT</td><td>50.6%</td><td>50.6%</td><td>48.2%</td><td>48.2%</td></tr>
       <tr><td>RL 25</td><td>51.4%</td><td>50.4%</td><td>45.2%</td><td>47.8%</td></tr>
       <tr><td>RL 50</td><td>52.2%</td><td>52.8%</td><td>50.0%</td><td>48.6%</td></tr>
       <tr><td>RL 75</td><td>53.6%</td><td>54.8%</td><td>52.6%</td><td>51.2%</td></tr>
@@ -439,9 +443,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="diagnosis">
   <p class="section-kicker">Diagnosis</p>
   <h2 class="section-title">What was actually hindering Arm B</h2>
-  <p class="section-lede">Decision-following is solid &mdash; KEEP follows a PASS prediction 100% of
-    the time, REVISE follows a non-PASS prediction 97&ndash;99% of the time, in both seeds. That's
-    not the problem. The problem is <b>discrimination</b>: telling, from the candidate code alone,
+  <p class="section-lede">Decision-following is solid &mdash; REVISE follows a non-PASS prediction 100% of
+    the time, KEEP follows a PASS prediction 96.4% of the time (seed 42) / 99.4% of the time (seed 43).
+    That's not the problem. The problem is <b>discrimination</b>: telling, from the candidate code alone,
     before it ever runs, whether it will pass, crash (<code style="color:#c98500">RUNTIME_ERROR</code>),
     or run fine but fail the assertion (<code style="color:#d03b3b">ASSERTION_FAILURE</code>) &mdash;
     the harder case, since it requires simulating the candidate's logic against the test, not just
@@ -478,43 +482,32 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
   <div class="callout warn">
     <div class="callout-label">Why GRPO can't fix it directly</div>
-    Prediction-label tokens are explicitly masked out of the GRPO loss by design (see
-    <a href="../docs/research_specs.md#arm-b--consequence-predictor">research_specs.md</a>): final
-    task reward depends only on whether <code>apply_patch</code>/<code>python_test</code>/<code>FINAL</code>
-    eventually succeed, never on what <code>&lt;PREDICTION&gt;</code> said, so GRPO carries no
-    <i>direct</i> loss term at those specific positions. That's narrower than saying GRPO can't
-    touch the skill at all: GRPO and the auxiliary CE update the same shared transformer weights,
-    so GRPO's gradient at every other position in the rollout (the <code>&lt;DECISION&gt;</code>
-    and action tokens) still reshapes the hidden representations feeding into the masked positions,
-    and can shift the prediction distribution indirectly. What the mask actually guarantees is that
-    no term in GRPO's loss directly rewards or penalizes a specific predicted label &mdash; the
-    auxiliary CE is the only <i>direct</i> supervision on correctness there, not the only thing
-    capable of moving those probabilities at all. The RL step-25 blip is noise from early
-    optimization; nothing directly defends it, so it doesn't last.
+    Prediction-label tokens are masked out of the GRPO loss by design (see
+    <a href="../docs/research_specs.md#arm-b--consequence-predictor">research_specs.md</a>) &mdash;
+    final reward depends only on whether <code>apply_patch</code>/<code>python_test</code>/<code>FINAL</code>
+    eventually succeed, never on what <code>&lt;PREDICTION&gt;</code> said. So GRPO carries no
+    <i>direct</i> loss term on those tokens. It's not zero effect, though: GRPO and the auxiliary CE
+    update the same shared transformer weights, so gradient at the surrounding
+    <code>&lt;DECISION&gt;</code>/action tokens can still reshape the masked positions indirectly.
+    The auxiliary CE (&lambda;=0.1) is the only <i>direct</i> teacher here &mdash; not the only thing
+    capable of moving those probabilities. The RL step-25 blip is early-optimization noise nothing
+    directly defends, so it doesn't last.
   </div>
 
-  <p class="section-lede" style="margin-top:20px">The SFT curriculum is part of why it starts
-    collapsed. Across all 212 Arm B SFT traces, <code>&lt;PREDICTION&gt;</code> labels split roughly
-    257 PASS : 45 real-failure (85% / 15%) &mdash; and half the 70 recovery traces (the 25
-    <code>visible</code> + 10 <code>deep_visible</code> ones) hardcode the label <code>PASS</code>
-    on the buggy candidate itself, demonstrating the &ldquo;honest mistake, caught by the real
-    test&rdquo; recovery path. Only the 25 <code>shadow</code> + 10 <code>deep_shadow</code> traces
-    ever show a correct non-PASS label. So SFT doesn't just fail to build a robust discrimination
-    skill &mdash; for half its recovery examples it directly demonstrates that guessing PASS and
-    letting <code>python_test</code> sort it out is an acceptable pattern, which is exactly the
-    shortcut the RL policy settles back into.</p>
+  <p class="section-lede mt-md">The SFT curriculum is part of why it starts collapsed: across all
+    212 Arm B SFT traces, <code>&lt;PREDICTION&gt;</code> labels split roughly 257 PASS : 45
+    real-failure (85% / 15%), and half the 70 recovery traces (25 <code>visible</code> + 10
+    <code>deep_visible</code>) hardcode the label <code>PASS</code> on the buggy candidate itself
+    &mdash; the &ldquo;honest mistake, caught by the real test&rdquo; path. Only the 25
+    <code>shadow</code> + 10 <code>deep_shadow</code> traces ever show a correct non-PASS label. So
+    half of Arm B's own recovery curriculum demonstrates that guessing PASS and letting
+    <code>python_test</code> sort it out is an acceptable pattern &mdash; exactly the shortcut the
+    RL policy falls back on. Not reward hacking, since there's nothing for GRPO to game here, only
+    indifference. The <a href="#next">two experiments below</a> target this directly: reweighting
+    the CE loss toward rare classes, and reward-shaping GRPO itself to finally grade the two kinds
+    of rollouts differently.</p>
 
-  <p class="section-lede" style="margin-top:20px">Not reward hacking &mdash; there's no loophole
-    being exploited, since the masked-out tokens mean there's nothing for GRPO to game, only
-    indifference. Call it poor reward shaping: a &lambda;=0.1 auxiliary CE loss, uniformly weighted
-    per token, was the only <i>direct</i> correctness signal on that skill, so the 85%-majority PASS
-    label dominates that gradient too. The two <a href="#next">experiments below</a> target these
-    directly &mdash; reweighting the CE loss toward rare classes attacks the second problem, and
-    reward shaping (extra reward for true-failure + predicted-failure + REVISE, and true-PASS +
-    predicted-PASS + KEEP) attacks the first, by finally giving GRPO's own reward &mdash; not just
-    the side loss &mdash; a reason to tell the two kinds of rollouts apart.</p>
-
-  <p class="section-lede" style="margin-top:30px">Real training dynamics, seed 42 &mdash; reward
+  <p class="section-lede mt-lg">Real training dynamics, seed 42 &mdash; reward
     from the orchestrator's per-step train-batch logs, entropy and loss from the trainer's per-step
     logs, not eval. Faint line = raw per-step value; bold line = 5-step centered moving average.</p>
   <div class="grid-2">
@@ -680,7 +673,7 @@ patch applied</code></div>
   </div>
 </div>
   </div>
-  <div class="callout warn" style="margin-top:20px">
+  <div class="callout warn">
     <div class="callout-label">What this shows</div>
     On the first two candidates (wrong arithmetic operator, still valid Python), Arm B predicts
     <code style="color:#007A5E">PASS</code> and <code style="color:#007A5E">KEEP</code>s &mdash;
@@ -694,7 +687,7 @@ patch applied</code></div>
     (<code>for i in range(abs(b)): result += a</code>, then flip sign on <code>a^b&lt;0</code>) that
     genuinely avoids <code>*</code>.
   </div>
-  <div class="callout crit" style="margin-top:16px">
+  <div class="callout crit">
     <div class="callout-label">Verifier gap</div>
     Arm B's winning candidate is <code>z = x * y</code> &mdash; it uses the exact operator the task
     says not to. The test suite is three numeric asserts (<code>multiply_int(10,20)==200</code>,
@@ -717,21 +710,16 @@ patch applied</code></div>
 
   <div class="card">
     <ol class="learned-list">
-      <li><b>A matched comparison isn't an ablation.</b> Arm A vs. Arm B tests two complete,
-      multi-part systems against each other &mdash; the predict/decide protocol, the auxiliary
-      loss, and the SFT trace format all change together. It can tell you the bundle didn't
-      clearly win; it can't tell you which piece of the bundle mattered. Isolating
-      &ldquo;prediction&rdquo; as a single causal factor needs a compute/action-matched ablation,
-      not this two-arm design.</li>
+      <li><b>A matched comparison isn't an ablation.</b> Testing two complete, multi-part systems
+      against each other (see <a href="#data">Scope</a>) can tell you the bundle didn't clearly
+      win; it can't tell you which piece of the bundle mattered. Isolating &ldquo;prediction&rdquo;
+      as a single causal factor needs a compute/action-matched ablation, not this two-arm
+      design.</li>
       <li><b>An auxiliary loss needs its own reward path, or it's the only <i>direct</i>
-      teacher.</b> Masking prediction-label tokens out of GRPO's loss is a reasonable design
-      choice &mdash; it stops the RL objective from getting a noisy gradient on tokens final
-      reward doesn't grade. It doesn't mean GRPO has zero effect on that skill: shared transformer
-      weights mean gradient from every other token can still shift the prediction distribution
-      indirectly. But it does mean the low-weight, uniformly-weighted auxiliary CE is the only
-      signal that directly targets whether that specific label is correct. A weak, indirect-only
-      supporting cast around a weak direct teacher produces a weak skill, independent of how good
-      the rest of the system is.</li>
+      teacher.</b> Masking prediction-label tokens out of GRPO's loss (<a href="#diagnosis">why,
+      above</a>) is a reasonable design choice, but it leaves the low-weight, uniformly-weighted
+      auxiliary CE as the only <i>direct</i> teacher for that skill. A weak sole teacher produces a
+      weak skill, independent of how good the rest of the system is.</li>
       <li><b>SFT curricula can bake in the shortcut they're trying to prevent.</b> Half of Arm B's
       recovery traces demonstrate &ldquo;guess PASS, let the real test catch the mistake&rdquo; as
       a valid, reward-preserving pattern &mdash; because that's a real recovery mode worth
@@ -749,17 +737,13 @@ patch applied</code></div>
       independent run with the same setup. Two-seed replication (now standard for both arms here)
       is what turned an appealing headline into a checked claim.</li>
       <li><b>&ldquo;No scratchpad&rdquo; doesn't mean &ldquo;no computation,&rdquo; and it isn't
-      automatically a dead end.</b> Every &lt;PREDICTION&gt; tag in every trace is emitted
-      immediately after <code>apply_patch</code>, with no reasoning tokens in between &mdash; but
-      this project's own inspiration, ECHO (Shrivastava, Kauffmann, Awadallah &amp; Papailiopoulos,
-      <a href="../docs/research_specs.md#novelty-relative-to-echo">&ldquo;Terminal Agents Learn
-      World Models for Free&rdquo;</a>, 2026), trains a CE loss on environment-observation tokens
-      with no separate reasoning step either, reusing the same GRPO rollout &mdash; and it doubles
-      pass@1 on TerminalBench-2.0 (Qwen3-8B: 2.70%&rarr;5.17%; Qwen3-14B: 5.17%&rarr;10.79%). So
-      scratchpad-free auxiliary prediction plainly can work. The likely difference: ECHO's target
-      is the full, dense, multi-token environment observation &mdash; the actual output text,
-      forcing token-by-token computation through what happened &mdash; while ours is a single
-      terse label from a 6-way enum. A denser prediction target closer to ECHO's (the specific
+      automatically a dead end.</b> Every &lt;PREDICTION&gt; tag is emitted immediately after
+      <code>apply_patch</code>, no reasoning tokens in between &mdash; but ECHO
+      (<a href="#data">this project's inspiration</a>) trains a similarly scratchpad-free CE loss
+      and still doubles pass@1 on TerminalBench-2.0. So scratchpad-free auxiliary prediction
+      plainly can work. The likely difference: ECHO's target is the full, dense, multi-token
+      environment observation, forcing token-by-token computation through what happened &mdash;
+      ours is a single terse label from a 6-way enum. A denser prediction target (the specific
       failing assertion or expected value, not just an outcome class) may be a more direct fix for
       the <code style="color:#d03b3b">ASSERTION_FAILURE</code> blind spot than reweighting the
       current, thin classification target.</li>
@@ -794,33 +778,25 @@ patch applied</code></div>
       <div class="next-num">02 &middot; then</div>
       <div class="next-title" style="color:#c98500">Reward shaping</div>
       <p>Final task reward pays out identically regardless of whether the prediction was right, so
-      GRPO carries no direct incentive toward good predictions. Hypothesis: give extra reward for
+      GRPO carries no direct incentive toward good predictions. Hypothesis: extra reward for
       <code>true failure + predicted failure + REVISE</code> and
-      <code>true PASS + predicted PASS + KEEP</code>. One nuance, verified in
-      <code>src/glyph/prime_rl.py</code>: GRPO already masks sampled
-      <code>&lt;PREDICTION&gt;</code> label tokens out of its own loss (<code>rl_weights=0</code>),
-      so a shaped reward's <i>direct</i> gradient still lands on the surrounding
-      <code>&lt;DECISION&gt;</code>/action tokens, not the label positions themselves. Because
-      every position shares the same transformer weights, that's not nothing &mdash;
-      decision-conditioned reward can still reshape the hidden states feeding the label positions
-      indirectly &mdash; but it isn't a term that directly grades the label choice, and
-      decision-following is already 97&ndash;99% consistent, so there's limited headroom on the
-      direct side. Making this experiment squarely target prediction correctness likely still
-      means lifting the mask, not just adding a reward term.</p>
+      <code>true PASS + predicted PASS + KEEP</code>. One nuance (see <a href="#diagnosis">Diagnosis</a>):
+      GRPO already masks prediction-label tokens from its own loss, so a shaped reward's <i>direct</i>
+      gradient still lands on the surrounding <code>&lt;DECISION&gt;</code>/action tokens, not the
+      label positions &mdash; a real indirect effect via shared weights, but not a direct grade on
+      the label choice. Decision-following is already 96&ndash;100% consistent, so there's limited
+      headroom there. Squarely targeting prediction correctness likely still means lifting the
+      mask, not just adding a reward term.</p>
     </div>
   </div>
-  <div class="callout warn" style="margin-top:20px">
+  <div class="callout warn mt-md">
     <div class="callout-label">The actual crux</div>
-    GRPO and the auxiliary CE update the same shared transformer weights, so calling them fully
-    separate is too strong &mdash; but they're not doing the same job either. GRPO carries no
-    direct loss term on the prediction-label positions (masked out by design); the auxiliary CE is
-    the only signal that directly supervises which label gets predicted there. Reweighting CE
-    strengthens that direct signal; reward shaping strengthens the indirect one, by making the
-    surrounding decision/action tokens' reward actually depend on prediction quality. Neither is a
-    full fix alone: reweighting doesn't add missing information about <i>how</i> to simulate, and
-    reward shaping's effect on the label positions, absent a direct term there, still depends on
-    shared-weight spillover from everywhere else in the rollout &mdash; real, but unmeasured and
-    not targeted.
+    Reweighting CE strengthens the one <i>direct</i> signal on the prediction skill; reward shaping
+    strengthens the indirect one, by making the surrounding decision/action tokens' reward depend
+    on prediction quality. Neither is a full fix alone: reweighting doesn't add missing information
+    about <i>how</i> to simulate, and reward shaping's effect on the label positions, absent a
+    direct term there, still depends on shared-weight spillover &mdash; real, but unmeasured and not
+    targeted.
   </div>
 </section>
 
