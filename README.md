@@ -20,6 +20,12 @@ trains the prediction; the agent never sees it. Details:
 [research_specs.md](docs/research_specs.md) ·
 [agent_trace.md](docs/agent_trace.md) · [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
+**Scope**: Arm A is a matched comparator, not a single-variable ablation.
+Arm B bundles the predict/decide protocol, an added action space, the
+auxiliary CE loss, and a different SFT trace format together — this compares
+two complete systems, it does not isolate "prediction" as one causal factor.
+Full caveat: [research_specs.md § Limits to report](docs/research_specs.md#limits-to-report).
+
 ## Data
 
 MBPP (Mostly Basic Python Problems): ~1,000 short, crowd-sourced Python

@@ -50,9 +50,13 @@ bash scripts/train_rl.sh b
 ```
 
 Both run 100 steps over the same 212 disjoint RL tasks with group size 16,
-batch size 64, 512 completion tokens, eight visible tool calls, binary final
-reward, no reference KL, and the `zero_advantage` post-batch filter enforced
-(drops GRPO groups with uniform-zero reward). Arm A starts from
+batch size 64, 512 completion tokens, binary final reward, no reference KL,
+and the `zero_advantage` post-batch filter enforced (drops GRPO groups with
+uniform-zero reward). Tool/turn budget, identical for both arms and shared
+with eval (`src/glyph/harness.py` defaults, `configs/arm_{a,b}_rl.toml`
+`harness.max_tool_calls`): **8 visible tool calls per rollout, 30s timeout per
+call**; `read_file`/`apply_patch`/`python_test` draw from the same pool.
+Arm A starts from
 `JayZenith/SFT_ARM_A`; Arm B starts from `JayZenith/SFT_ARM_B` with `λ=0.1`
 (`alpha` in the config). `configs/arm_{a,b}_rl.toml` set `[ckpt] interval=25,
 keep_last=4` and `[orchestrator.eval] interval=25`, so all four checkpoints
@@ -228,7 +232,10 @@ accuracy, six-class macro-F1, bad-patch rejection, and unnecessary rejection
 of good patches.
 
 The primary comparison is Arm A RLVR versus Arm B RLVR. Base and SFT results
-show where each training stage changed behavior.
+show where each training stage changed behavior. This is a system-vs-system
+comparison, not a single-variable ablation — see
+[research_specs.md § Limits to report](research_specs.md#limits-to-report)
+for what's bundled inside "Arm B" and can't currently be varied independently.
 
 ## 7. Efficiency
 

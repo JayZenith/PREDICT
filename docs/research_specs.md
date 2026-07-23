@@ -272,6 +272,16 @@ claim must stand on prediction quality, decisions, correctness, and efficiency.
 
 ## Limits to report
 
+- **Arm A is a matched comparator, not a single-variable ablation.** Arm B
+  bundles several simultaneous changes together: the predict/decide protocol
+  (extra action space beyond patch→test), the auxiliary CE loss term, the
+  resulting SFT trace format (`PREDICTION`/`DECISION` tags, deeper two-step
+  recovery chains), and the token cost of emitting that protocol on every
+  turn within the same shared tool/token budget. This experiment tests the
+  complete Arm B system against Arm A — it does not attribute any observed
+  effect to "prediction" as an isolated causal factor, since the protocol,
+  loss, and data format cannot currently be varied independently of each
+  other.
 - Arm B adds auxiliary CE sequences, so it uses more trainer tokens than Arm A.
   Report trainer tokens and GPU-hours. A compute-matched control is follow-up
   work, not part of this two-arm test.
