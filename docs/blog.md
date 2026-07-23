@@ -186,9 +186,18 @@ failures and is blind to the other ~57%. That's sufficient on its own to
 explain why Arm B never pulled ahead, independent of the arm-vs-arm
 significance question.
 
-**Where to go next**: sweep `λ` (`orchestrator.algo.alpha` in
-`configs/arm_b_rl.toml`, currently `0.1`) upward, or reweight the auxiliary
-CE loss toward the rare/hard classes instead of uniform per-token weighting.
-That would tell you whether the `ASSERTION_FAILURE` collapse is a
-loss-weight problem or a harder ceiling on what this SFT curriculum can
-teach the model to generalize to its own generated code.
+**Where to go next**, two directions, sweep first:
+
+1. **Sweep `λ`** (`orchestrator.algo.alpha` in `configs/arm_b_rl.toml`,
+   currently `0.1`) upward, or reweight the auxiliary CE loss toward the
+   rare/hard classes instead of uniform per-token weighting. Tells you
+   whether the `ASSERTION_FAILURE` collapse is a loss-weight problem or a
+   harder ceiling on what this SFT curriculum can teach the model to
+   generalize to its own generated code.
+2. **Reward shaping.** Final task reward pays out identically regardless of
+   whether the prediction was right, so GRPO itself has no gradient toward
+   good decisions — only the weaker CE term does. Hypothesis: prediction
+   improves decisions, so give extra reward when
+   `true failure + predicted failure + REVISE` and when
+   `true PASS + predicted PASS + KEEP`. Puts the discrimination skill
+   directly in GRPO's reward, not just the auxiliary loss.
