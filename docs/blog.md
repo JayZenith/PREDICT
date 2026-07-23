@@ -76,7 +76,10 @@ Both arms were full-fine-tuned from `Qwen3-4B-Base` on verified MBPP (Mostly
 Basic Python Problems — Austin et al.,
 ["Program Synthesis with Large Language Models"](https://arxiv.org/abs/2108.07732),
 2021) agent traces: 60 optimizer steps (nine epochs over 212 traces),
-1280-token sequence limit, no trace truncated or excluded.
+1280-token sequence limit, no trace truncated or excluded. RLVR-on-MBPP with a
+small Qwen model was directly inspired by Skopin & Kotelnikov,
+["Improving Small Language Models for Code Generation with Reinforcement
+Learning from Verification Feedback"](https://arxiv.org/abs/2605.30478) (2026).
 
 | Checkpoint | Final loss | val40 pass@1 (greedy) |
 |---|---:|---:|

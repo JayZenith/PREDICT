@@ -25,8 +25,11 @@ trains the prediction; the agent never sees it. Details:
 MBPP (Mostly Basic Python Problems): ~1,000 short, crowd-sourced Python
 problems, each with a description and gold-standard test assertions, from
 Austin et al., ["Program Synthesis with Large Language Models"](https://arxiv.org/abs/2108.07732)
-(2021). Used here as the source task distribution. Official MBPP, split by
-seed 42, disjoint SFT/RL/validation/test:
+(2021). Used here as the source task distribution. RLVR-on-MBPP-with-small-Qwen
+setup directly inspired by Skopin & Kotelnikov,
+["Improving Small Language Models for Code Generation with Reinforcement
+Learning from Verification Feedback"](https://arxiv.org/abs/2605.30478) (2026).
+Official MBPP, split by seed 42, disjoint SFT/RL/validation/test:
 
 | Split | Task IDs | n | Use |
 |---|---|---:|---|
