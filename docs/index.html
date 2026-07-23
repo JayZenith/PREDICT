@@ -430,19 +430,21 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <rect x="68.9" y="36.7" width="90.2" height="189.3" rx="3" fill="#007A5E"/>
 <text x="114.0" y="28.7" text-anchor="middle" class="bar-value" fill="#007A5E">92%</text>
 <text x="114.0" y="242" text-anchor="middle" class="axis-label">PASS</text>
-<text x="114.0" y="254" text-anchor="middle" class="axis-sub">22% of predictions</text>
+<text x="114.0" y="254" text-anchor="middle" class="axis-sub">22% of verified outcomes</text>
 <rect x="264.9" y="96.6" width="90.2" height="129.4" rx="3" fill="#c98500"/>
 <text x="310.0" y="88.6" text-anchor="middle" class="bar-value" fill="#c98500">63%</text>
 <text x="310.0" y="242" text-anchor="middle" class="axis-label">RUNTIME_ERROR</text>
-<text x="310.0" y="254" text-anchor="middle" class="axis-sub">16% of predictions</text>
+<text x="310.0" y="254" text-anchor="middle" class="axis-sub">16% of verified outcomes</text>
 <rect x="460.9" y="226.0" width="90.2" height="0.0" rx="3" fill="#d03b3b"/>
-<text x="506.0" y="218.0" text-anchor="middle" class="bar-value" fill="#d03b3b">0%</text>
+<text x="506.0" y="218.0" text-anchor="middle" class="bar-value" fill="#d03b3b">0% (never guessed)</text>
 <text x="506.0" y="242" text-anchor="middle" class="axis-label">ASSERTION_FAILURE</text>
-<text x="506.0" y="254" text-anchor="middle" class="axis-sub">57% of predictions</text>
+<text x="506.0" y="254" text-anchor="middle" class="axis-sub">57% of verified outcomes</text>
 </svg></div>
-  <p class="chart-caption">Recall = correct predictions / actual occurrences of that class. The model
-    has not once correctly predicted ASSERTION_FAILURE &mdash; the dominant failure mode &mdash; at
-    step 50, 75, or 100, in either independent seed.</p>
+  <p class="chart-caption">Sub-label = share of execution-verified outcomes in that class (the real
+    or shadow test result, not the model's guess). Recall = the model's own sampled prediction
+    matching that verified outcome. The model has not once correctly predicted ASSERTION_FAILURE
+    &mdash; despite it being the actual verified outcome 57% of the time, the dominant failure mode
+    &mdash; at step 50, 75, or 100, in either independent seed.</p>
 
   <div class="callout crit">
     <div class="callout-label">Blind spot</div>
@@ -453,6 +455,13 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     discrimination skill. Only the auxiliary CE loss (&lambda;=0.1) could teach it, and it isn't
     strong enough to survive against GRPO's pull.
   </div>
+  <p class="section-lede" style="margin-top:20px">Not reward hacking &mdash; there's no loophole
+    being exploited. GRPO's reward never depended on prediction correctness in the first place, so
+    there's nothing for the policy to game; it's just indifferent. Call it poor reward shaping
+    instead: the one skill that mattered was routed entirely through a &lambda;=0.1 auxiliary CE
+    loss instead of through the signal GRPO actually optimizes, and that auxiliary signal lost the
+    fight against GRPO's own gradient. The <a href="#next">reward-shaping experiment below</a> is
+    the direct fix &mdash; put the discrimination skill in GRPO's reward, not just the side loss.</p>
 
   <p class="section-lede" style="margin-top:30px">Real training dynamics, seed 42, smoothed
     (5-step window) &mdash; from the orchestrator's and trainer's own per-step logs, not eval:</p>
