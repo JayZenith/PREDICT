@@ -34,6 +34,12 @@ Austin et al., ["Program Synthesis with Large Language Models"](https://arxiv.or
 setup directly inspired by Skopin & Kotelnikov,
 ["Improving Small Language Models for Code Generation with Reinforcement
 Learning from Verification Feedback"](https://arxiv.org/abs/2605.30478) (2026).
+The verified-label auxiliary CE design was inspired by Shrivastava, Kauffmann,
+Awadallah & Papailiopoulos, ["ECHO: Terminal Agents Learn World Models for
+Free"](https://arxiv.org/abs/2605.24517) (2026), which trains a
+complementary cross-entropy loss on environment-observation tokens within the
+same GRPO rollout; PREDICT's difference from ECHO is detailed in
+[research_specs.md § Novelty relative to ECHO](docs/research_specs.md#novelty-relative-to-echo).
 Official MBPP, split by seed 42, disjoint SFT/RL/validation/test:
 
 | Split | Task IDs | n | Use |

@@ -86,6 +86,13 @@ Basic Python Problems — Austin et al.,
 small Qwen model was directly inspired by Skopin & Kotelnikov,
 ["Improving Small Language Models for Code Generation with Reinforcement
 Learning from Verification Feedback"](https://arxiv.org/abs/2605.30478) (2026).
+The verified-label auxiliary CE design was inspired by Shrivastava, Kauffmann,
+Awadallah & Papailiopoulos, ["ECHO: Terminal Agents Learn World Models for
+Free"](https://arxiv.org/abs/2605.24517) (2026) — ECHO trains a complementary
+CE loss on environment-observation tokens within the same GRPO rollout, no
+separate reasoning step, and doubles pass@1 on TerminalBench-2.0 (Qwen3-8B:
+2.70%→5.17%; Qwen3-14B: 5.17%→10.79%). PREDICT's difference from ECHO:
+[research_specs.md § Novelty relative to ECHO](research_specs.md#novelty-relative-to-echo).
 
 | SFT behavior family | Count | Arm A | Arm B |
 |---|---:|---|---|
@@ -261,14 +268,23 @@ from digging into why the results looked the way they did.
    seed noise — gone under a second independent run with the same setup.
    Two-seed replication (now standard for both arms here) is what turned
    an appealing headline into a checked claim.
-6. **One-shot classification without a scratchpad is a harder ask than it
-   looks.** Every `<PREDICTION>` tag in every trace is emitted immediately
-   after `apply_patch`, with no reasoning tokens in between. Catching
-   `RUNTIME_ERROR` only requires spotting a surface pattern; catching
-   `ASSERTION_FAILURE` requires actually simulating the candidate's logic
-   against the test, in a single forward pass, from a label alone. Whether
-   a 4B model can do that without ever being shown how is still an open
-   question here, not something reweighting a loss term answers by itself.
+6. **"No scratchpad" doesn't mean "no computation," and it isn't
+   automatically a dead end.** Every `<PREDICTION>` tag in every trace is
+   emitted immediately after `apply_patch`, with no reasoning tokens in
+   between — but this project's own inspiration, ECHO (Shrivastava,
+   Kauffmann, Awadallah & Papailiopoulos, ["Terminal Agents Learn World
+   Models for Free"](https://arxiv.org/abs/2605.24517), 2026), trains a CE
+   loss on environment-observation tokens with no separate reasoning step
+   either, reusing the same GRPO rollout — and it doubles pass@1 on
+   TerminalBench-2.0 (Qwen3-8B: 2.70%→5.17%; Qwen3-14B: 5.17%→10.79%). So
+   scratchpad-free auxiliary prediction plainly can work. The likely
+   difference: ECHO's target is the full, dense, multi-token environment
+   observation — the actual output text, forcing token-by-token computation
+   through what happened — while ours is a single terse label from a 6-way
+   enum. A denser prediction target closer to ECHO's (the specific failing
+   assertion or expected value, not just an outcome class) may be a more
+   direct fix for the `ASSERTION_FAILURE` blind spot than reweighting the
+   current, thin classification target.
 
 **Where to go next**, two directions, sweep first:
 

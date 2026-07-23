@@ -293,9 +293,12 @@ claim must stand on prediction quality, decisions, correctness, and efficiency.
 
 ## Novelty relative to ECHO
 
-ECHO applies CE to the environment's actual output tokens, but those predictions
-are not emitted as a pre-execution assistant action and do not control whether
-the agent executes or revises.
+Shrivastava, Kauffmann, Awadallah & Papailiopoulos,
+["ECHO: Terminal Agents Learn World Models for Free"](https://arxiv.org/abs/2605.24517)
+(2026), applies CE to the environment's actual output tokens (the literal
+stdout/error/trace text), reusing the same rollout as GRPO with no separate
+reasoning step — but those predictions are not emitted as a pre-execution
+assistant action and do not control whether the agent executes or revises.
 
 This experiment combines:
 

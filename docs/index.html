@@ -279,7 +279,14 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     Models&rdquo;</a> (2021). The RLVR-on-MBPP-with-small-Qwen setup was directly inspired by
     Skopin &amp; Kotelnikov, <a href="https://arxiv.org/abs/2605.30478">&ldquo;Improving Small
     Language Models for Code Generation with Reinforcement Learning from Verification
-    Feedback&rdquo;</a> (2026).</p>
+    Feedback&rdquo;</a> (2026). The verified-label auxiliary CE design was inspired by
+    Shrivastava, Kauffmann, Awadallah &amp; Papailiopoulos,
+    <a href="https://arxiv.org/abs/2605.24517">&ldquo;ECHO: Terminal Agents Learn World Models
+    for Free&rdquo;</a> (2026) &mdash; ECHO trains a complementary CE loss on
+    environment-observation tokens within the same GRPO rollout, no separate reasoning step, and
+    doubles pass@1 on TerminalBench-2.0. PREDICT's difference from ECHO:
+    <a href="../docs/research_specs.md#novelty-relative-to-echo">research_specs.md &sect; Novelty
+    relative to ECHO</a>.</p>
 
   <div class="stat-grid">
     <div class="stat-tile"><div class="stat-value">424</div><div class="stat-label">train pool &rarr; 212 SFT + 212 RL</div></div>
@@ -715,14 +722,21 @@ patch applied</code></div>
       and significantly ahead at step 25. Both effects were seed noise &mdash; gone under a second
       independent run with the same setup. Two-seed replication (now standard for both arms here)
       is what turned an appealing headline into a checked claim.</li>
-      <li><b>One-shot classification without a scratchpad is a harder ask than it looks.</b> Every
-      &lt;PREDICTION&gt; tag in every trace is emitted immediately after <code>apply_patch</code>,
-      with no reasoning tokens in between. Catching <code style="color:#c98500">RUNTIME_ERROR</code>
-      only requires spotting a surface pattern; catching
-      <code style="color:#d03b3b">ASSERTION_FAILURE</code> requires actually simulating the
-      candidate's logic against the test, in a single forward pass, from a label alone. Whether a
-      4B model can do that without ever being shown how is still an open question here, not
-      something reweighting a loss term answers by itself.</li>
+      <li><b>&ldquo;No scratchpad&rdquo; doesn't mean &ldquo;no computation,&rdquo; and it isn't
+      automatically a dead end.</b> Every &lt;PREDICTION&gt; tag in every trace is emitted
+      immediately after <code>apply_patch</code>, with no reasoning tokens in between &mdash; but
+      this project's own inspiration, ECHO (Shrivastava, Kauffmann, Awadallah &amp; Papailiopoulos,
+      <a href="../docs/research_specs.md#novelty-relative-to-echo">&ldquo;Terminal Agents Learn
+      World Models for Free&rdquo;</a>, 2026), trains a CE loss on environment-observation tokens
+      with no separate reasoning step either, reusing the same GRPO rollout &mdash; and it doubles
+      pass@1 on TerminalBench-2.0 (Qwen3-8B: 2.70%&rarr;5.17%; Qwen3-14B: 5.17%&rarr;10.79%). So
+      scratchpad-free auxiliary prediction plainly can work. The likely difference: ECHO's target
+      is the full, dense, multi-token environment observation &mdash; the actual output text,
+      forcing token-by-token computation through what happened &mdash; while ours is a single
+      terse label from a 6-way enum. A denser prediction target closer to ECHO's (the specific
+      failing assertion or expected value, not just an outcome class) may be a more direct fix for
+      the <code style="color:#d03b3b">ASSERTION_FAILURE</code> blind spot than reweighting the
+      current, thin classification target.</li>
     </ol>
   </div>
 </section>
