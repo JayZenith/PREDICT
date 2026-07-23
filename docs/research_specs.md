@@ -45,7 +45,7 @@ its candidate actually satisfies them.
 
 ## SFT composition
 
-| Trace type | Count | Arm A | Arm B |
+| SFT behavior family | Count | Arm A | Arm B |
 |---|---:|---|---|
 | Direct success | 142 | patch → test passes | correct patch → predict PASS → KEEP → test passes |
 | One-step recovery | 50 | faulty patch → test fails → fix → test passes | 25 shadow: predict failure → REVISE → fix → predict PASS → KEEP → test passes; 25 visible: predict PASS (honest mistake) → KEEP → test fails → fix → predict PASS → KEEP → test passes |
