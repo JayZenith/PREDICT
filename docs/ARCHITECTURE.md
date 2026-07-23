@@ -52,7 +52,7 @@ The patched PRIME-RL algorithm keeps two training views:
 1. Raw rollout: GRPO trains agent actions. Sampled prediction-label tokens have
    zero GRPO weight.
 2. Auxiliary view: the exact pre-prediction context is followed by the verified
-   sandbox label. Only that label receives CE weight.
+   execution-verified label. Only that label receives CE weight.
 
 ```text
 loss = GRPO(actions) + λ × CE(verified outcome | problem, candidate, history)

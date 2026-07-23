@@ -204,6 +204,6 @@ apply_patch bad candidate
 7. `FINAL:` is valid only after a real visible passing test and must be the last
    assistant turn. A hidden final-state check must also pass.
 8. Preserve sampled predictions for metrics. Prediction CE targets the verified
-   sandbox label in a separate auxiliary view.
+   execution-verified label in a separate auxiliary view.
 9. Mask prediction-label tokens from GRPO. Final task success remains the only
    scalar reward.

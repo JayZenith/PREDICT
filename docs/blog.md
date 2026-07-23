@@ -72,9 +72,11 @@ steps and the complete comparison tables: [`docs/REPRODUCTION.md`](REPRODUCTION.
 
 # SFT complete: moving to RLVR
 
-Both arms were full-fine-tuned from `Qwen3-4B-Base` on verified MBPP agent
-traces: 60 optimizer steps (nine epochs over 212 traces), 1280-token sequence
-limit, no trace truncated or excluded.
+Both arms were full-fine-tuned from `Qwen3-4B-Base` on verified MBPP (Mostly
+Basic Python Problems — Austin et al.,
+["Program Synthesis with Large Language Models"](https://arxiv.org/abs/2108.07732),
+2021) agent traces: 60 optimizer steps (nine epochs over 212 traces),
+1280-token sequence limit, no trace truncated or excluded.
 
 | Checkpoint | Final loss | val40 pass@1 (greedy) |
 |---|---:|---:|

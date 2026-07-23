@@ -1,8 +1,11 @@
 # PREDICT
 
-Does sandbox-supervised outcome prediction before execution make a coding
-agent decide better? Two matched arms, same base model, same MBPP tasks,
-same budgets, same reward.
+Does training a multi-turn coding agent to predict execution outcomes before
+running the test improve error recovery and decision-making over a purely
+reactive agent? Two matched arms use the same base model, MBPP tasks, tool
+budgets, and task reward; Arm B additionally learns outcome prediction
+through verified labels using auxiliary cross-entropy alongside RLVR, then
+decides whether to keep or revise each candidate patch before execution.
 
 | Arm | Loop | Training |
 |---|---|---|
@@ -12,14 +15,18 @@ same budgets, same reward.
 Arm B predicts one class before testing — `PASS`, `ASSERTION_FAILURE`,
 `RUNTIME_ERROR`, `SYNTAX_ERROR`, `TIMEOUT`, `OTHER` — then commits to `KEEP`
 (runs the real test) or `REVISE` (the rejected candidate is shadow-tested,
-hidden from the agent, then it patches again). The verified sandbox label
+hidden from the agent, then it patches again). The verified execution label
 trains the prediction; the agent never sees it. Details:
 [research_specs.md](docs/research_specs.md) ·
 [agent_trace.md](docs/agent_trace.md) · [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Data
 
-Official MBPP, split by seed 42, disjoint SFT/RL/validation/test:
+MBPP (Mostly Basic Python Problems): ~1,000 short, crowd-sourced Python
+problems, each with a description and gold-standard test assertions, from
+Austin et al., ["Program Synthesis with Large Language Models"](https://arxiv.org/abs/2108.07732)
+(2021). Used here as the source task distribution. Official MBPP, split by
+seed 42, disjoint SFT/RL/validation/test:
 
 | Split | Task IDs | n | Use |
 |---|---|---:|---|

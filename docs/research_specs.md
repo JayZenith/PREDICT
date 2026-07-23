@@ -2,13 +2,13 @@
 
 ## Research question
 
-Can a coding agent trained to predict the sandbox consequence of its concrete
+Can a coding agent trained to predict the execution consequence of its concrete
 patch use that prediction to revise bad patches before execution, improving
 correctness or reducing test usage?
 
 The claim stays narrow:
 
-> Adding sandbox-supervised pre-execution consequence prediction to an
+> Adding execution-supervised pre-execution consequence prediction to an
 > otherwise matched coding-agent pipeline improves patch decisions,
 > correctness, or execution efficiency.
 
@@ -54,7 +54,7 @@ Total: 212 traces per arm (70 recovery, split 50 one-step / 20 two-step).
 
 Two-step recovery traces exist because RL exploration routinely revises more
 than once per task, a regime one-step SFT traces never demonstrate. Each
-two-step trace chains two independently sandbox-verified failing mutations of
+two-step trace chains two independently execution-verified failing mutations of
 the gold code, fixed sequentially, so Arm B gets a genuine three-cycle
 prediction/decision example instead of learning the protocol only up to depth
 two.
@@ -144,7 +144,7 @@ total loss = GRPO loss + λ × prediction loss
 
 - GRPO trains patches, decisions, revisions, tool calls, and `FINAL` from final
   task success.
-- Prediction CE trains the outcome label from the real sandbox result.
+- Prediction CE trains the outcome label from the real execution result.
 - λ controls how strongly prediction learning influences the model.
 - Mask prediction-label tokens out of the GRPO loss. Predictions receive no
   scalar reward; only final test success determines RL reward.
@@ -161,7 +161,7 @@ context =
     + previous tool observations
     + <PREDICTION>
 
-target = actual sandbox outcome
+target = actual execution outcome
 
 prediction CE = -log P(actual outcome | context)
 ```
@@ -172,7 +172,7 @@ Example:
 Problem: implement is_even
 Candidate: return n % 2 == 1
 Model sampled: PASS
-Shadow sandbox: ASSERTION_FAILURE
+Shadow test: ASSERTION_FAILURE
 ```
 
 The auxiliary target must be:
@@ -190,7 +190,7 @@ Implementation rule:
    `KEEP/REVISE` decision.
 2. Construct an auxiliary training view ending immediately before the prediction
    label.
-3. Teacher-force the verified sandbox label and compute CE only on its label
+3. Teacher-force the verified execution label and compute CE only on its label
    tokens.
 4. Mask the remaining auxiliary tokens from prediction CE.
 
@@ -206,7 +206,7 @@ problem + candidate code → likely execution consequence
 ## Shadow execution
 
 If Arm B chooses `REVISE`, the evaluator copies the rejected candidate into an
-isolated hidden test process inside the disposable sandbox. The result is never
+isolated hidden test process in a disposable subprocess workspace. The result is never
 shown to the agent and does not count as a visible tool call.
 
 ```text
@@ -290,7 +290,7 @@ This experiment combines:
 - The same policy generates the patch and predicts its outcome.
 - Prediction happens before execution.
 - Prediction explicitly controls `KEEP` versus `REVISE`.
-- Real sandbox outcomes supervise predictions during GRPO.
+- Real execution outcomes supervise predictions during GRPO.
 - Shadow execution supervises rejected candidates.
 - Final correctness remains the only RL reward.
 - Correct rejection and unnecessary rejection are directly measurable.
