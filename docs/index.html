@@ -640,14 +640,14 @@ patch applied</code></div>
 <div class="turn turn-predict"><span class="turn-tag" style="color:#c98500">predict</span><code>&lt;PREDICTION&gt;PASS&lt;/PREDICTION&gt; &lt;DECISION&gt;<span style="color:#007A5E">KEEP</span>&lt;/DECISION&gt;</code></div>
 <div class="turn turn-agent"><span class="turn-tag">agent</span><code>CALL python_test {"project_path":"solution.py"}</code></div>
 <div class="turn turn-tool turn-tool-fail"><span class="turn-tag">tool</span><code>status: <b style="color:#d03b3b">failed</b>
-tests <b style="color:#d03b3b">failed</b></code></div>
+tests <b style="color:#d03b3b">failed</b> (actual: ASSERTION_FAILURE)</code></div>
 <div class="turn turn-agent"><span class="turn-tag">agent</span><code>CALL apply_patch {"find":"z = x + y","replace":"z = x - y"}</code></div>
 <div class="turn turn-tool"><span class="turn-tag">tool</span><code>status: <b style="color:#007A5E">success</b>
 patch applied</code></div>
 <div class="turn turn-predict"><span class="turn-tag" style="color:#c98500">predict</span><code>&lt;PREDICTION&gt;PASS&lt;/PREDICTION&gt; &lt;DECISION&gt;<span style="color:#007A5E">KEEP</span>&lt;/DECISION&gt;</code></div>
 <div class="turn turn-agent"><span class="turn-tag">agent</span><code>CALL python_test {"project_path":"solution.py"}</code></div>
 <div class="turn turn-tool turn-tool-fail"><span class="turn-tag">tool</span><code>status: <b style="color:#d03b3b">failed</b>
-tests <b style="color:#d03b3b">failed</b></code></div>
+tests <b style="color:#d03b3b">failed</b> (actual: ASSERTION_FAILURE)</code></div>
 <div class="turn turn-agent"><span class="turn-tag">agent</span><code>CALL apply_patch {"find":"z = x - y","replace":"z = x * y"}</code></div>
 <div class="turn turn-tool"><span class="turn-tag">tool</span><code>status: <b style="color:#007A5E">success</b>
 patch applied</code></div>
@@ -661,10 +661,15 @@ patch applied</code></div>
   </div>
   <div class="callout warn" style="margin-top:20px">
     <div class="callout-label">What this shows</div>
-    Arm B predicts <code style="color:#007A5E">PASS</code> and <code style="color:#007A5E">KEEP</code>s
-    three times in a row on a candidate that hasn't run yet &mdash; matching the 0% ASSERTION_FAILURE
-    recall above &mdash; then reacts to the real test failure exactly like Arm A would have anyway.
-    Arm A solves it correctly on the first try, no recovery needed.
+    On the first two candidates (wrong arithmetic operator, still valid Python), Arm B predicts
+    <code style="color:#007A5E">PASS</code> and <code style="color:#007A5E">KEEP</code>s &mdash;
+    but the verified outcome once each candidate actually runs is
+    <code style="color:#d03b3b">ASSERTION_FAILURE</code> both times, exactly the class it has 0%
+    recall on. This isn't hypothetical &mdash; it's this exact real trace: two wrong PASS
+    predictions, in a row, then a real test failure it reacts to exactly like Arm A would have
+    anyway (no benefit from having predicted at all). Only the third candidate is actually correct,
+    so that PASS prediction happens to be right. Arm A solves it correctly on the first try, no
+    recovery needed.
   </div>
 </section>
 
