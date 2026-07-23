@@ -87,6 +87,15 @@ small Qwen model was directly inspired by Skopin & Kotelnikov,
 ["Improving Small Language Models for Code Generation with Reinforcement
 Learning from Verification Feedback"](https://arxiv.org/abs/2605.30478) (2026).
 
+| SFT behavior family | Count | Arm A | Arm B |
+|---|---:|---|---|
+| Direct success | 142 | patch → test passes | correct patch → predict PASS → KEEP → test passes |
+| One-step recovery | 50 | faulty patch → test fails → fix → test passes | 25 shadow: predict failure → REVISE → fix → predict PASS → KEEP → test passes; 25 visible: predict PASS (honest mistake) → KEEP → test fails → fix → predict PASS → KEEP → test passes |
+| Two-step recovery | 20 | faulty patch → fails → different faulty patch → fails → fix → test passes | 10 deep shadow: predict failure → REVISE → predict failure → REVISE → predict PASS → KEEP → test passes; 10 deep visible: predict PASS (mistake) → KEEP → fails → predict PASS (mistake again) → KEEP → fails → fix → predict PASS → KEEP → test passes |
+
+Total: 212 traces per arm (70 recovery, split 50 one-step / 20 two-step). Full
+detail: [research_specs.md § SFT composition](research_specs.md#sft-composition).
+
 | Checkpoint | Final loss | val40 pass@1 (greedy) |
 |---|---:|---:|
 | [Arm A SFT](https://huggingface.co/JayZenith/SFT_ARM_A) | 0.0287 | 24/40 (60%) |
