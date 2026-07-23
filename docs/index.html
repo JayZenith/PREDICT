@@ -423,7 +423,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <h2 class="section-title">What was actually hindering Arm B</h2>
   <p class="section-lede">Decision-following is solid &mdash; KEEP follows a PASS prediction 100% of
     the time, REVISE follows a non-PASS prediction 97&ndash;99% of the time, in both seeds. That's
-    not the problem. The problem is prediction <i>coverage</i>, by outcome class, step 100 seed 42:</p>
+    not the problem. The problem is <b>discrimination</b>: telling, from the candidate code alone,
+    before it ever runs, whether it will pass, crash (<code style="color:#c98500">RUNTIME_ERROR</code>),
+    or run fine but fail the assertion (<code style="color:#d03b3b">ASSERTION_FAILURE</code>) &mdash;
+    the harder case, since it requires simulating the candidate's logic against the test, not just
+    spotting a surface-level crash pattern. Measured by outcome class, RL step 100, seed 42:</p>
 
   <div class="chart-wrap"><svg viewBox="0 0 620 260" class="chart-svg" role="img" aria-label="bar chart">
 <line x1="16" y1="226.0" x2="604" y2="226.0" stroke="#7a7a7a" stroke-width="1"/>
@@ -444,24 +448,50 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     or shadow test result, not the model's guess). Recall = the model's own sampled prediction
     matching that verified outcome. The model has not once correctly predicted ASSERTION_FAILURE
     &mdash; despite it being the actual verified outcome 57% of the time, the dominant failure mode
-    &mdash; at step 50, 75, or 100, in either independent seed.</p>
+    &mdash; at RL step 50, 75, or 100, in either independent seed.</p>
 
   <div class="callout crit">
     <div class="callout-label">Blind spot</div>
-    100% PASS at SFT (fully collapsed) &rarr; a brief 1&ndash;2% ASSERTION_FAILURE recall at step 25
-    &rarr; extinguished back to 0% by step 50, never recovering. Correctly predicting
-    ASSERTION_FAILURE and choosing REVISE saves at most one turn over just testing and reacting
-    &mdash; final task reward is identical either path, so GRPO has no gradient toward that
-    discrimination skill. Only the auxiliary CE loss (&lambda;=0.1) could teach it, and it isn't
-    strong enough to survive against GRPO's pull.
+    100% PASS at the SFT checkpoint, i.e. RL step 0 (fully collapsed) &rarr; a brief 1&ndash;2%
+    ASSERTION_FAILURE recall at RL step 25 &rarr; extinguished back to 0% by RL step 50, never
+    recovering through step 100. These are RLVR (GRPO) steps, not SFT steps &mdash; SFT is already
+    finished and frozen by the time this trajectory starts.
   </div>
+
+  <div class="callout warn">
+    <div class="callout-label">Why GRPO can't fix it</div>
+    Prediction-label tokens are explicitly masked out of the GRPO loss by design (see
+    <a href="../docs/research_specs.md#arm-b--consequence-predictor">research_specs.md</a>): final
+    task reward depends only on whether <code>apply_patch</code>/<code>python_test</code>/<code>FINAL</code>
+    eventually succeed, never on what <code>&lt;PREDICTION&gt;</code> said, so GRPO has literally
+    zero gradient on those tokens in either direction. This is exactly why GRPO reliably lifts
+    pass@1 for both arms by step 100 (it's training the tokens tied to its reward) while never
+    touching the discrimination skill at all (those tokens are cut out of its loss). The only thing
+    that ever updates a prediction token during RL is the auxiliary CE loss &mdash; so whatever the
+    SFT checkpoint starts with is the entire signal RL has to work with. The RL step-25 blip is
+    noise from early optimization; nothing defends it, so it doesn't last.
+  </div>
+
+  <p class="section-lede" style="margin-top:20px">The SFT curriculum is part of why it starts
+    collapsed. Across all 212 Arm B SFT traces, <code>&lt;PREDICTION&gt;</code> labels split roughly
+    257 PASS : 45 real-failure (85% / 15%) &mdash; and half the 70 recovery traces (the 25
+    <code>visible</code> + 10 <code>deep_visible</code> ones) hardcode the label <code>PASS</code>
+    on the buggy candidate itself, demonstrating the &ldquo;honest mistake, caught by the real
+    test&rdquo; recovery path. Only the 25 <code>shadow</code> + 10 <code>deep_shadow</code> traces
+    ever show a correct non-PASS label. So SFT doesn't just fail to build a robust discrimination
+    skill &mdash; for half its recovery examples it directly demonstrates that guessing PASS and
+    letting <code>python_test</code> sort it out is an acceptable pattern, which is exactly the
+    shortcut the RL policy settles back into.</p>
+
   <p class="section-lede" style="margin-top:20px">Not reward hacking &mdash; there's no loophole
-    being exploited. GRPO's reward never depended on prediction correctness in the first place, so
-    there's nothing for the policy to game; it's just indifferent. Call it poor reward shaping
-    instead: the one skill that mattered was routed entirely through a &lambda;=0.1 auxiliary CE
-    loss instead of through the signal GRPO actually optimizes, and that auxiliary signal lost the
-    fight against GRPO's own gradient. The <a href="#next">reward-shaping experiment below</a> is
-    the direct fix &mdash; put the discrimination skill in GRPO's reward, not just the side loss.</p>
+    being exploited, since the masked-out tokens mean there's nothing for GRPO to game, only
+    indifference. Call it poor reward shaping: the one skill that mattered was routed entirely
+    through a &lambda;=0.1 auxiliary CE loss, uniformly weighted per token, so the 85%-majority PASS
+    label dominates that gradient too. The two <a href="#next">experiments below</a> target these
+    directly &mdash; reweighting the CE loss toward rare classes attacks the second problem, and
+    reward shaping (extra reward for true-failure + predicted-failure + REVISE, and true-PASS +
+    predicted-PASS + KEEP) attacks the first, by finally giving GRPO's own reward &mdash; not just
+    the side loss &mdash; a reason to tell the two kinds of rollouts apart.</p>
 
   <p class="section-lede" style="margin-top:30px">Real training dynamics, seed 42, smoothed
     (5-step window) &mdash; from the orchestrator's and trainer's own per-step logs, not eval:</p>

@@ -174,20 +174,48 @@ The problem is prediction coverage, by outcome class (step 100, both seeds):
 
 The model predicts only `PASS` or `RUNTIME_ERROR`, ever. It has not once
 correctly predicted `ASSERTION_FAILURE` — the dominant failure mode, code
-that runs but fails the assertion — at step 50, 75, or 100, in either
-independent run. The trajectory: 100% `PASS` at SFT (fully collapsed), a
-brief ~1-2% `ASSERTION_FAILURE` recall at step 25, extinguished back to 0% by
-step 50 and never recovering.
+that runs but fails the assertion — at RL step 50, 75, or 100, in either
+independent run (these are RLVR/GRPO steps; SFT is already finished and
+frozen before this trajectory starts). The trajectory: 100% `PASS` at the
+SFT checkpoint, i.e. RL step 0 (fully collapsed), a brief ~1-2%
+`ASSERTION_FAILURE` recall at RL step 25, extinguished back to 0% by RL step
+50 and never recovering.
 
-Likely cause: correctly predicting `ASSERTION_FAILURE` and choosing `REVISE`
-saves at most one turn over just testing and reacting — the real
-`python_test` catches wrong logic for free either way, and final task reward
-is identical either path. GRPO has no reward gradient pushing toward that
-discrimination skill; only the auxiliary CE loss (`λ=0.1`) could teach it,
-and it isn't strong enough to survive against GRPO's pull. `RUNTIME_ERROR` is
-detectable from surface code features (undefined vars, index risk) without
-simulating the algorithm against the test cases — a cheaper pattern, and the
-only one that stuck.
+Root cause, in two parts:
+
+1. **GRPO can't fix it.** Prediction-label tokens are explicitly masked out
+   of the GRPO loss ([research_specs.md § Arm B — consequence
+   predictor](research_specs.md#arm-b--consequence-predictor)): final task
+   reward depends only on whether `apply_patch`/`python_test`/`FINAL`
+   eventually succeed, never on what `<PREDICTION>` said. GRPO has literally
+   zero gradient on those tokens either way — which is exactly why it
+   reliably lifts pass@1 for both arms by step 100 (it trains the tokens
+   tied to its reward) while never touching discrimination at all (those
+   tokens are cut from its loss). Only the auxiliary CE loss (`λ=0.1`) ever
+   updates a prediction token during RL, so whatever the SFT checkpoint
+   starts with is the entire signal RL has to work with; the step-25 blip is
+   early-optimization noise that nothing defends, so it doesn't last.
+2. **SFT starts collapsed by construction.** Across all 212 Arm B SFT
+   traces, `<PREDICTION>` labels split roughly 257 PASS : 45 real-failure
+   (85%/15%) — and half the 70 recovery traces (25 `visible` + 10
+   `deep_visible`) hardcode the label `PASS` on the buggy candidate itself,
+   demonstrating the "honest mistake, caught by the real test" recovery
+   path. Only the 25 `shadow` + 10 `deep_shadow` traces ever show a correct
+   non-PASS label. So SFT doesn't just fail to build the skill robustly —
+   for half its recovery examples it directly demonstrates that guessing
+   PASS and letting `python_test` sort it out is an acceptable pattern,
+   which is exactly the shortcut the RL policy settles back into.
+   `RUNTIME_ERROR` is detectable from surface code features (undefined
+   vars, index risk) without simulating the algorithm against the test
+   cases — a cheaper pattern, and the only non-PASS one that stuck.
+
+Not reward hacking — the masked-out tokens mean there's nothing for GRPO to
+game, only indifference. Call it poor reward shaping: the one skill that
+mattered was routed entirely through a low-weight, uniformly-per-token CE
+loss, so the 85%-majority PASS label dominates that gradient too. The two
+directions below target these directly — reweighting CE toward rare classes
+attacks part 2, reward shaping attacks part 1 by finally giving GRPO's own
+reward a reason to tell the two kinds of rollouts apart.
 
 Net: Arm B pays the full token overhead of predicting on every turn (see
 efficiency numbers above) but the mechanism only covers ~15% of real
