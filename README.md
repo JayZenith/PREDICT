@@ -1,11 +1,9 @@
 # PREDICT
 
-Does training a multi-turn coding agent to predict execution outcomes before
-running the test improve error recovery and decision-making over a purely
-reactive agent? Two matched arms use the same base model, MBPP tasks, tool
-budgets, and task reward; Arm B additionally learns outcome prediction
-through verified labels using auxiliary cross-entropy alongside RLVR, then
-decides whether to keep or revise each candidate patch before execution.
+How do reactive and predictive multi-turn coding-agent training systems
+compare under matched tasks, models, budgets, and rewards? Arm A uses SFT
+and RLVR for test-and-recover behavior; Arm B adds outcome prediction with
+verified-label cross-entropy and a keep-or-revise decision before execution.
 
 | Arm | Loop | Training |
 |---|---|---|

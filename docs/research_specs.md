@@ -2,9 +2,10 @@
 
 ## Research question
 
-Can a coding agent trained to predict the execution consequence of its concrete
-patch use that prediction to revise bad patches before execution, improving
-correctness or reducing test usage?
+How do reactive and predictive multi-turn coding-agent training systems
+compare under matched tasks, models, budgets, and rewards? Arm A uses SFT
+and RLVR for test-and-recover behavior; Arm B adds outcome prediction with
+verified-label cross-entropy and a keep-or-revise decision before execution.
 
 The claim stays narrow:
 

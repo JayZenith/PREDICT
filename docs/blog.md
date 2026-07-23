@@ -107,9 +107,9 @@ wrong. A standard-MBPP completion check (tests shown, no agent loop) on the
 *untuned* base model scored 64.6% pass@1 on the same 500 tasks where the full
 SFT pipeline scored 6%.
 
-Arm B's actual research question — does explicit outcome prediction improve
-reasoning, first-pass correctness, and reduce revision attempts in a
-realistic test-driven workflow — doesn't require blind signature guessing to
+Arm B's actual research question — how outcome prediction changes reasoning,
+first-pass correctness, and revision attempts in a realistic test-driven
+workflow, compared to Arm A — doesn't require blind signature guessing to
 be interesting; it requires the agent to know what it's graded against and
 still have to execute to find out if its candidate works. Blind-signature
 inference was accidentally the dominant difficulty, swamping the actual
