@@ -613,7 +613,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <h2 class="section-title">Same task, same checkpoint step, two loops</h2>
   <p class="section-lede">Real step-100 (seed 42) test-set traces for <code>mbpp_127</code>
     (&ldquo;multiply two integers without <code>*</code>&rdquo;) &mdash; picked because both arms
-    solved it, so the loop shape is the only difference. Verbatim from
+    got reward 1.0, so the loop shape is the only difference. Verbatim from
     <code>PREDICT_RL_RESULTS/RL_ARM_{A,B}_100/eval/</code>.</p>
 
   <div class="transcript-grid">
@@ -686,8 +686,23 @@ patch applied</code></div>
     recall on. This isn't hypothetical &mdash; it's this exact real trace: two wrong PASS
     predictions, in a row, then a real test failure it reacts to exactly like Arm A would have
     anyway (no benefit from having predicted at all). Only the third candidate is actually correct,
-    so that PASS prediction happens to be right. Arm A solves it correctly on the first try, no
-    recovery needed.
+    so that PASS prediction happens to be right. Arm A solves the stated problem correctly on the
+    first try; Arm A's real code is a repeated-addition loop with sign correction
+    (<code>for i in range(abs(b)): result += a</code>, then flip sign on <code>a^b&lt;0</code>) that
+    genuinely avoids <code>*</code>.
+  </div>
+  <div class="callout crit" style="margin-top:16px">
+    <div class="callout-label">Verifier gap</div>
+    Arm B's winning candidate is <code>z = x * y</code> &mdash; it uses the exact operator the task
+    says not to. The test suite is three numeric asserts (<code>multiply_int(10,20)==200</code>,
+    etc.); it checks the output, not what operators produced it, so this rollout still scores
+    reward 1.0. Both arms &ldquo;solved&rdquo; the task by the only thing that's actually measured
+    (the given tests), but only Arm A solved what was actually <i>asked</i>. This is specification
+    gaming, not a bug in this demo &mdash; it's a real, verified property of grading purely by
+    assert statements: any part of a prompt's spec that isn't encoded as a test is simply not
+    checked or rewarded. (A quick check across the 500-task test set found this exact
+    &ldquo;without using X&rdquo; phrasing on only this one task &mdash; a real but isolated case
+    here, not a systemic pattern in this dataset.)
   </div>
 </section>
 
