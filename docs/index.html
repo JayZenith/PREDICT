@@ -681,9 +681,17 @@ patch applied</code></div>
       <div class="next-num">01 &middot; try first</div>
       <div class="next-title" style="color:#3987e5">Sweep &lambda;</div>
       <p>Sweep <code>orchestrator.algo.alpha</code> in <code>configs/arm_b_rl.toml</code> (currently
-      <code>0.1</code>) upward, or reweight the auxiliary CE loss toward the rare/hard classes
-      instead of uniform per-token weighting. Tells you whether the ASSERTION_FAILURE collapse is a
-      loss-weight problem or a harder generalization ceiling.</p>
+      <code>0.1</code>) upward, or change how the CE loss counts each label. Right now every
+      <code>&lt;PREDICTION&gt;</code> token counts the same in that loss's average, and ~85% of all
+      labels are <code>PASS</code>, so the average is mostly &ldquo;get PASS right&rdquo; &mdash;
+      <code style="color:#d03b3b">ASSERTION_FAILURE</code> is <i>rare</i> (~15% of labels, so it
+      barely moves that average even when wrong) and separately <i>hard</i> (getting it right
+      requires simulating the candidate's logic against the test, unlike
+      <code style="color:#c98500">RUNTIME_ERROR</code>, which surface code features like undefined
+      names or index risk can flag without that simulation). Giving rare/hard-class labels a bigger
+      multiplier in the loss &mdash; so the optimizer pays for ignoring them, not just proportionally
+      &mdash; tests whether this is a fixable weighting problem or a harder ceiling on what the model
+      can learn to simulate at all.</p>
     </div>
     <div class="next-card">
       <div class="next-num">02 &middot; then</div>
