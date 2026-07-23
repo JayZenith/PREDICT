@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PREDICT &mdash; reactive vs. predictive coding agents</title>
-<meta name="description" content="RLVR on MBPP: a reactive test-and-recover agent vs. a predictive keep-or-revise agent. Results, training dynamics, and real rollouts.">
+<title>PREDICT &mdash; Training a Coding Agent to Judge Its Own Patches Before Execution</title>
+<meta name="description" content="RLVR on MBPP: a test-and-recover coding agent vs. a predict-and-decide coding agent trained with SFT, RLVR, and verified-label cross-entropy. Results, training dynamics, and real rollouts.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='black'/%3E%3Cpath d='M13 2 L4 14 H11 L10 22 L20 9 H13 Z' fill='%23c98500'/%3E%3C/svg%3E">
 <style>
 :root {
@@ -185,8 +185,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <div class="card"><svg viewBox="0 0 800 620" class="diagram-svg" role="img" aria-label="Arm A versus Arm B execution flow">
 <defs><marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#a9a9a9"/></marker></defs>
-<text x="180" y="26" text-anchor="middle" class="diagram-col-title" fill="#3987e5">Arm A &mdash; reactive</text>
-<text x="580" y="26" text-anchor="middle" class="diagram-col-title" fill="#c98500">Arm B &mdash; predictive</text>
+<text x="180" y="26" text-anchor="middle" class="diagram-col-title" fill="#3987e5">Arm A &mdash; test-and-recover</text>
+<text x="580" y="26" text-anchor="middle" class="diagram-col-title" fill="#c98500">Arm B &mdash; predict-and-decide</text>
 <rect x="60" y="46" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.3"/><text x="180.0" y="75.0" text-anchor="middle" class="diagram-title" fill="#3987e5">read_file</text>
 <rect x="60" y="130" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.3"/><text x="180.0" y="159.0" text-anchor="middle" class="diagram-title" fill="#3987e5">apply_patch</text>
 <rect x="60" y="214" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.3"/><text x="180.0" y="243.0" text-anchor="middle" class="diagram-title" fill="#3987e5">python_test</text>
@@ -223,7 +223,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </svg></div>
 
   <p class="section-lede" style="margin-top:34px">That harness runs inside PRIME-RL's training
-    loop: the orchestrator dispatches each rollout into a fresh Verifiers subprocess sandbox,
+    loop: the orchestrator dispatches each rollout into a fresh, isolated Verifiers subprocess,
     scores it, forms GRPO groups, and sends batches to the trainer &mdash; which broadcasts
     updated policy weights straight back to the inference server every step.</p>
   <div class="card"><svg viewBox="0 0 760 460" class="diagram-svg" role="img" aria-label="PRIME-RL and Verifiers training loop">
@@ -236,7 +236,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <g font-family="inherit">
     <rect x="20" y="30" width="200" height="86" rx="6" fill="#0a0a0a" stroke="#a9a9a9" stroke-width="1.3"/>
     <text x="120" y="66" text-anchor="middle" class="diagram-title" fill="#f5f5f5">Verifiers Harness</text>
-    <text x="120" y="86" text-anchor="middle" class="diagram-sub">fresh subprocess sandbox</text>
+    <text x="120" y="86" text-anchor="middle" class="diagram-sub">isolated subprocess</text>
     <text x="120" y="102" text-anchor="middle" class="diagram-sub">read_file / apply_patch / python_test</text>
 
     <rect x="280" y="30" width="200" height="86" rx="6" fill="#0a0a0a" stroke="#a9a9a9" stroke-width="1.3"/>
@@ -375,7 +375,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     run (54.2% vs 53.6%, p=0.86).
   </div>
   <div class="callout good">
-    <div class="callout-label">&#10003; Confirmed</div>
+    <div class="callout-label">&#10003; Replicated across two seeds</div>
     RLVR improves <b>both</b> arms over their own SFT baseline by step 100, replicated across both
     seeds for each arm &mdash; Arm A: p=0.0003 and p=0.028; Arm B: p=0.033 and p=0.0017.
   </div>
@@ -622,7 +622,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <div class="transcript-grid">
     <div class="transcript-card" style="--accent:#3987e5">
   <div class="transcript-head">
-    <div><span class="transcript-title" style="color:#3987e5">Arm A &amp;middot; reactive</span>
+    <div><span class="transcript-title" style="color:#3987e5">Arm A &amp;middot; test-and-recover</span>
     <span class="transcript-sub">step 100, seed 42</span></div>
     <span class="badge" style="border-color:#3987e5;color:#3987e5">reward 1.0</span>
   </div>
@@ -644,7 +644,7 @@ patch applied</code></div>
 </div>
     <div class="transcript-card" style="--accent:#c98500">
   <div class="transcript-head">
-    <div><span class="transcript-title" style="color:#c98500">Arm B &amp;middot; predictive</span>
+    <div><span class="transcript-title" style="color:#c98500">Arm B &amp;middot; predict-and-decide</span>
     <span class="transcript-sub">step 100, seed 42</span></div>
     <span class="badge" style="border-color:#c98500;color:#c98500">reward 1.0</span>
   </div>
