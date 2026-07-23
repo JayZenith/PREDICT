@@ -15,10 +15,10 @@
   --ink: #ffffff;
   --ink-2: #a9a9a9;
   --mute: #7a7a7a;
-  --blue: #3987e5; --blue-glow: #7fb4ff;
-  --yellow: #c98500; --yellow-glow: #ffcf4d;
-  --green: #007A5E; --green-glow: #2fe0b8;
-  --red: #d03b3b; --red-glow: #ff7a7a;
+  --blue: #3987e5;
+  --yellow: #c98500;
+  --green: #007A5E;
+  --red: #d03b3b;
   --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
   --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -30,47 +30,43 @@ a:hover { text-decoration: underline; }
 code { font-family: var(--mono); font-size: 0.86em; }
 .page { max-width: 1040px; margin: 0 auto; padding: 0 20px 80px; }
 
-.glow-blue   { text-shadow: 0 0 10px rgba(57,135,229,.55), 0 0 26px rgba(57,135,229,.28); }
-.glow-yellow { text-shadow: 0 0 10px rgba(201,133,0,.55), 0 0 26px rgba(201,133,0,.28); }
-.glow-green  { text-shadow: 0 0 10px rgba(0,122,94,.55), 0 0 26px rgba(0,122,94,.3); }
-.glow-red    { text-shadow: 0 0 10px rgba(208,59,59,.55), 0 0 26px rgba(208,59,59,.28); }
-
 /* ---- nav ---- */
-.topnav { position: sticky; top: 0; z-index: 5; background: rgba(0,0,0,.86); backdrop-filter: blur(6px);
+.topnav { position: sticky; top: 0; z-index: 5; background: var(--bg);
   border-bottom: 1px solid var(--border); }
 .topnav-inner { max-width: 1040px; margin: 0 auto; padding: 12px 20px; display: flex; gap: 18px;
   flex-wrap: wrap; font-size: 13.5px; }
 .topnav a { color: var(--ink-2); }
-.topnav a:hover { color: var(--blue); text-decoration: none; }
+.topnav a:hover { color: var(--ink); text-decoration: none; }
 
 /* ---- hero ---- */
-.hero { padding: 64px 0 36px; border-bottom: 1px solid var(--border); }
-.kicker { font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 14px; }
-.h1 { font-size: 42px; line-height: 1.15; margin: 0 0 18px; font-weight: 700; letter-spacing: -0.01em; }
-.tagline { font-size: 18px; color: #d8d8d8; max-width: 720px; margin: 0 0 26px; }
-.meta-row { display: flex; flex-wrap: wrap; gap: 10px; }
-.chip { border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; font-size: 12.5px;
+.hero { padding: 56px 0 32px; border-bottom: 1px solid var(--border); }
+.kicker { font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 14px; }
+.h1 { font-size: 36px; line-height: 1.25; margin: 0 0 16px; font-weight: 600; letter-spacing: -0.01em; }
+.tagline { font-size: 16.5px; color: #cfcfcf; max-width: 700px; margin: 0 0 24px; }
+.meta-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; font-size: 12.5px;
   color: var(--ink-2); font-family: var(--mono); }
 .chip b { color: var(--ink); font-weight: 600; }
 
 /* ---- sections ---- */
 .section { padding: 56px 0; border-bottom: 1px solid var(--border); }
 .section:last-of-type { border-bottom: none; }
-.section-kicker { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 8px; }
-.section-title { font-size: 27px; font-weight: 700; margin: 0 0 14px; letter-spacing: -0.01em; }
-.section-lede { color: #cfcfcf; max-width: 760px; margin: 0 0 30px; font-size: 15.5px; }
+.section-kicker { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 8px;
+  color: var(--mute); font-weight: 600; }
+.section-title { font-size: 24px; font-weight: 600; margin: 0 0 14px; letter-spacing: -0.01em; }
+.section-lede { color: #cfcfcf; max-width: 760px; margin: 0 0 28px; font-size: 15px; }
 .lede-narrow { max-width: 640px; }
 
 /* ---- cards / grid ---- */
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px 24px; }
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 22px 24px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 @media (max-width: 760px) { .grid-2, .grid-3, .transcript-grid { grid-template-columns: 1fr; } }
 
-.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 0 0 26px; }
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 0 0 26px; }
 @media (max-width: 700px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
-.stat-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
-.stat-value { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; }
+.stat-value { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .stat-label { font-size: 12.5px; color: var(--ink-2); margin-top: 4px; }
 
 /* ---- tables ---- */
@@ -83,15 +79,15 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 14px; marg
 .data-table tbody tr:last-child td { border-bottom: none; }
 
 /* ---- chart chrome ---- */
-.chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px 8px; }
+.chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 20px 8px; }
 .chart-svg, .diagram-svg { width: 100%; height: auto; display: block; overflow: visible; }
 .chart-svg text, .diagram-svg text { font-family: var(--sans); fill: var(--ink-2); }
 .axis-label { font-size: 11px; fill: var(--ink-2); }
 .axis-sub { font-size: 9.5px; fill: var(--mute); }
 .line-end-label { font-size: 12px; font-weight: 600; }
-.bar-value { font-size: 13px; font-weight: 700; }
-.diagram-title { font-size: 14.5px; font-weight: 700; }
-.diagram-col-title { font-size: 15px; font-weight: 700; }
+.bar-value { font-size: 13px; font-weight: 600; }
+.diagram-title { font-size: 14px; font-weight: 600; }
+.diagram-col-title { font-size: 14.5px; font-weight: 600; }
 .diagram-sub { font-size: 10.5px; fill: var(--ink-2); }
 .diagram-edge { font-size: 10.5px; fill: var(--ink-2); }
 .chart-caption { font-size: 13px; color: var(--ink-2); padding: 10px 4px 14px; }
@@ -101,20 +97,20 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 14px; marg
 .swatch.dashed { background: none; border: 2px dashed currentColor; width: 15px; height: 0; border-radius: 0; }
 
 /* ---- callouts ---- */
-.callout { border: 1px solid var(--border); border-left: 3px solid var(--c); border-radius: 8px;
+.callout { border: 1px solid var(--border); border-left: 3px solid var(--c); border-radius: 4px;
   padding: 14px 18px; margin: 14px 0; font-size: 14.5px; color: #d6d6d6; }
-.callout-label { font-weight: 700; font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase;
+.callout-label { font-weight: 600; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase;
   color: var(--c); margin-bottom: 5px; display: flex; align-items: center; gap: 7px; }
 .good { --c: var(--green); } .warn { --c: var(--yellow); } .crit { --c: var(--red); } .info { --c: var(--blue); }
 
 /* ---- transcripts ---- */
 .transcript-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.transcript-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.transcript-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
 .transcript-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px;
   border-bottom: 1px solid var(--border); background: var(--surface-2); }
-.transcript-title { font-weight: 700; font-size: 14.5px; }
+.transcript-title { font-weight: 600; font-size: 14.5px; }
 .transcript-sub { color: var(--ink-2); font-size: 12.5px; margin-left: 10px; }
-.badge { font-family: var(--mono); font-size: 11px; border: 1px solid; border-radius: 999px; padding: 3px 10px; }
+.badge { font-family: var(--mono); font-size: 11px; border: 1px solid; border-radius: 4px; padding: 3px 10px; }
 .transcript-body { padding: 6px 6px 14px; max-height: 560px; overflow-y: auto; }
 .turn { padding: 8px 16px; font-size: 12.8px; border-bottom: 1px solid rgba(255,255,255,.045); }
 .turn code { white-space: pre-wrap; word-break: break-word; color: #e6e6e6; }
@@ -127,9 +123,9 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 14px; marg
 
 /* ---- next steps ---- */
 .next-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.next-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; }
+.next-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px 22px; }
 .next-num { font-family: var(--mono); font-size: 12px; color: var(--ink-2); margin-bottom: 6px; }
-.next-title { font-size: 16.5px; font-weight: 700; margin: 0 0 8px; }
+.next-title { font-size: 16px; font-weight: 600; margin: 0 0 8px; }
 
 footer { padding: 46px 0 20px; color: var(--ink-2); font-size: 13.5px; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 14px 0 22px; }
@@ -154,8 +150,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
 <header class="hero">
   <p class="kicker">PREDICT &middot; RLVR on MBPP &middot; commit <a href="https://github.com/JayZenith/PREDICT/commit/9eefac7"><code>9eefac7</code></a></p>
-  <h1 class="h1"><span class="glow-blue" style="color:#3987e5">Reactive</span> vs.
-    <span class="glow-yellow" style="color:#c98500">predictive</span><br>coding agents, matched and RLVR'd.</h1>
+  <h1 class="h1"><span style="color:#3987e5">Reactive</span> vs.
+    <span style="color:#c98500">predictive</span> coding agents, matched and RLVR'd.</h1>
   <p class="tagline">How do reactive and predictive multi-turn coding-agent training systems compare
     under matched tasks, models, budgets, and rewards? Arm A uses SFT and RLVR for test-and-recover
     behavior; Arm B adds outcome prediction with verified-label cross-entropy and a keep-or-revise
@@ -170,7 +166,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </header>
 
 <section class="section" id="architecture">
-  <p class="section-kicker" style="color:#d03b3b">Architecture</p>
+  <p class="section-kicker">Architecture</p>
   <h2 class="section-title">How the training loop actually runs</h2>
   <p class="section-lede">PRIME-RL's orchestrator dispatches each rollout into a fresh Verifiers
     subprocess sandbox, scores it, forms GRPO groups, and sends batches to the trainer &mdash; which
@@ -183,23 +179,23 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   </defs>
   <!-- boxes -->
   <g font-family="inherit">
-    <rect x="20" y="30" width="200" height="86" rx="10" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.6"/>
-    <text x="120" y="66" text-anchor="middle" class="diagram-title" fill="#3987e5">Verifiers Harness</text>
+    <rect x="20" y="30" width="200" height="86" rx="6" fill="#0a0a0a" stroke="#a9a9a9" stroke-width="1.3"/>
+    <text x="120" y="66" text-anchor="middle" class="diagram-title" fill="#f5f5f5">Verifiers Harness</text>
     <text x="120" y="86" text-anchor="middle" class="diagram-sub">fresh subprocess sandbox</text>
     <text x="120" y="102" text-anchor="middle" class="diagram-sub">read_file / apply_patch / python_test</text>
 
-    <rect x="280" y="30" width="200" height="86" rx="10" fill="#0a0a0a" stroke="#f5f5f5" stroke-width="1.6"/>
+    <rect x="280" y="30" width="200" height="86" rx="6" fill="#0a0a0a" stroke="#a9a9a9" stroke-width="1.3"/>
     <text x="380" y="66" text-anchor="middle" class="diagram-title" fill="#f5f5f5">Orchestrator</text>
     <text x="380" y="86" text-anchor="middle" class="diagram-sub">dispatch rollouts, score reward,</text>
     <text x="380" y="102" text-anchor="middle" class="diagram-sub">form GRPO groups (zero_advantage)</text>
 
-    <rect x="540" y="30" width="200" height="86" rx="10" fill="#0a0a0a" stroke="#c98500" stroke-width="1.6"/>
-    <text x="640" y="66" text-anchor="middle" class="diagram-title" fill="#c98500">Inference Server</text>
+    <rect x="540" y="30" width="200" height="86" rx="6" fill="#0a0a0a" stroke="#a9a9a9" stroke-width="1.3"/>
+    <text x="640" y="66" text-anchor="middle" class="diagram-title" fill="#f5f5f5">Inference Server</text>
     <text x="640" y="86" text-anchor="middle" class="diagram-sub">vLLM, serves current policy</text>
     <text x="640" y="102" text-anchor="middle" class="diagram-sub">samples the agent's tokens</text>
 
-    <rect x="280" y="330" width="200" height="86" rx="10" fill="#0a0a0a" stroke="#d03b3b" stroke-width="1.6"/>
-    <text x="380" y="366" text-anchor="middle" class="diagram-title" fill="#d03b3b">Trainer</text>
+    <rect x="280" y="330" width="200" height="86" rx="6" fill="#0a0a0a" stroke="#a9a9a9" stroke-width="1.3"/>
+    <text x="380" y="366" text-anchor="middle" class="diagram-title" fill="#f5f5f5">Trainer</text>
     <text x="380" y="386" text-anchor="middle" class="diagram-sub">FSDP, GRPO(actions) + &#955;&middot;CE(verified label)</text>
     <text x="380" y="402" text-anchor="middle" class="diagram-sub">one optimizer step per batch</text>
   </g>
@@ -231,12 +227,12 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
       <path d="M0,0 L10,5 L0,10 z" fill="#a9a9a9"/></marker></defs>
 <text x="180" y="26" text-anchor="middle" class="diagram-col-title" fill="#3987e5">Arm A &mdash; reactive</text>
 <text x="580" y="26" text-anchor="middle" class="diagram-col-title" fill="#c98500">Arm B &mdash; predictive</text>
-<rect x="60" y="46" width="240" height="50" rx="9" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.6"/><text x="180.0" y="75.0" text-anchor="middle" class="diagram-title" fill="#3987e5">read_file</text>
-<rect x="60" y="130" width="240" height="50" rx="9" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.6"/><text x="180.0" y="159.0" text-anchor="middle" class="diagram-title" fill="#3987e5">apply_patch</text>
-<rect x="60" y="214" width="240" height="50" rx="9" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.6"/><text x="180.0" y="243.0" text-anchor="middle" class="diagram-title" fill="#3987e5">python_test</text>
-<rect x="60" y="340" width="110" height="50" rx="9" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.6"/><text x="115.0" y="369.0" text-anchor="middle" class="diagram-title" fill="#007A5E">pass</text>
-<rect x="190" y="340" width="110" height="50" rx="9" fill="#0a0a0a" stroke="#d03b3b" stroke-width="1.6"/><text x="245.0" y="369.0" text-anchor="middle" class="diagram-title" fill="#d03b3b">fail</text>
-<rect x="60" y="430" width="240" height="46" rx="9" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.6"/><text x="180.0" y="457.0" text-anchor="middle" class="diagram-title" fill="#007A5E">FINAL</text>
+<rect x="60" y="46" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.3"/><text x="180.0" y="75.0" text-anchor="middle" class="diagram-title" fill="#3987e5">read_file</text>
+<rect x="60" y="130" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.3"/><text x="180.0" y="159.0" text-anchor="middle" class="diagram-title" fill="#3987e5">apply_patch</text>
+<rect x="60" y="214" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.3"/><text x="180.0" y="243.0" text-anchor="middle" class="diagram-title" fill="#3987e5">python_test</text>
+<rect x="60" y="340" width="110" height="50" rx="6" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.3"/><text x="115.0" y="369.0" text-anchor="middle" class="diagram-title" fill="#007A5E">pass</text>
+<rect x="190" y="340" width="110" height="50" rx="6" fill="#0a0a0a" stroke="#d03b3b" stroke-width="1.3"/><text x="245.0" y="369.0" text-anchor="middle" class="diagram-title" fill="#d03b3b">fail</text>
+<rect x="60" y="430" width="240" height="46" rx="6" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.3"/><text x="180.0" y="457.0" text-anchor="middle" class="diagram-title" fill="#007A5E">FINAL</text>
 <path d="M180,96 L180,130" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
 <path d="M180,180 L180,214" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
 <path d="M150,264 L115,340" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
@@ -245,14 +241,14 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <path d="M245,365 C 380,365 380,155 300,155" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)" fill="none"/>
 <text x="345" y="255" text-anchor="middle" class="diagram-edge">revise &amp;</text>
 <text x="345" y="270" text-anchor="middle" class="diagram-edge">retest</text>
-<rect x="460" y="46" width="240" height="50" rx="9" fill="#0a0a0a" stroke="#c98500" stroke-width="1.6"/><text x="580.0" y="75.0" text-anchor="middle" class="diagram-title" fill="#c98500">read_file</text>
-<rect x="460" y="130" width="240" height="50" rx="9" fill="#0a0a0a" stroke="#c98500" stroke-width="1.6"/><text x="580.0" y="159.0" text-anchor="middle" class="diagram-title" fill="#c98500">apply_patch</text>
-<rect x="460" y="214" width="240" height="58" rx="9" fill="#0a0a0a" stroke="#c98500" stroke-width="1.6"/><text x="580.0" y="241.0" text-anchor="middle" class="diagram-title" fill="#c98500">PREDICTION</text><text x="580.0" y="259.0" text-anchor="middle" class="diagram-sub">&lt;PREDICTION&gt; + &lt;DECISION&gt;</text>
-<rect x="460" y="322" width="110" height="50" rx="9" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.6"/><text x="515.0" y="351.0" text-anchor="middle" class="diagram-title" fill="#007A5E">KEEP</text>
-<rect x="590" y="322" width="110" height="50" rx="9" fill="#0a0a0a" stroke="#d03b3b" stroke-width="1.6"/><text x="645.0" y="351.0" text-anchor="middle" class="diagram-title" fill="#d03b3b">REVISE</text>
-<rect x="460" y="406" width="110" height="58" rx="9" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.6"/><text x="515.0" y="433.0" text-anchor="middle" class="diagram-title" fill="#007A5E">python_test</text><text x="515.0" y="451.0" text-anchor="middle" class="diagram-sub">visible</text>
-<rect x="590" y="406" width="110" height="58" rx="9" fill="#0a0a0a" stroke="#d03b3b" stroke-width="1.6"/><text x="645.0" y="433.0" text-anchor="middle" class="diagram-title" fill="#d03b3b">shadow test</text><text x="645.0" y="451.0" text-anchor="middle" class="diagram-sub">hidden from agent</text>
-<rect x="460" y="520" width="240" height="46" rx="9" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.6"/><text x="580.0" y="547.0" text-anchor="middle" class="diagram-title" fill="#007A5E">FINAL</text>
+<rect x="460" y="46" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#c98500" stroke-width="1.3"/><text x="580.0" y="75.0" text-anchor="middle" class="diagram-title" fill="#c98500">read_file</text>
+<rect x="460" y="130" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#c98500" stroke-width="1.3"/><text x="580.0" y="159.0" text-anchor="middle" class="diagram-title" fill="#c98500">apply_patch</text>
+<rect x="460" y="214" width="240" height="58" rx="6" fill="#0a0a0a" stroke="#c98500" stroke-width="1.3"/><text x="580.0" y="241.0" text-anchor="middle" class="diagram-title" fill="#c98500">PREDICTION</text><text x="580.0" y="259.0" text-anchor="middle" class="diagram-sub">&lt;PREDICTION&gt; + &lt;DECISION&gt;</text>
+<rect x="460" y="322" width="110" height="50" rx="6" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.3"/><text x="515.0" y="351.0" text-anchor="middle" class="diagram-title" fill="#007A5E">KEEP</text>
+<rect x="590" y="322" width="110" height="50" rx="6" fill="#0a0a0a" stroke="#d03b3b" stroke-width="1.3"/><text x="645.0" y="351.0" text-anchor="middle" class="diagram-title" fill="#d03b3b">REVISE</text>
+<rect x="460" y="406" width="110" height="58" rx="6" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.3"/><text x="515.0" y="433.0" text-anchor="middle" class="diagram-title" fill="#007A5E">python_test</text><text x="515.0" y="451.0" text-anchor="middle" class="diagram-sub">visible</text>
+<rect x="590" y="406" width="110" height="58" rx="6" fill="#0a0a0a" stroke="#d03b3b" stroke-width="1.3"/><text x="645.0" y="433.0" text-anchor="middle" class="diagram-title" fill="#d03b3b">shadow test</text><text x="645.0" y="451.0" text-anchor="middle" class="diagram-sub">hidden from agent</text>
+<rect x="460" y="520" width="240" height="46" rx="6" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.3"/><text x="580.0" y="547.0" text-anchor="middle" class="diagram-title" fill="#007A5E">FINAL</text>
 <path d="M580,96 L580,130" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
 <path d="M580,180 L580,214" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
 <path d="M550,272 L515,322" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
@@ -268,7 +264,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </section>
 
 <section class="section" id="data">
-  <p class="section-kicker" style="color:#3987e5">Data</p>
+  <p class="section-kicker">Data</p>
   <h2 class="section-title">MBPP, split once, touched once</h2>
   <p class="section-lede">MBPP (Mostly Basic Python Problems): ~1,000 short, crowd-sourced Python
     problems with gold-standard test assertions, from Austin et al.,
@@ -296,7 +292,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </section>
 
 <section class="section" id="results">
-  <p class="section-kicker" style="color:#007A5E">Results</p>
+  <p class="section-kicker">Results</p>
   <h2 class="section-title">Pass@1 by RL step, n=500, greedy</h2>
   <p class="section-lede">Both arms were trained twice, independently, from the same SFT checkpoints
     with different seeds, specifically to check whether any Arm A vs. Arm B gap replicates.</p>
@@ -380,7 +376,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </section>
 
 <section class="section" id="efficiency">
-  <p class="section-kicker" style="color:#c98500">Efficiency</p>
+  <p class="section-kicker">Efficiency</p>
   <h2 class="section-title">Step-100 seed-42 traces: not a clean win either way</h2>
   <p class="section-lede">Arm B doesn't use fewer tool calls or turns. It does use fewer visible
     test executions &mdash; shadow-testing on REVISE moves some cycles off the visible ledger &mdash;
@@ -422,7 +418,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </section>
 
 <section class="section" id="diagnosis">
-  <p class="section-kicker" style="color:#d03b3b">Diagnosis</p>
+  <p class="section-kicker">Diagnosis</p>
   <h2 class="section-title">What was actually hindering Arm B</h2>
   <p class="section-lede">Decision-following is solid &mdash; KEEP follows a PASS prediction 100% of
     the time, REVISE follows a non-PASS prediction 97&ndash;99% of the time, in both seeds. That's
@@ -551,7 +547,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </section>
 
 <section class="section" id="demo">
-  <p class="section-kicker" style="color:#3987e5">Rollout demo</p>
+  <p class="section-kicker">Rollout demo</p>
   <h2 class="section-title">Same task, same checkpoint step, two loops</h2>
   <p class="section-lede">Real step-100 (seed 42) test-set traces for <code>mbpp_127</code>
     (&ldquo;multiply two integers without <code>*</code>&rdquo;) &mdash; picked because both arms
@@ -629,7 +625,7 @@ patch applied</code></div>
 </section>
 
 <section class="section" id="next">
-  <p class="section-kicker" style="color:#007A5E">Where to go next</p>
+  <p class="section-kicker">Where to go next</p>
   <h2 class="section-title">Two directions, sweep first</h2>
   <div class="next-grid">
     <div class="next-card">
