@@ -493,8 +493,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     predicted-PASS + KEEP) attacks the first, by finally giving GRPO's own reward &mdash; not just
     the side loss &mdash; a reason to tell the two kinds of rollouts apart.</p>
 
-  <p class="section-lede" style="margin-top:30px">Real training dynamics, seed 42, smoothed
-    (5-step window) &mdash; from the orchestrator's and trainer's own per-step logs, not eval:</p>
+  <p class="section-lede" style="margin-top:30px">Real training dynamics, seed 42 &mdash; reward
+    from the orchestrator's per-step train-batch logs, entropy and loss from the trainer's per-step
+    logs, not eval. Faint line = raw per-step value; bold line = 5-step centered moving average.</p>
   <div class="grid-2">
     <div class="chart-wrap">
       <div class="chart-caption" style="padding-top:0">train-batch reward (success rate) &mdash; Arm A</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
@@ -553,7 +554,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </svg>
     </div>
     <div class="chart-wrap">
-      <div class="chart-caption" style="padding-top:0">GRPO+CE loss &mdash; Arm A</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
+      <div class="chart-caption" style="padding-top:0">GRPO loss &mdash; Arm A</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
 <line x1="38" y1="130.0" x2="326" y2="130.0" stroke="#242424" stroke-width="1"/>
 <text x="30" y="133.5" text-anchor="end" class="axis-label">0.00</text>
 <line x1="38" y1="70.0" x2="326" y2="70.0" stroke="#242424" stroke-width="1"/>
@@ -582,8 +583,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     </div>
   </div>
   <p class="chart-caption">Reward is the mean binary task reward over each 64-rollout training
-    batch (noisy by construction &mdash; a handful of tasks per batch) — a rolling success-rate
-    proxy during training, distinct from the held-out pass@1 numbers above.</p>
+    batch &mdash; noisy by construction (a handful of distinct tasks per batch), and a per-batch
+    success-rate snapshot, not a windowed average itself (the 5-step smoothing above is applied on
+    top of it) &mdash; distinct from the held-out pass@1 numbers earlier in this page. Arm A's loss
+    is plain GRPO; Arm B's adds the &lambda;=0.1 auxiliary prediction CE term, so the two are not
+    directly comparable in scale.</p>
 </section>
 
 <section class="section" id="demo">
