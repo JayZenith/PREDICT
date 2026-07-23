@@ -324,3 +324,22 @@ weighted, fully decoupled from reward. Reweighting CE fixes the weighting
 half; reward shaping, as scoped today, can't reach the label tokens at all
 without also lifting GRPO's mask on them. Neither alone closes the loop
 between "predicted correctly" and "rewarded for it" — that requires both.
+
+## Appendix
+
+### Beyond Code Verification: Research Judgment
+
+One unexpected lesson came from reviewing the experiment itself. I initially
+described Arm A as a baseline and Arm B as a single added variable. That
+framing was too clean: Arm B also changed the trace format, action protocol,
+auxiliary loss, and decision space. The two arms are better understood as
+comparative training systems, not a strict causal ablation.
+
+The coding agent helped build and document the project, but it did not
+challenge that experimental claim. Code has hard verifiers—tests, syntax,
+execution, and logs. Research judgment has no equivalent oracle. Auditing a
+claim requires reconstructing the entire experiment, identifying every
+differing factor, and testing whether the conclusion is actually supported.
+
+A stronger research agent would need to do more than make a project coherent
+and functional. It would need to actively falsify the researcher's framing.

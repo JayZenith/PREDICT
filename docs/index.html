@@ -121,6 +121,10 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 14px; marg
 .turn-final { background: rgba(0,122,94,.09); font-weight: 600; }
 .turn-predict code { color: var(--yellow); }
 
+/* ---- appendix ---- */
+.appendix p { max-width: 760px; color: var(--ink-2); font-style: italic; margin: 0 0 16px; }
+.appendix p:last-child { margin-bottom: 0; }
+
 /* ---- learned ---- */
 .learned-list { margin: 0; padding-left: 22px; }
 .learned-list li { margin: 0 0 14px; }
@@ -149,6 +153,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <a href="#demo">Rollouts</a>
   <a href="#learned">Learned</a>
   <a href="#next">Next</a>
+  <a href="#appendix">Appendix</a>
   <a href="https://github.com/JayZenith/PREDICT">GitHub &rarr;</a>
 </div></nav>
 
@@ -788,6 +793,22 @@ patch applied</code></div>
     all without also lifting GRPO's mask on them. Neither alone closes the loop between
     &ldquo;predicted correctly&rdquo; and &ldquo;rewarded for it&rdquo; &mdash; that requires both.
   </div>
+</section>
+
+<section class="section appendix" id="appendix">
+  <p class="section-kicker">Appendix</p>
+  <h2 class="section-title">Beyond Code Verification: Research Judgment</h2>
+  <p>One unexpected lesson came from reviewing the experiment itself. I initially described Arm A
+    as a baseline and Arm B as a single added variable. That framing was too clean: Arm B also
+    changed the trace format, action protocol, auxiliary loss, and decision space. The two arms are
+    better understood as comparative training systems, not a strict causal ablation.</p>
+  <p>The coding agent helped build and document the project, but it did not challenge that
+    experimental claim. Code has hard verifiers&mdash;tests, syntax, execution, and logs. Research
+    judgment has no equivalent oracle. Auditing a claim requires reconstructing the entire
+    experiment, identifying every differing factor, and testing whether the conclusion is actually
+    supported.</p>
+  <p>A stronger research agent would need to do more than make a project coherent and functional.
+    It would need to actively falsify the researcher's framing.</p>
 </section>
 
 <footer>
