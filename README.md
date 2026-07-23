@@ -1,9 +1,10 @@
-# PREDICT
+# PREDICT — Training a Coding Agent to Judge Its Own Patches Before Execution
 
-How do reactive and predictive multi-turn coding-agent training systems
-compare under matched tasks, models, budgets, and rewards? Arm A uses SFT
-and RLVR for test-and-recover behavior; Arm B adds outcome prediction with
-verified-label cross-entropy and a keep-or-revise decision before execution.
+How does adding explicit outcome prediction and keep-or-revise control change
+a long-horizon coding agent? Arm A is a standard test-and-recover system
+trained with SFT and RLVR. Arm B adds a custom prediction-and-decision trace
+trained with verified-label cross-entropy alongside RLVR. The arms are
+comparative systems, not a single-variable ablation.
 
 | Arm | Loop | Training |
 |---|---|---|

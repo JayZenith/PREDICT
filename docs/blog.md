@@ -223,6 +223,53 @@ failures and is blind to the other ~57%. That's sufficient on its own to
 explain why Arm B never pulled ahead, independent of the arm-vs-arm
 significance question.
 
+## What I learned
+
+Not the results table — the methodology and architecture lessons that came
+from digging into why the results looked the way they did.
+
+1. **A matched comparison isn't an ablation.** Arm A vs. Arm B tests two
+   complete, multi-part systems against each other — the predict/decide
+   protocol, the auxiliary loss, and the SFT trace format all change
+   together. It can tell you the bundle didn't clearly win; it can't tell
+   you which piece of the bundle mattered. Isolating "prediction" as a
+   single causal factor needs a compute/action-matched ablation, not this
+   two-arm design.
+2. **An auxiliary loss needs its own reward path, or it's the only
+   teacher.** Masking prediction-label tokens out of GRPO's loss is a
+   reasonable design choice — it stops the RL objective from getting noisy
+   gradient on tokens final reward doesn't grade. But it also means the
+   low-weight, uniformly-weighted auxiliary CE became the *entire* training
+   signal for that skill. A weak sole teacher produces a weak skill,
+   independent of how good the rest of the system is.
+3. **SFT curricula can bake in the shortcut they're trying to prevent.**
+   Half of Arm B's recovery traces demonstrate "guess PASS, let the real
+   test catch the mistake" as a valid, reward-preserving pattern — because
+   that's a real recovery mode worth training. It also happens to be the
+   exact shortcut the collapsed policy falls back on. A curriculum can be
+   correct about the behavior it demonstrates and still work against a
+   different goal of the same system.
+4. **Rare at one stage isn't rare at another.** Only 37 of 302 SFT
+   prediction labels are real `ASSERTION_FAILURE` examples — genuinely
+   thin. But checking real per-step RL logs (not just final eval) showed
+   the model sees this outcome constantly during RL, a third to half of
+   every step. Diagnosing a persistent 0% recall as "not enough examples"
+   would have been wrong; checking the actual training-time logs instead
+   of assuming the SFT-time distribution still applied caught that.
+5. **One training run is an anecdote.** The first seed made Arm A look
+   ahead at step 100 and significantly ahead at step 25. Both effects were
+   seed noise — gone under a second independent run with the same setup.
+   Two-seed replication (now standard for both arms here) is what turned
+   an appealing headline into a checked claim.
+6. **One-shot classification without a scratchpad is a harder ask than it
+   looks.** Every `<PREDICTION>` tag in every trace is emitted immediately
+   after `apply_patch`, with no reasoning tokens in between. Catching
+   `RUNTIME_ERROR` only requires spotting a surface pattern; catching
+   `ASSERTION_FAILURE` requires actually simulating the candidate's logic
+   against the test, in a single forward pass, from a label alone. Whether
+   a 4B model can do that without ever being shown how is still an open
+   question here, not something reweighting a loss term answers by itself.
+
 **Where to go next**, two directions, sweep first:
 
 1. **Sweep `λ`** (`orchestrator.algo.alpha` in `configs/arm_b_rl.toml`,

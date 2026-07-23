@@ -121,6 +121,11 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 14px; marg
 .turn-final { background: rgba(0,122,94,.09); font-weight: 600; }
 .turn-predict code { color: var(--yellow); }
 
+/* ---- learned ---- */
+.learned-list { margin: 0; padding-left: 22px; }
+.learned-list li { margin: 0 0 14px; }
+.learned-list li:last-child { margin-bottom: 0; }
+
 /* ---- next steps ---- */
 .next-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .next-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px 22px; }
@@ -142,6 +147,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <a href="#efficiency">Efficiency</a>
   <a href="#diagnosis">Diagnosis</a>
   <a href="#demo">Rollouts</a>
+  <a href="#learned">Learned</a>
   <a href="#next">Next</a>
   <a href="https://github.com/JayZenith/PREDICT">GitHub &rarr;</a>
 </div></nav>
@@ -150,12 +156,12 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
 <header class="hero">
   <p class="kicker">PREDICT &middot; RLVR on MBPP &middot; commit <a href="https://github.com/JayZenith/PREDICT/commit/9eefac7"><code>9eefac7</code></a></p>
-  <h1 class="h1"><span style="color:#3987e5">Reactive</span> vs.
-    <span style="color:#c98500">predictive</span> coding agents, matched and RLVR'd.</h1>
-  <p class="tagline">How do reactive and predictive multi-turn coding-agent training systems compare
-    under matched tasks, models, budgets, and rewards? Arm A uses SFT and RLVR for test-and-recover
-    behavior; Arm B adds outcome prediction with verified-label cross-entropy and a keep-or-revise
-    decision before execution.</p>
+  <h1 class="h1">PREDICT &mdash; Training a Coding Agent to Judge Its Own Patches Before Execution</h1>
+  <p class="tagline">How does adding explicit outcome prediction and keep-or-revise control change a
+    long-horizon coding agent? Arm A is a standard test-and-recover system trained with SFT and
+    RLVR. Arm B adds a custom prediction-and-decision trace trained with verified-label
+    cross-entropy alongside RLVR. The arms are comparative systems, not a single-variable
+    ablation.</p>
   <div class="meta-row">
     <span class="chip"><b>n=500</b> held-out test</span>
     <span class="chip"><b>2&times;2</b> seed matrix, both arms</span>
@@ -670,6 +676,54 @@ patch applied</code></div>
     anyway (no benefit from having predicted at all). Only the third candidate is actually correct,
     so that PASS prediction happens to be right. Arm A solves it correctly on the first try, no
     recovery needed.
+  </div>
+</section>
+
+<section class="section" id="learned">
+  <p class="section-kicker">What I learned</p>
+  <h2 class="section-title">Six things this run actually taught</h2>
+  <p class="section-lede">Not the results table &mdash; the methodology and architecture lessons
+    that came from digging into why the results looked the way they did.</p>
+
+  <div class="card">
+    <ol class="learned-list">
+      <li><b>A matched comparison isn't an ablation.</b> Arm A vs. Arm B tests two complete,
+      multi-part systems against each other &mdash; the predict/decide protocol, the auxiliary
+      loss, and the SFT trace format all change together. It can tell you the bundle didn't
+      clearly win; it can't tell you which piece of the bundle mattered. Isolating
+      &ldquo;prediction&rdquo; as a single causal factor needs a compute/action-matched ablation,
+      not this two-arm design.</li>
+      <li><b>An auxiliary loss needs its own reward path, or it's the only teacher.</b> Masking
+      prediction-label tokens out of GRPO's loss is a reasonable design choice &mdash; it stops the
+      RL objective from getting noisy gradient on tokens final reward doesn't grade. But it also
+      means the low-weight, uniformly-weighted auxiliary CE became the <i>entire</i> training
+      signal for that skill. A weak sole teacher produces a weak skill, independent of how good the
+      rest of the system is.</li>
+      <li><b>SFT curricula can bake in the shortcut they're trying to prevent.</b> Half of Arm B's
+      recovery traces demonstrate &ldquo;guess PASS, let the real test catch the mistake&rdquo; as
+      a valid, reward-preserving pattern &mdash; because that's a real recovery mode worth
+      training. It also happens to be the exact shortcut the collapsed policy falls back on. A
+      curriculum can be correct about the behavior it demonstrates and still work against a
+      different goal of the same system.</li>
+      <li><b>Rare at one stage isn't rare at another.</b> Only 37 of 302 SFT prediction labels are
+      real <code style="color:#d03b3b">ASSERTION_FAILURE</code> examples &mdash; genuinely thin. But
+      checking real per-step RL logs (not just final eval) showed the model sees this outcome
+      constantly during RL, a third to half of every step. Diagnosing a persistent 0% recall as
+      &ldquo;not enough examples&rdquo; would have been wrong; checking the actual training-time
+      logs instead of assuming the SFT-time distribution still applied caught that.</li>
+      <li><b>One training run is an anecdote.</b> The first seed made Arm A look ahead at step 100
+      and significantly ahead at step 25. Both effects were seed noise &mdash; gone under a second
+      independent run with the same setup. Two-seed replication (now standard for both arms here)
+      is what turned an appealing headline into a checked claim.</li>
+      <li><b>One-shot classification without a scratchpad is a harder ask than it looks.</b> Every
+      &lt;PREDICTION&gt; tag in every trace is emitted immediately after <code>apply_patch</code>,
+      with no reasoning tokens in between. Catching <code style="color:#c98500">RUNTIME_ERROR</code>
+      only requires spotting a surface pattern; catching
+      <code style="color:#d03b3b">ASSERTION_FAILURE</code> requires actually simulating the
+      candidate's logic against the test, in a single forward pass, from a label alone. Whether a
+      4B model can do that without ever being shown how is still an open question here, not
+      something reweighting a loss term answers by itself.</li>
+    </ol>
   </div>
 </section>
 
