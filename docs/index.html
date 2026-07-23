@@ -167,10 +167,54 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
 <section class="section" id="architecture">
   <p class="section-kicker">Architecture</p>
-  <h2 class="section-title">How the training loop actually runs</h2>
-  <p class="section-lede">PRIME-RL's orchestrator dispatches each rollout into a fresh Verifiers
-    subprocess sandbox, scores it, forms GRPO groups, and sends batches to the trainer &mdash; which
-    broadcasts updated policy weights straight back to the inference server every step.</p>
+  <h2 class="section-title">One harness, two agents</h2>
+  <p class="section-lede">Both arms share one harness. Arm A reacts to test output; Arm B must
+    predict the outcome and commit to <b style="color:#007A5E">KEEP</b> or
+    <b style="color:#d03b3b">REVISE</b> before it's allowed to see the real result.</p>
+  <div class="card"><svg viewBox="0 0 800 620" class="diagram-svg" role="img" aria-label="Arm A versus Arm B execution flow">
+<defs><marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#a9a9a9"/></marker></defs>
+<text x="180" y="26" text-anchor="middle" class="diagram-col-title" fill="#3987e5">Arm A &mdash; reactive</text>
+<text x="580" y="26" text-anchor="middle" class="diagram-col-title" fill="#c98500">Arm B &mdash; predictive</text>
+<rect x="60" y="46" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.3"/><text x="180.0" y="75.0" text-anchor="middle" class="diagram-title" fill="#3987e5">read_file</text>
+<rect x="60" y="130" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.3"/><text x="180.0" y="159.0" text-anchor="middle" class="diagram-title" fill="#3987e5">apply_patch</text>
+<rect x="60" y="214" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.3"/><text x="180.0" y="243.0" text-anchor="middle" class="diagram-title" fill="#3987e5">python_test</text>
+<rect x="60" y="340" width="110" height="50" rx="6" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.3"/><text x="115.0" y="369.0" text-anchor="middle" class="diagram-title" fill="#007A5E">pass</text>
+<rect x="190" y="340" width="110" height="50" rx="6" fill="#0a0a0a" stroke="#d03b3b" stroke-width="1.3"/><text x="245.0" y="369.0" text-anchor="middle" class="diagram-title" fill="#d03b3b">fail</text>
+<rect x="60" y="430" width="240" height="46" rx="6" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.3"/><text x="180.0" y="457.0" text-anchor="middle" class="diagram-title" fill="#007A5E">FINAL</text>
+<path d="M180,96 L180,130" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
+<path d="M180,180 L180,214" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
+<path d="M150,264 L115,340" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
+<path d="M210,264 L245,340" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
+<path d="M115,390 L150,430" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
+<path d="M245,365 C 380,365 380,155 300,155" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)" fill="none"/>
+<text x="345" y="255" text-anchor="middle" class="diagram-edge">revise &amp;</text>
+<text x="345" y="270" text-anchor="middle" class="diagram-edge">retest</text>
+<rect x="460" y="46" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#c98500" stroke-width="1.3"/><text x="580.0" y="75.0" text-anchor="middle" class="diagram-title" fill="#c98500">read_file</text>
+<rect x="460" y="130" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#c98500" stroke-width="1.3"/><text x="580.0" y="159.0" text-anchor="middle" class="diagram-title" fill="#c98500">apply_patch</text>
+<rect x="460" y="214" width="240" height="58" rx="6" fill="#0a0a0a" stroke="#c98500" stroke-width="1.3"/><text x="580.0" y="241.0" text-anchor="middle" class="diagram-title" fill="#c98500">PREDICTION</text><text x="580.0" y="259.0" text-anchor="middle" class="diagram-sub">&lt;PREDICTION&gt; + &lt;DECISION&gt;</text>
+<rect x="460" y="322" width="110" height="50" rx="6" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.3"/><text x="515.0" y="351.0" text-anchor="middle" class="diagram-title" fill="#007A5E">KEEP</text>
+<rect x="590" y="322" width="110" height="50" rx="6" fill="#0a0a0a" stroke="#d03b3b" stroke-width="1.3"/><text x="645.0" y="351.0" text-anchor="middle" class="diagram-title" fill="#d03b3b">REVISE</text>
+<rect x="460" y="406" width="110" height="58" rx="6" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.3"/><text x="515.0" y="433.0" text-anchor="middle" class="diagram-title" fill="#007A5E">python_test</text><text x="515.0" y="451.0" text-anchor="middle" class="diagram-sub">visible</text>
+<rect x="590" y="406" width="110" height="58" rx="6" fill="#0a0a0a" stroke="#d03b3b" stroke-width="1.3"/><text x="645.0" y="433.0" text-anchor="middle" class="diagram-title" fill="#d03b3b">shadow test</text><text x="645.0" y="451.0" text-anchor="middle" class="diagram-sub">hidden from agent</text>
+<rect x="460" y="520" width="240" height="46" rx="6" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.3"/><text x="580.0" y="547.0" text-anchor="middle" class="diagram-title" fill="#007A5E">FINAL</text>
+<path d="M580,96 L580,130" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
+<path d="M580,180 L580,214" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
+<path d="M550,272 L515,322" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
+<path d="M610,272 L645,322" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
+<path d="M515,372 L515,406" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
+<path d="M645,372 L645,406" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
+<path d="M515,464 L550,520" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
+<path d="M645,464 C 735,490 735,155 700,155" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)" fill="none" stroke-dasharray="5 4"/>
+<text x="748" y="310" text-anchor="middle" class="diagram-edge" transform="rotate(90 748 310)">apply_patch again</text>
+<path d="M515,464 C 410,500 410,155 460,155" stroke="#d03b3b" stroke-width="1.4" marker-end="url(#arrow2)" fill="none" stroke-dasharray="5 4" opacity="0.85"/>
+<text x="412" y="500" text-anchor="middle" class="diagram-edge" fill="#d03b3b">test still fails &rarr; apply_patch</text>
+</svg></div>
+
+  <p class="section-lede" style="margin-top:34px">That harness runs inside PRIME-RL's training
+    loop: the orchestrator dispatches each rollout into a fresh Verifiers subprocess sandbox,
+    scores it, forms GRPO groups, and sends batches to the trainer &mdash; which broadcasts
+    updated policy weights straight back to the inference server every step.</p>
   <div class="card"><svg viewBox="0 0 760 460" class="diagram-svg" role="img" aria-label="PRIME-RL and Verifiers training loop">
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -217,49 +261,6 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <path d="M480,350 C 600,350 660,250 640,116" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow)" fill="none" stroke-dasharray="5 4"/>
   <text x="660" y="230" text-anchor="middle" class="diagram-edge">broadcast updated</text>
   <text x="660" y="246" text-anchor="middle" class="diagram-edge">policy weights</text>
-</svg></div>
-
-  <p class="section-lede" style="margin-top:34px">Both arms share one harness. Arm A reacts to
-    test output; Arm B must predict the outcome and commit to <b style="color:#007A5E">KEEP</b> or
-    <b style="color:#d03b3b">REVISE</b> before it's allowed to see the real result.</p>
-  <div class="card"><svg viewBox="0 0 800 620" class="diagram-svg" role="img" aria-label="Arm A versus Arm B execution flow">
-<defs><marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#a9a9a9"/></marker></defs>
-<text x="180" y="26" text-anchor="middle" class="diagram-col-title" fill="#3987e5">Arm A &mdash; reactive</text>
-<text x="580" y="26" text-anchor="middle" class="diagram-col-title" fill="#c98500">Arm B &mdash; predictive</text>
-<rect x="60" y="46" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.3"/><text x="180.0" y="75.0" text-anchor="middle" class="diagram-title" fill="#3987e5">read_file</text>
-<rect x="60" y="130" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.3"/><text x="180.0" y="159.0" text-anchor="middle" class="diagram-title" fill="#3987e5">apply_patch</text>
-<rect x="60" y="214" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.3"/><text x="180.0" y="243.0" text-anchor="middle" class="diagram-title" fill="#3987e5">python_test</text>
-<rect x="60" y="340" width="110" height="50" rx="6" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.3"/><text x="115.0" y="369.0" text-anchor="middle" class="diagram-title" fill="#007A5E">pass</text>
-<rect x="190" y="340" width="110" height="50" rx="6" fill="#0a0a0a" stroke="#d03b3b" stroke-width="1.3"/><text x="245.0" y="369.0" text-anchor="middle" class="diagram-title" fill="#d03b3b">fail</text>
-<rect x="60" y="430" width="240" height="46" rx="6" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.3"/><text x="180.0" y="457.0" text-anchor="middle" class="diagram-title" fill="#007A5E">FINAL</text>
-<path d="M180,96 L180,130" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
-<path d="M180,180 L180,214" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
-<path d="M150,264 L115,340" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
-<path d="M210,264 L245,340" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
-<path d="M115,390 L150,430" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
-<path d="M245,365 C 380,365 380,155 300,155" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)" fill="none"/>
-<text x="345" y="255" text-anchor="middle" class="diagram-edge">revise &amp;</text>
-<text x="345" y="270" text-anchor="middle" class="diagram-edge">retest</text>
-<rect x="460" y="46" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#c98500" stroke-width="1.3"/><text x="580.0" y="75.0" text-anchor="middle" class="diagram-title" fill="#c98500">read_file</text>
-<rect x="460" y="130" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#c98500" stroke-width="1.3"/><text x="580.0" y="159.0" text-anchor="middle" class="diagram-title" fill="#c98500">apply_patch</text>
-<rect x="460" y="214" width="240" height="58" rx="6" fill="#0a0a0a" stroke="#c98500" stroke-width="1.3"/><text x="580.0" y="241.0" text-anchor="middle" class="diagram-title" fill="#c98500">PREDICTION</text><text x="580.0" y="259.0" text-anchor="middle" class="diagram-sub">&lt;PREDICTION&gt; + &lt;DECISION&gt;</text>
-<rect x="460" y="322" width="110" height="50" rx="6" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.3"/><text x="515.0" y="351.0" text-anchor="middle" class="diagram-title" fill="#007A5E">KEEP</text>
-<rect x="590" y="322" width="110" height="50" rx="6" fill="#0a0a0a" stroke="#d03b3b" stroke-width="1.3"/><text x="645.0" y="351.0" text-anchor="middle" class="diagram-title" fill="#d03b3b">REVISE</text>
-<rect x="460" y="406" width="110" height="58" rx="6" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.3"/><text x="515.0" y="433.0" text-anchor="middle" class="diagram-title" fill="#007A5E">python_test</text><text x="515.0" y="451.0" text-anchor="middle" class="diagram-sub">visible</text>
-<rect x="590" y="406" width="110" height="58" rx="6" fill="#0a0a0a" stroke="#d03b3b" stroke-width="1.3"/><text x="645.0" y="433.0" text-anchor="middle" class="diagram-title" fill="#d03b3b">shadow test</text><text x="645.0" y="451.0" text-anchor="middle" class="diagram-sub">hidden from agent</text>
-<rect x="460" y="520" width="240" height="46" rx="6" fill="#0a0a0a" stroke="#007A5E" stroke-width="1.3"/><text x="580.0" y="547.0" text-anchor="middle" class="diagram-title" fill="#007A5E">FINAL</text>
-<path d="M580,96 L580,130" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
-<path d="M580,180 L580,214" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
-<path d="M550,272 L515,322" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
-<path d="M610,272 L645,322" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
-<path d="M515,372 L515,406" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
-<path d="M645,372 L645,406" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
-<path d="M515,464 L550,520" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)"  fill="none"/>
-<path d="M645,464 C 735,490 735,155 700,155" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow2)" fill="none" stroke-dasharray="5 4"/>
-<text x="748" y="310" text-anchor="middle" class="diagram-edge" transform="rotate(90 748 310)">apply_patch again</text>
-<path d="M515,464 C 410,500 410,155 460,155" stroke="#d03b3b" stroke-width="1.4" marker-end="url(#arrow2)" fill="none" stroke-dasharray="5 4" opacity="0.85"/>
-<text x="412" y="500" text-anchor="middle" class="diagram-edge" fill="#d03b3b">test still fails &rarr; apply_patch</text>
 </svg></div>
 </section>
 
