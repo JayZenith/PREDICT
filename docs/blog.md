@@ -190,18 +190,22 @@ SFT checkpoint, i.e. RL step 0 (fully collapsed), a brief ~1-2%
 
 Root cause, in two parts:
 
-1. **GRPO can't fix it.** Prediction-label tokens are explicitly masked out
-   of the GRPO loss ([research_specs.md § Arm B — consequence
+1. **GRPO can't fix it directly.** Prediction-label tokens are explicitly
+   masked out of the GRPO loss ([research_specs.md § Arm B — consequence
    predictor](research_specs.md#arm-b--consequence-predictor)): final task
    reward depends only on whether `apply_patch`/`python_test`/`FINAL`
-   eventually succeed, never on what `<PREDICTION>` said. GRPO has literally
-   zero gradient on those tokens either way — which is exactly why it
-   reliably lifts pass@1 for both arms by step 100 (it trains the tokens
-   tied to its reward) while never touching discrimination at all (those
-   tokens are cut from its loss). Only the auxiliary CE loss (`λ=0.1`) ever
-   updates a prediction token during RL, so whatever the SFT checkpoint
-   starts with is the entire signal RL has to work with; the step-25 blip is
-   early-optimization noise that nothing defends, so it doesn't last.
+   eventually succeed, never on what `<PREDICTION>` said, so GRPO carries no
+   direct loss term at those specific positions. That's narrower than "GRPO
+   never touches it" — GRPO and the auxiliary CE update the same shared
+   transformer weights, so GRPO's gradient at every other position in the
+   rollout (the `<DECISION>` and action tokens) still reshapes the hidden
+   representations feeding the masked positions, and can shift the
+   prediction distribution indirectly. What the mask actually guarantees:
+   no term in GRPO's loss directly rewards or penalizes a specific
+   predicted label; the auxiliary CE (`λ=0.1`) is the only *direct*
+   supervision on correctness there, not the only thing capable of moving
+   those probabilities at all. The step-25 blip is early-optimization noise
+   that nothing directly defends, so it doesn't last.
 2. **SFT starts collapsed by construction.** Across all 212 Arm B SFT
    traces, `<PREDICTION>` labels split roughly 257 PASS : 45 real-failure
    (85%/15%) — and half the 70 recovery traces (25 `visible` + 10
@@ -216,11 +220,12 @@ Root cause, in two parts:
    vars, index risk) without simulating the algorithm against the test
    cases — a cheaper pattern, and the only non-PASS one that stuck.
 
-Not reward hacking — the masked-out tokens mean there's nothing for GRPO to
-game, only indifference. Call it poor reward shaping: the one skill that
-mattered was routed entirely through a low-weight, uniformly-per-token CE
-loss, so the 85%-majority PASS label dominates that gradient too. The two
-directions below target these directly — reweighting CE toward rare classes
+Not reward hacking — the masked-out tokens mean there's no direct term for
+GRPO to game, only indifference. Call it poor reward shaping: the one skill
+that mattered had no direct reward term and relied on a low-weight,
+uniformly-per-token CE loss as its only targeted teacher, so the
+85%-majority PASS label dominates that gradient too. The two directions
+below target these directly — reweighting CE toward rare classes
 attacks part 2, reward shaping attacks part 1 by finally giving GRPO's own
 reward a reason to tell the two kinds of rollouts apart.
 
@@ -304,26 +309,34 @@ from digging into why the results looked the way they did.
    simulate. Tells you whether this is a fixable weighting problem or a real
    ceiling on one-shot, no-scratchpad code simulation at this model size.
 2. **Reward shaping.** Final task reward pays out identically regardless of
-   whether the prediction was right, so GRPO itself has no gradient toward
-   good decisions — only the weaker CE term does. Hypothesis: prediction
-   improves decisions, so give extra reward when
+   whether the prediction was right, so GRPO carries no direct incentive
+   toward good predictions. Hypothesis: give extra reward when
    `true failure + predicted failure + REVISE` and when
-   `true PASS + predicted PASS + KEEP`. One catch, verified in
+   `true PASS + predicted PASS + KEEP`. One nuance, verified in
    `src/glyph/prime_rl.py`: GRPO already masks sampled `<PREDICTION>` label
    tokens out of its own loss (`rl_weights=0`), so a shaped reward's
-   gradient reaches the surrounding `<DECISION>`/action tokens, not the
-   prediction content itself — and decision-following is already 97-99%
-   consistent, so there's little room left there. Making this experiment
-   actually touch the prediction tokens means lifting that mask too, not
-   just adding a reward term.
+   *direct* gradient still lands on the surrounding `<DECISION>`/action
+   tokens, not the label positions themselves. Because every position
+   shares the same transformer weights, that's not nothing — reward tied
+   to the decision can still reshape the hidden states feeding the label
+   positions indirectly — but it isn't a term that directly grades the
+   label choice, and decision-following is already 97-99% consistent,
+   so there's limited headroom on the direct side. Making this experiment
+   squarely target prediction correctness likely still means lifting the
+   mask, not just adding a reward term.
 
-The actual crux: two separate, non-overlapping pathways touch these traces —
-GRPO trains everything *except* the prediction label (masked out by
-design), and the auxiliary CE trains *only* the prediction label, uniformly
-weighted, fully decoupled from reward. Reweighting CE fixes the weighting
-half; reward shaping, as scoped today, can't reach the label tokens at all
-without also lifting GRPO's mask on them. Neither alone closes the loop
-between "predicted correctly" and "rewarded for it" — that requires both.
+The actual crux: GRPO and the auxiliary CE update the same shared
+transformer weights, so calling them fully separate is too strong — but
+they're not doing the same job either. GRPO carries no direct loss term on
+the prediction-label positions (masked out by design); the auxiliary CE is
+the only signal that directly supervises which label gets predicted there.
+Reweighting CE strengthens that direct signal; reward shaping strengthens
+the indirect one, by making the surrounding decision/action tokens' reward
+actually depend on prediction quality. Neither is a full fix alone:
+reweighting doesn't add missing information about *how* to simulate, and
+reward shaping's effect on the label positions, absent a direct term there,
+still depends on shared-weight spillover from everywhere else in the
+rollout — real, but unmeasured and not targeted.
 
 ## Appendix
 
