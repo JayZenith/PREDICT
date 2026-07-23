@@ -298,8 +298,8 @@ claim must stand on prediction quality, decisions, correctness, and efficiency.
   winning candidate is `z = x * y`, using the exact operator the prompt
   forbids, and still scores reward 1 because the three numeric asserts can't
   detect it (Arm A's real solution for the same task, a repeated-addition
-  loop, does honor the constraint). This is specification gaming enabled by
-  a verifier gap, not a training bug — pass@1 and RL reward measure
+  loop, does honor the constraint). This is a verifier gap, not a training
+  bug — pass@1 and RL reward measure
   test-assertion satisfaction, not spec compliance, for any part of a prompt
   that isn't encoded as a test. A quick check found this exact phrasing on
   only one of the 500 test tasks, so it's a real but isolated case here, not

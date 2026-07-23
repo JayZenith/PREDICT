@@ -221,10 +221,10 @@ Root cause, in two parts:
    cases — a cheaper pattern, and the only non-PASS one that stuck.
 
 Not reward hacking — the masked-out tokens mean there's no direct term for
-GRPO to game, only indifference. Call it poor reward shaping: the one skill
-that mattered had no direct reward term and relied on a low-weight,
-uniformly-per-token CE loss as its only targeted teacher, so the
-85%-majority PASS label dominates that gradient too. The two directions
+GRPO to game, only indifference. Call it poor reward shaping: a low-weight,
+uniformly-per-token CE loss was the only direct correctness signal on that
+skill, so the 85%-majority PASS label dominates that gradient too. The two
+directions
 below target these directly — reweighting CE toward rare classes
 attacks part 2, reward shaping attacks part 1 by finally giving GRPO's own
 reward a reason to tell the two kinds of rollouts apart.
