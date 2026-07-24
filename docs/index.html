@@ -663,19 +663,27 @@ patch applied</code></div>
 
 <section class="section" id="next">
   <p class="section-kicker">Where to go next</p>
-  <h2 class="section-title">Sweep first, then the harder tests</h2>
+  <h2 class="section-title">Cheap experiments first, then the harder tests</h2>
   <div class="next-grid">
     <div class="next-card">
       <div class="next-num">01 &middot; try first</div>
-      <div class="next-title" style="color:#39ff14">Sweep &lambda;</div>
-      <p>The 212 Arm B SFT traces split 257 PASS : 37 <code style="color:#ef4444">ASSERTION_FAILURE</code>
-      : 8 <code style="color:#f5e400">RUNTIME_ERROR</code>, rare at SFT time. But during RL,
-      ASSERTION_FAILURE is a third to half of every step's outcomes, so exposure isn't the problem;
-      simulating the logic is. Reweighting the loss tests whether this is fixable, or a real
-      ceiling on no-scratchpad simulation at this model size.</p>
+      <div class="next-title" style="color:#39ff14">Turn up &lambda;</div>
+      <p>&lambda; is the weight on the auxiliary CE loss, currently <code>0.1</code>. So the only
+      thing that directly trains the prediction is also the smallest term in the loss. Turn it up,
+      and weight the rare failure classes above PASS, then see whether prediction quality moves at
+      all. Cheapest experiment here, and it separates &ldquo;the signal was too weak&rdquo; from
+      &ldquo;a 4B model can't do this.&rdquo;</p>
     </div>
     <div class="next-card">
-      <div class="next-num">02 &middot; then</div>
+      <div class="next-num">02 &middot; try first</div>
+      <div class="next-title" style="color:#00d17a">Train longer than 100 steps</div>
+      <p>100 GRPO steps may simply be too short to judge this. Nothing has plateaued: two of the
+      four runs are still climbing at step 100 (+2.8 and +2.4 points over step 75), and the other
+      two are down only 0.6, inside the noise. Comparing arms at a point where both are still
+      moving risks reading a transient as a result. Run to convergence, then compare.</p>
+    </div>
+    <div class="next-card">
+      <div class="next-num">03 &middot; then</div>
       <div class="next-title" style="color:#f5e400">Reward shaping</div>
       <p>Reward pays out the same regardless of whether the prediction was right, so GRPO has no
       incentive toward good predictions. Hypothesis: extra reward for correctly-predicted
@@ -683,7 +691,7 @@ patch applied</code></div>
       lands on the surrounding tokens, not the label itself, an indirect nudge, not a direct fix.</p>
     </div>
     <div class="next-card">
-      <div class="next-num">03 &middot; the real test</div>
+      <div class="next-num">04 &middot; the real test</div>
       <div class="next-title" style="color:#39ff14">Ablate the gate</div>
       <p>The one piece here that's actually new relative to ECHO is that the prediction causally
       gates <code>KEEP</code>/<code>REVISE</code>. That's never been tested in isolation: run
@@ -691,7 +699,7 @@ patch applied</code></div>
       Arm B, holding everything else fixed.</p>
     </div>
     <div class="next-card">
-      <div class="next-num">04 &middot; harder</div>
+      <div class="next-num">05 &middot; harder</div>
       <div class="next-title" style="color:#00d17a">Denser prediction target</div>
       <p>Not another SFT pass on the same label: change what's being predicted. Today's target is
       a single token from a 6-way enum. Predicting the specific failing assertion or
@@ -700,29 +708,22 @@ patch applied</code></div>
       to simulate in the first place.</p>
     </div>
     <div class="next-card">
-      <div class="next-num">05 &middot; rigor check</div>
+      <div class="next-num">06 &middot; rigor check</div>
       <div class="next-title" style="color:#4d9fff">Isolate the causal effect</div>
-      <p>Decision-following is ~100% by construction, so &ldquo;predicted X&rdquo; and &ldquo;did
-      X&rdquo; are nearly tautological: they can't currently be told apart. Fix: force KEEP or
-      REVISE independent of the model's stated prediction on some rollouts, and see whether reward
-      actually moves with prediction correctness, or only with the decision.</p>
+      <p>Right now the prediction and the decision always agree: KEEP follows PASS, REVISE follows
+      a predicted failure, ~100% of the time. So when a rollout goes well, there is no way to tell
+      whether it went well because the <i>prediction</i> was right, or just because of the
+      <i>action</i> that prediction triggered. Break the link: on some rollouts, pick KEEP or REVISE
+      at random instead of following the prediction. If reward still tracks whether the prediction
+      was correct, the prediction is doing real work.</p>
     </div>
     <div class="next-card">
-      <div class="next-num">06 &middot; generalize</div>
+      <div class="next-num">07 &middot; generalize</div>
       <div class="next-title" style="color:#00d17a">Scale beyond one model, one benchmark</div>
       <p>n=500 on MBPP with a 4B model that may have seen MBPP in pretraining can't rule out
       idiosyncrasy. Replicating across model scale, or on a benchmark unlikely to be memorized, is
       what would make this a claim rather than a run.</p>
     </div>
-  </div>
-  <div class="callout warn mt-md">
-    <div class="callout-label">The actual crux</div>
-    Reweighting CE strengthens the one <i>direct</i> signal on the prediction skill; reward shaping
-    strengthens the indirect one, by making the surrounding decision/action tokens' reward depend
-    on prediction quality. Neither is a full fix alone: reweighting doesn't add missing information
-    about <i>how</i> to simulate, and reward shaping's effect on the label positions, absent a
-    direct term there, still depends on shared-weight spillover, real but unmeasured and not
-    targeted.
   </div>
 </section>
 

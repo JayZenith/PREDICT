@@ -273,24 +273,22 @@ from digging into why the results looked the way they did.
    more direct fix for the `ASSERTION_FAILURE` blind spot than reweighting
    the current, thin classification target.
 
-**Where to go next**, sweep first, then the harder tests:
+**Where to go next**, cheap experiments first, then the harder tests:
 
-1. **Sweep `λ`** (`orchestrator.algo.alpha` in `configs/arm_b_rl.toml`,
-   currently `0.1`) upward, or reweight the auxiliary CE loss toward the
-   rare/hard classes instead of uniform per-token weighting. "Rare" is a
-   claim about the *SFT set*, not RL: counting the 212 Arm B SFT traces
-   directly, `<PREDICTION>` labels split 257 PASS : 37 `ASSERTION_FAILURE` :
-   8 `RUNTIME_ERROR` — only 37 real examples, ever, none with any reasoning
-   shown before the label (the tag is emitted immediately after
-   `apply_patch`, no scratchpad). During RL itself `ASSERTION_FAILURE` is
-   *not* rare — it's routinely a third to half of every step's real outcomes
-   (118 of 236 at step 1, 72 of 103 at step 50) — so the model isn't short
-   on raw exposure during RL, it just never learns from it. That points at
-   *hard*, not just *rare*. Reweighting raises the gradient on examples the
-   model already sees; it doesn't add a missing demonstration of *how* to
-   simulate. Tells you whether this is a fixable weighting problem or a real
-   ceiling on one-shot, no-scratchpad code simulation at this model size.
-2. **Reward shaping.** Final task reward pays out identically regardless of
+1. **Turn up `λ`** (`orchestrator.algo.alpha` in `configs/arm_b_rl.toml`,
+   currently `0.1`). `λ` is the weight on the auxiliary CE loss, so the only
+   thing that directly trains the prediction is also the smallest term in
+   the loss. Turn it up, and weight the rare failure classes above `PASS`
+   instead of uniform per-token weighting, then see whether prediction
+   quality moves at all. Cheapest experiment on this list, and it separates
+   "the signal was too weak" from "a 4B model can't do this."
+2. **Train longer than 100 steps.** 100 GRPO steps may simply be too short
+   to judge this. Nothing has plateaued: two of the four runs are still
+   climbing at step 100 (+2.8 and +2.4 points over step 75), and the other
+   two are down only 0.6, inside the noise. Comparing the arms at a point
+   where both are still moving risks reading a transient as a result. Run to
+   convergence, then compare.
+3. **Reward shaping.** Final task reward pays out identically regardless of
    whether the prediction was right, so GRPO carries no direct incentive
    toward good predictions. Hypothesis: extra reward for
    `true failure + predicted failure + REVISE` and
@@ -303,34 +301,29 @@ from digging into why the results looked the way they did.
    there's limited headroom there. Squarely targeting prediction
    correctness likely still means lifting the mask, not just adding a
    reward term.
-3. **Ablate the gate.** Test prediction-with-behavioral-gating (current
+4. **Ablate the gate.** Test prediction-with-behavioral-gating (current
    Arm B) against prediction-as-pure-auxiliary-signal (ECHO-style, no
    `KEEP`/`REVISE` control), holding the rest of the bundle fixed. This is
    the one piece that's actually new relative to ECHO, and it's never been
    tested in isolation.
-4. **Denser prediction target.** Not another SFT pass on the same label:
+5. **Denser prediction target.** Not another SFT pass on the same label:
    change what's being predicted. Today's target is a single token from a
    6-way enum. Predicting the specific failing assertion or expected/actual
    value instead forces multi-token, generative simulation of the test,
    closer to how ECHO's dense observation-token target works, and may be why
    the model never learned to simulate in the first place.
-5. **Isolate the causal effect.** Decision-following is ~100% by
-   construction, so "predicted X" and "did X" are nearly tautological: they
-   can't currently be told apart. Fix: force `KEEP` or `REVISE` independent
-   of the model's stated prediction on some rollouts, and see whether reward
-   actually moves with prediction correctness, or only with the decision.
-6. **Scale beyond one model and one benchmark.** n=500 on MBPP with a 4B
+6. **Isolate the causal effect.** Right now the prediction and the
+   decision always agree: `KEEP` follows `PASS`, `REVISE` follows a
+   predicted failure, ~100% of the time. So when a rollout goes well, there
+   is no way to tell whether it went well because the *prediction* was
+   right, or just because of the *action* that prediction triggered. Break
+   the link: on some rollouts, pick `KEEP` or `REVISE` at random instead of
+   following the prediction. If reward still tracks whether the prediction
+   was correct, the prediction is doing real work.
+7. **Scale beyond one model and one benchmark.** n=500 on MBPP with a 4B
    model that may have seen MBPP in pretraining can't rule out idiosyncrasy.
    Replicating across model scale or on a benchmark unlikely to be
    memorized is what would make this a claim, not just a run.
-
-The actual crux: reweighting CE strengthens the one *direct* signal on the
-prediction skill; reward shaping strengthens the indirect one, by making the
-surrounding decision/action tokens' reward depend on prediction quality.
-Neither is a full fix alone: reweighting doesn't add missing information
-about *how* to simulate, and reward shaping's effect on the label
-positions, absent a direct term there, still depends on shared-weight
-spillover — real, but unmeasured and not targeted.
 
 ## Appendix
 
