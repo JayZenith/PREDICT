@@ -36,21 +36,13 @@ code { font-family: var(--mono); font-size: 0.86em; color: #d8ecd9;
   background: rgba(57,255,20,.06); border-radius: 3px; padding: 1px 5px; }
 .page { max-width: 940px; margin: 0 auto; padding: 0 24px 72px; }
 
-/* ---- nav ---- */
-.topnav { position: sticky; top: 0; z-index: 5; background: rgba(0,0,0,.86);
-  backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
-.topnav-inner { max-width: 940px; margin: 0 auto; padding: 11px 24px; display: flex; gap: 20px;
-  flex-wrap: wrap; font-size: 15px; }
-.topnav a { color: var(--mute); border-bottom: none; letter-spacing: .01em; }
-.topnav a:hover { color: var(--green); }
-
 /* ---- hero ---- */
-.hero { padding: 60px 0 44px; border-bottom: 1px solid var(--border); position: relative; }
+.hero { padding: 64px 0 44px; border-bottom: 1px solid var(--border); position: relative; }
 .hero::after { content: ""; position: absolute; left: 0; bottom: -1px; width: 90px; height: 2px;
   background: var(--green); box-shadow: 0 0 14px rgba(57,255,20,.7); }
 .kicker { font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: var(--green);
   font-weight: 700; margin: 0 0 18px; }
-.h1 { font-size: 42px; line-height: 1.16; margin: 0 0 22px; font-weight: 650; letter-spacing: -0.022em; }
+.h1 { font-size: 33px; line-height: 1.22; margin: 0 0 20px; font-weight: 650; letter-spacing: -0.018em; }
 .tagline { font-size: 18.5px; line-height: 1.7; color: var(--ink-2); margin: 0; }
 .meta-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip { border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; font-size: 15px;
@@ -58,7 +50,7 @@ code { font-family: var(--mono); font-size: 0.86em; color: #d8ecd9;
 .chip b { color: var(--ink); font-weight: 600; }
 
 /* ---- sections ---- */
-.section { padding: 52px 0; border-bottom: 1px solid var(--border); scroll-margin-top: 60px; }
+.section { padding: 52px 0; border-bottom: 1px solid var(--border); scroll-margin-top: 20px; }
 .section:last-of-type { border-bottom: none; }
 .section-kicker { display: inline-block; font-size: 12.5px; letter-spacing: .11em;
   text-transform: uppercase; margin: 0 0 14px; color: var(--green); font-weight: 700;
@@ -181,19 +173,6 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </style>
 </head>
 <body>
-
-<nav class="topnav"><div class="topnav-inner">
-  <a href="#architecture">Architecture</a>
-  <a href="#data">Data</a>
-  <a href="#results">Results</a>
-  <a href="#efficiency">Efficiency</a>
-  <a href="#diagnosis">Diagnosis</a>
-  <a href="#demo">Rollouts</a>
-  <a href="#learned">Learned</a>
-  <a href="#next">Next</a>
-  <a href="#appendix">Appendix</a>
-  <a href="https://github.com/JayZenith/PREDICT">GitHub &rarr;</a>
-</div></nav>
 
 <div class="page">
 
