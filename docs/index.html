@@ -577,50 +577,38 @@ patch applied</code></div>
   </div>
   <div class="callout warn">
     <div class="callout-label">What this shows</div>
-    On the first two candidates (wrong arithmetic operator, still valid Python), Arm B predicts
-    <code style="color:#22c55e">PASS</code> and <code style="color:#22c55e">KEEP</code>s,
-    but the verified outcome once each candidate actually runs is
-    <code style="color:#ef4444">ASSERTION_FAILURE</code> both times, exactly the class it has 0%
-    recall on. This isn't hypothetical; it's this exact real trace: two wrong PASS
-    predictions, in a row, then a real test failure it reacts to exactly like Arm A would have
-    anyway (no benefit from having predicted at all). Only the third candidate passes the tests,
-    so that PASS prediction happens to be right. Arm A solves the stated problem correctly on the
-    first try; Arm A's real code is a repeated-addition loop with sign correction
-    (<code>for i in range(abs(b)): result += a</code>, then flip sign on <code>a^b&lt;0</code>) that
-    genuinely avoids <code>*</code>.
+    Arm B predicts PASS twice in a row and is wrong both times (the real test comes back
+    ASSERTION_FAILURE), so it gains nothing over Arm A: it reacts to the failure the same way
+    either agent would. Only the third candidate actually passes.
   </div>
   <div class="callout crit">
     <div class="callout-label">Verifier gap</div>
-    Arm B's winning candidate is <code>z = x * y</code>: it uses the exact operator the task
-    says not to. The test suite is three numeric asserts (<code>multiply_int(10,20)==200</code>,
-    etc.); it checks the output, not what operators produced it, so this rollout still scores
-    reward 1.0. Both arms &ldquo;solved&rdquo; the task by the only thing that's actually measured
-    (the given tests), but only Arm A solved what was actually <i>asked</i>. This is a verifier
-    gap, not a bug in this demo: it's a real, verified property of grading purely by assert
-    statements: any part of a prompt's spec that isn't encoded as a test is simply not checked or
-    rewarded. (A quick check across the 500-task test set found this exact
-    &ldquo;without using X&rdquo; phrasing on only this one task, a real but isolated case
-    here, not a systemic pattern in this dataset.)
+    That third candidate, <code>z = x * y</code>, uses the exact operator the task banned. The
+    test only checks numeric output, not which operator produced it, so it still scores reward
+    1.0. Arm A's own solution (a loop with sign correction) actually obeys the instruction. Both
+    "solved" the task by the only thing graded; only Arm A solved what was asked. One isolated
+    case in this dataset, not a systemic pattern.
   </div>
 </section>
 
 <section class="section" id="learned">
   <p class="section-kicker">What I learned</p>
-  <h2 class="section-title">Six things this run actually taught</h2>
+  <h2 class="section-title">Five things this run actually taught</h2>
   <p class="section-lede">Not the results table: the methodology and architecture lessons
     that came from digging into why the results looked the way they did.</p>
 
   <div class="card">
     <ol class="learned-list">
-      <li><b>A matched comparison isn't an ablation.</b> Two complete systems not clearly differing
-      doesn't tell you which piece of the bundle mattered. That needs a compute/action-matched
-      ablation, not this two-arm design.</li>
-      <li><b>A masked-out loss needs its own reward path, or it's the sole teacher.</b> Prediction
-      tokens are masked from GRPO (<a href="#diagnosis">why</a>), leaving the low-weight auxiliary
-      CE as the only direct teacher for that skill. A weak sole teacher makes a weak skill.</li>
-      <li><b>SFT curricula can bake in the shortcut they're trying to prevent.</b> Half of Arm B's
-      recovery traces demonstrate &ldquo;guess PASS, let the real test catch it&rdquo;, a valid
-      pattern that's also exactly the shortcut the collapsed policy falls back on.</li>
+      <li><b>The reward never actually grades the prediction, so nothing forces it to improve.</b>
+      Whether the task passes or fails depends only on the final code, never on what
+      <code>&lt;PREDICTION&gt;</code> said (<a href="#diagnosis">why</a>). The only thing training
+      the prediction itself is the small auxiliary CE loss, so if that one signal is weak, the
+      prediction skill stays weak, no matter how well the rest of the agent performs.</li>
+      <li><b>Half the training examples quietly taught the model to skip predicting honestly.</b>
+      In half of Arm B's recovery examples, the "correct" move was to guess PASS on a buggy
+      candidate and let the real test catch the mistake afterward. That's a legitimate fallback to
+      teach, but it also means the training data itself modeled "just guess PASS and let the test
+      sort it out" as acceptable, which is exactly the lazy habit the model fell back on.</li>
       <li><b>Rare at one stage isn't rare at another.</b> Only 37 of 302 SFT labels are real
       <code style="color:#ef4444">ASSERTION_FAILURE</code> examples, but RL logs show the model
       sees this outcome constantly during training. The 0% recall isn't a data-scarcity problem.</li>
