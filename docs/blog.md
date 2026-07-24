@@ -47,15 +47,11 @@ McNemar (continuity-corrected) + paired bootstrap CI on per-task pass/fail
   significance (p=0.11, p=0.27). **No checkpoint step shows a difference
   between Arm A and Arm B that holds up across seed combinations.**
 
-Read plainly: the RL training itself works for **both** arms — each reliably
-improves over its own SFT starting point by step 100, backed by two
-independent runs per arm. Whether Arm A's reactive design or Arm B's
-predictive design is *better than the other* is a different, separate
-question, and it remains unconfirmed at every step, across every seed
-combination tested. The one number that once suggested Arm A had an edge
-(step 25) traced back to a single outlier training run on Arm B's side, not
-a reproducible arm-level effect. Both arms show good within-arm
-reproducibility of their own.
+Bottom line: RLVR reliably improves **both** arms over their own SFT baseline
+by step 100, across two independent runs each. Whether either design is
+*better than the other* remains unconfirmed at every step and seed
+combination — the one number that once suggested Arm A had an edge (step 25)
+traced back to a single outlier run, not a reproducible effect.
 
 **Scope**: none of this isolates "prediction" as a single causal variable —
 Arm B bundles the predict/decide protocol, an added action space, the
@@ -124,13 +120,9 @@ wrong. A standard-MBPP completion check (tests shown, no agent loop) on the
 *untuned* base model scored 64.6% pass@1 on the same 500 tasks where the full
 SFT pipeline scored 6%.
 
-Arm B's actual research question — how outcome prediction changes reasoning,
-first-pass correctness, and revision attempts in a realistic test-driven
-workflow, compared to Arm A — doesn't require blind signature guessing to
-be interesting; it requires the agent to know what it's graded against and
-still have to execute to find out if its candidate works. Blind-signature
-inference was accidentally the dominant difficulty, swamping the actual
-experimental variable. The task prompt now shows the exact test assertions
+That's not the actual research question — Arm B needs the agent to know what
+it's graded against and still have to execute to find out if its candidate
+works, not blind-guess a function signature. The task prompt now shows the exact test assertions
 (matching standard MBPP), for both arms, everywhere the prompt is built (SFT
 traces and RL train/validation/test tasksets share one prompt function).
 Arm A's val40 score landing right at the base model's own ceiling (60% vs.
@@ -191,22 +183,17 @@ SFT checkpoint, i.e. RL step 0 (fully collapsed), a brief ~1-2%
 
 Root cause, in two parts:
 
-1. **GRPO can't fix it directly.** Prediction-label tokens are explicitly
-   masked out of the GRPO loss ([research_specs.md § Arm B — consequence
-   predictor](research_specs.md#arm-b--consequence-predictor)): final task
-   reward depends only on whether `apply_patch`/`python_test`/`FINAL`
-   eventually succeed, never on what `<PREDICTION>` said, so GRPO carries no
-   direct loss term at those specific positions. That's narrower than "GRPO
-   never touches it" — GRPO and the auxiliary CE update the same shared
-   transformer weights, so GRPO's gradient at every other position in the
-   rollout (the `<DECISION>` and action tokens) still reshapes the hidden
-   representations feeding the masked positions, and can shift the
-   prediction distribution indirectly. What the mask actually guarantees:
-   no term in GRPO's loss directly rewards or penalizes a specific
-   predicted label; the auxiliary CE (`λ=0.1`) is the only *direct*
-   supervision on correctness there, not the only thing capable of moving
-   those probabilities at all. The step-25 blip is early-optimization noise
-   that nothing directly defends, so it doesn't last.
+1. **GRPO can't fix it directly.** Prediction-label tokens are masked out of
+   the GRPO loss ([research_specs.md § Arm B — consequence
+   predictor](research_specs.md#arm-b--consequence-predictor)): final reward
+   depends only on whether `apply_patch`/`python_test`/`FINAL` succeed,
+   never on what `<PREDICTION>` said. GRPO carries no *direct* loss term on
+   those tokens — but GRPO and the auxiliary CE update the same shared
+   transformer weights, so gradient at the surrounding `<DECISION>`/action
+   tokens can still reshape the masked positions indirectly. The auxiliary
+   CE (`λ=0.1`) is the only *direct* teacher here, not the only thing
+   capable of moving those probabilities. The step-25 blip is
+   early-optimization noise nothing directly defends, so it doesn't last.
 2. **SFT starts collapsed by construction.** Across all 212 Arm B SFT
    traces, `<PREDICTION>` labels split roughly 257 PASS : 45 real-failure
    (85%/15%) — and half the 70 recovery traces (25 `visible` + 10
@@ -221,14 +208,13 @@ Root cause, in two parts:
    vars, index risk) without simulating the algorithm against the test
    cases — a cheaper pattern, and the only non-PASS one that stuck.
 
-Not reward hacking — the masked-out tokens mean there's no direct term for
-GRPO to game, only indifference. Call it poor reward shaping: a low-weight,
+Not reward hacking — the masked-out tokens mean there's nothing for GRPO to
+game, only indifference. Call it poor reward shaping: a low-weight,
 uniformly-per-token CE loss was the only direct correctness signal on that
-skill, so the 85%-majority PASS label dominates that gradient too. The two
-directions
-below target these directly — reweighting CE toward rare classes
-attacks part 2, reward shaping attacks part 1 by finally giving GRPO's own
-reward a reason to tell the two kinds of rollouts apart.
+skill, dominated by the 85%-majority PASS label. The two directions below
+target this: reweighting CE toward rare classes attacks part 2, reward
+shaping attacks part 1 by giving GRPO's own reward a reason to tell the two
+kinds of rollouts apart.
 
 Net: Arm B pays the full token overhead of predicting on every turn (see
 efficiency numbers above) but the mechanism only covers ~15% of real
@@ -241,20 +227,17 @@ significance question.
 Not the results table — the methodology and architecture lessons that came
 from digging into why the results looked the way they did.
 
-1. **A matched comparison isn't an ablation.** Arm A vs. Arm B tests two
-   complete, multi-part systems against each other — the predict/decide
-   protocol, the auxiliary loss, and the SFT trace format all change
-   together. It can tell you the bundle didn't clearly win; it can't tell
-   you which piece of the bundle mattered. Isolating "prediction" as a
-   single causal factor needs a compute/action-matched ablation, not this
-   two-arm design.
+1. **A matched comparison isn't an ablation.** Testing two complete,
+   multi-part systems against each other (see **Scope**, above) can tell
+   you the bundle didn't clearly win; it can't tell you which piece
+   mattered. Isolating "prediction" as a single causal factor needs a
+   compute/action-matched ablation, not this two-arm design.
 2. **An auxiliary loss needs its own reward path, or it's the only
-   teacher.** Masking prediction-label tokens out of GRPO's loss is a
-   reasonable design choice — it stops the RL objective from getting noisy
-   gradient on tokens final reward doesn't grade. But it also means the
-   low-weight, uniformly-weighted auxiliary CE became the *entire* training
-   signal for that skill. A weak sole teacher produces a weak skill,
-   independent of how good the rest of the system is.
+   *direct* teacher.** Masking prediction-label tokens out of GRPO's loss
+   (see Root cause, above) is a reasonable design choice, but it leaves the
+   low-weight, uniformly-weighted auxiliary CE as the only *direct* teacher
+   for that skill. A weak sole teacher produces a weak skill, independent
+   of how good the rest of the system is.
 3. **SFT curricula can bake in the shortcut they're trying to prevent.**
    Half of Arm B's recovery traces demonstrate "guess PASS, let the real
    test catch the mistake" as a valid, reward-preserving pattern — because
@@ -275,22 +258,20 @@ from digging into why the results looked the way they did.
    Two-seed replication (now standard for both arms here) is what turned
    an appealing headline into a checked claim.
 6. **"No scratchpad" doesn't mean "no computation," and it isn't
-   automatically a dead end.** Every `<PREDICTION>` tag in every trace is
-   emitted immediately after `apply_patch`, with no reasoning tokens in
-   between — but this project's own inspiration, ECHO (Shrivastava,
-   Kauffmann, Awadallah & Papailiopoulos, ["Terminal Agents Learn World
-   Models for Free"](https://arxiv.org/abs/2605.24517), 2026), trains a CE
-   loss on environment-observation tokens with no separate reasoning step
-   either, reusing the same GRPO rollout — and it doubles pass@1 on
-   TerminalBench-2.0 (Qwen3-8B: 2.70%→5.17%; Qwen3-14B: 5.17%→10.79%). So
-   scratchpad-free auxiliary prediction plainly can work. The likely
-   difference: ECHO's target is the full, dense, multi-token environment
-   observation — the actual output text, forcing token-by-token computation
-   through what happened — while ours is a single terse label from a 6-way
-   enum. A denser prediction target closer to ECHO's (the specific failing
-   assertion or expected value, not just an outcome class) may be a more
-   direct fix for the `ASSERTION_FAILURE` blind spot than reweighting the
-   current, thin classification target.
+   automatically a dead end.** Every `<PREDICTION>` tag is emitted
+   immediately after `apply_patch`, no reasoning tokens in between — but
+   ECHO (Shrivastava, Kauffmann, Awadallah & Papailiopoulos,
+   ["Terminal Agents Learn World Models for
+   Free"](https://arxiv.org/abs/2605.24517), 2026, this project's own
+   inspiration) trains a similarly scratchpad-free CE loss and still
+   doubles pass@1 on TerminalBench-2.0. So scratchpad-free auxiliary
+   prediction plainly can work. The likely difference: ECHO's target is
+   the full, dense, multi-token environment observation, forcing
+   token-by-token computation through what happened — ours is a single
+   terse label from a 6-way enum. A denser prediction target (the specific
+   failing assertion or expected value, not just an outcome class) may be a
+   more direct fix for the `ASSERTION_FAILURE` blind spot than reweighting
+   the current, thin classification target.
 
 **Where to go next**, sweep first, then the harder tests:
 
@@ -311,20 +292,17 @@ from digging into why the results looked the way they did.
    ceiling on one-shot, no-scratchpad code simulation at this model size.
 2. **Reward shaping.** Final task reward pays out identically regardless of
    whether the prediction was right, so GRPO carries no direct incentive
-   toward good predictions. Hypothesis: give extra reward when
-   `true failure + predicted failure + REVISE` and when
-   `true PASS + predicted PASS + KEEP`. One nuance, verified in
-   `src/glyph/prime_rl.py`: GRPO already masks sampled `<PREDICTION>` label
-   tokens out of its own loss (`rl_weights=0`), so a shaped reward's
-   *direct* gradient still lands on the surrounding `<DECISION>`/action
-   tokens, not the label positions themselves. Because every position
-   shares the same transformer weights, that's not nothing — reward tied
-   to the decision can still reshape the hidden states feeding the label
-   positions indirectly — but it isn't a term that directly grades the
-   label choice, and decision-following is already 96-100% consistent,
-   so there's limited headroom on the direct side. Making this experiment
-   squarely target prediction correctness likely still means lifting the
-   mask, not just adding a reward term.
+   toward good predictions. Hypothesis: extra reward for
+   `true failure + predicted failure + REVISE` and
+   `true PASS + predicted PASS + KEEP`. One nuance (see Root cause, above):
+   GRPO already masks prediction-label tokens from its own loss
+   (`rl_weights=0`), so a shaped reward's *direct* gradient still lands on
+   the surrounding `<DECISION>`/action tokens, not the label positions — a
+   real indirect effect via shared weights, but not a direct grade on the
+   label choice. Decision-following is already 96-100% consistent, so
+   there's limited headroom there. Squarely targeting prediction
+   correctness likely still means lifting the mask, not just adding a
+   reward term.
 3. **Ablate the gate.** Test prediction-with-behavioral-gating (current
    Arm B) against prediction-as-pure-auxiliary-signal (ECHO-style, no
    `KEEP`/`REVISE` control), holding the rest of the bundle fixed. This is
@@ -345,18 +323,13 @@ from digging into why the results looked the way they did.
    Replicating across model scale or on a benchmark unlikely to be
    memorized is what would make this a claim, not just a run.
 
-The actual crux: GRPO and the auxiliary CE update the same shared
-transformer weights, so calling them fully separate is too strong — but
-they're not doing the same job either. GRPO carries no direct loss term on
-the prediction-label positions (masked out by design); the auxiliary CE is
-the only signal that directly supervises which label gets predicted there.
-Reweighting CE strengthens that direct signal; reward shaping strengthens
-the indirect one, by making the surrounding decision/action tokens' reward
-actually depend on prediction quality. Neither is a full fix alone:
-reweighting doesn't add missing information about *how* to simulate, and
-reward shaping's effect on the label positions, absent a direct term there,
-still depends on shared-weight spillover from everywhere else in the
-rollout — real, but unmeasured and not targeted.
+The actual crux: reweighting CE strengthens the one *direct* signal on the
+prediction skill; reward shaping strengthens the indirect one, by making the
+surrounding decision/action tokens' reward depend on prediction quality.
+Neither is a full fix alone: reweighting doesn't add missing information
+about *how* to simulate, and reward shaping's effect on the label
+positions, absent a direct term there, still depends on shared-weight
+spillover — real, but unmeasured and not targeted.
 
 ## Appendix
 
