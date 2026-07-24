@@ -136,6 +136,8 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 16.5px; ma
 .learned-list li:last-child { margin-bottom: 0; }
 .learned-tag { display: block; font-size: 12.5px; font-weight: 600; letter-spacing: .06em;
   text-transform: uppercase; color: var(--yellow); margin-bottom: 3px; }
+.block-label { display: block; font-size: 13px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--yellow); margin: 0 0 6px; }
 
 /* ---- next steps ---- */
 .next-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -347,7 +349,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="efficiency">
   <p class="section-kicker">Efficiency</p>
   <h2 class="section-title">Step-100 seed-42 traces: not a clean win either way</h2>
-  <p class="section-lede">Currently, Arm B doesn't use fewer tool calls or turns. Its visible test
+  <p class="section-lede"><span class="block-label">Current tradeoff</span>Currently, Arm B doesn't use fewer tool calls or turns. Its visible test
     count is lower only because REVISE runs a hidden shadow test instead of the real one, so that
     cycle never shows up in the visible trace, not because it tests less overall. It also spends
     noticeably more generation length per task on
@@ -390,7 +392,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="diagnosis">
   <p class="section-kicker">Diagnosis</p>
   <h2 class="section-title">What was actually hindering Arm B</h2>
-  <p class="section-lede">Decision-following is solid: REVISE follows a non-PASS prediction 100% of
+  <p class="section-lede"><span class="block-label">Decision-following vs. discrimination</span>Decision-following is solid: REVISE follows a non-PASS prediction 100% of
     the time, KEEP follows a PASS prediction 96.4% of the time (seed 42) / 99.4% of the time (seed 43).
     That's not the problem. The problem is <b>discrimination</b>: telling, from the candidate code alone,
     before it ever runs, whether it will pass, crash (<code style="color:#39ff14">RUNTIME_ERROR</code>),
@@ -398,6 +400,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     harder case, since it requires simulating the candidate's logic against the test, not just
     spotting a surface-level crash pattern. Measured by outcome class, RL step 100, seed 42:</p>
 
+  <span class="block-label">Prediction recall by outcome class</span>
   <div class="chart-wrap" style="max-width:480px;margin:0 auto"><svg viewBox="0 0 620 220" class="chart-svg" role="img" aria-label="bar chart">
 <line x1="16" y1="186.0" x2="604" y2="186.0" stroke="#6f9c7c" stroke-width="1"/>
 <rect x="68.9" y="26.7" width="90.2" height="159.3" rx="3" fill="#22c55e"/>
@@ -431,14 +434,14 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     GRPO's gradient nudge those tokens indirectly, just weakly.
   </div>
 
-  <p class="section-lede mt-md">Part of why it starts collapsed: half of Arm B's SFT recovery
+  <p class="section-lede mt-md"><span class="block-label">Root cause: the SFT curriculum</span>Part of why it starts collapsed: half of Arm B's SFT recovery
     traces hardcode the label PASS on a buggy candidate and let the real test catch the mistake, a
     genuinely valid recovery pattern, but also exactly the shortcut the RL policy falls back on.
     Not reward hacking; just indifference, since nothing directly penalizes it. The
     <a href="#next">two experiments below</a> target this: reweighting the CE loss toward rare
     classes, and reward-shaping GRPO to finally grade the two kinds of rollouts differently.</p>
 
-  <p class="section-lede mt-lg">Real training dynamics, seed 42, both arms overlaid: reward from
+  <p class="section-lede mt-lg"><span class="block-label">Training dynamics</span>Real training dynamics, seed 42, both arms overlaid: reward from
     the orchestrator's per-step train-batch logs, entropy and loss from the trainer's per-step logs,
     not eval. Each line is a 5-step centered moving average.</p>
   <div class="legend">
