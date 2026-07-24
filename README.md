@@ -1,4 +1,4 @@
-# PREDICT — Training a Coding Agent to Judge Its Own Patches Before Execution
+# PREDICT — Toward a Ground-Truth-Grounded World Model for Coding Agents
 
 How does adding explicit outcome prediction and keep-or-revise control change
 a long-horizon coding agent? Arm A is a standard test-and-recover system
