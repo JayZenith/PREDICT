@@ -134,6 +134,8 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 15.5px; ma
 .learned-list { margin: 0; padding-left: 22px; }
 .learned-list li { margin: 0 0 14px; }
 .learned-list li:last-child { margin-bottom: 0; }
+.learned-tag { display: block; font-size: 12.5px; font-weight: 600; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--yellow); margin-bottom: 3px; }
 
 /* ---- next steps ---- */
 .next-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -599,17 +601,22 @@ patch applied</code></div>
 
   <div class="card">
     <ol class="learned-list">
-      <li><b>Half the training examples quietly taught the model to skip predicting honestly.</b>
-      In half of Arm B's recovery examples, the "correct" move was to guess PASS on a buggy
-      candidate and let the real test catch the mistake afterward. That's a legitimate fallback to
-      teach, but it also means the training data itself modeled "just guess PASS and let the test
-      sort it out" as acceptable, which is exactly the lazy habit the model fell back on.</li>
-      <li><b>Rare at one stage isn't rare at another.</b> Only 37 of 302 SFT labels are real
+      <li><span class="learned-tag">Reward shaping</span><b>Half the training examples quietly
+      taught the model to skip predicting honestly, and reward never punished it.</b> In half of
+      Arm B's recovery examples, the "correct" move was to guess PASS on a buggy candidate and let
+      the real test catch the mistake afterward, a legitimate fallback to teach. But reward pays
+      out the same either way, honest prediction or lazy guess, so the model had no reason to
+      prefer the harder, honest path: it learned the shortcut because nothing in the reward made
+      the shortcut cost anything.</li>
+      <li><span class="learned-tag">Exposure &ne; learning</span><b>Rare at one stage isn't rare at
+      another.</b> Only 37 of 302 SFT labels are real
       <code style="color:#ef4444">ASSERTION_FAILURE</code> examples, but RL logs show the model
       sees this outcome constantly during training. The 0% recall isn't a data-scarcity problem.</li>
-      <li><b>One training run is an anecdote.</b> Seed 1 made Arm A look ahead at steps 25 and 100.
-      Both effects were noise that vanished under a second independent run.</li>
-      <li><b>&ldquo;No scratchpad&rdquo; isn't automatically a dead end.</b> ECHO
+      <li><span class="learned-tag">Noise vs. real wins</span><b>One training run is an
+      anecdote.</b> Seed 1 made Arm A look ahead at steps 25 and 100. Both effects were noise that
+      vanished under a second independent run.</li>
+      <li><span class="learned-tag">Tokens aren't required to think</span><b>&ldquo;No
+      scratchpad&rdquo; isn't automatically a dead end.</b> ECHO
       (<a href="#architecture">this project's inspiration</a>) trains a similarly scratchpad-free
       CE loss and still doubles pass@1 elsewhere. The likely difference: its target is a dense,
       multi-token observation; ours is one label from a 6-way enum, which may be why simulation
