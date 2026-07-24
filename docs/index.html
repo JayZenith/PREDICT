@@ -187,10 +187,10 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     real result. Two questions carry the design. Does a prediction need its own direct
     supervision, a cross-entropy loss straight off the verified outcome, because RLVR's reward is
     far too crude to grade one? And is a gate only as wise as its predictor, so calibration has to
-    come before metacognition pays? <span style="color:#00d17a">(A side curiosity rides along: does predicting first sharpen
-    the model's internal state even with no visible tokens to reason in?)</span> Arm A, the matched
+    come before metacognition pays? (A side curiosity rides along: does predicting first sharpen
+    the model's internal state even with no visible tokens to reason in?) Arm A, the matched
     comparator, is the standard loop: patch,
-    test, react, trained with plain SFT then RLVR. <i style="color:#149a54">This is early-stage: the mechanism is built and
+    test, react, trained with plain SFT then RLVR. <i>This is early-stage: the mechanism is built and
     replicated across seeds; whether the gate itself earns its keep is exactly what the next
     experiments below are designed to answer.</i></p>
 </header>
