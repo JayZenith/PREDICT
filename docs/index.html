@@ -230,53 +230,6 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     loop: the orchestrator dispatches each rollout into a separate Verifiers subprocess execution
     environment, scores it, forms GRPO groups, and sends batches to the trainer &mdash; which broadcasts
     updated policy weights straight back to the inference server every step.</p>
-  <div class="card"><svg viewBox="0 0 760 460" class="diagram-svg" role="img" aria-label="PRIME-RL and Verifiers training loop">
-  <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#a9a9a9"/>
-    </marker>
-  </defs>
-  <!-- boxes -->
-  <g font-family="inherit">
-    <rect x="20" y="30" width="200" height="86" rx="6" fill="#0a0a0a" stroke="#a9a9a9" stroke-width="1.3"/>
-    <text x="120" y="66" text-anchor="middle" class="diagram-title" fill="#f5f5f5">Verifiers Harness</text>
-    <text x="120" y="86" text-anchor="middle" class="diagram-sub">separate subprocess execution env</text>
-    <text x="120" y="102" text-anchor="middle" class="diagram-sub">read_file / apply_patch / python_test</text>
-
-    <rect x="280" y="30" width="200" height="86" rx="6" fill="#0a0a0a" stroke="#a9a9a9" stroke-width="1.3"/>
-    <text x="380" y="66" text-anchor="middle" class="diagram-title" fill="#f5f5f5">Orchestrator</text>
-    <text x="380" y="86" text-anchor="middle" class="diagram-sub">dispatch rollouts, score reward,</text>
-    <text x="380" y="102" text-anchor="middle" class="diagram-sub">form GRPO groups (zero_advantage)</text>
-
-    <rect x="540" y="30" width="200" height="86" rx="6" fill="#0a0a0a" stroke="#a9a9a9" stroke-width="1.3"/>
-    <text x="640" y="66" text-anchor="middle" class="diagram-title" fill="#f5f5f5">Inference Server</text>
-    <text x="640" y="86" text-anchor="middle" class="diagram-sub">vLLM, serves current policy</text>
-    <text x="640" y="102" text-anchor="middle" class="diagram-sub">samples the agent's tokens</text>
-
-    <rect x="280" y="330" width="200" height="86" rx="6" fill="#0a0a0a" stroke="#a9a9a9" stroke-width="1.3"/>
-    <text x="380" y="366" text-anchor="middle" class="diagram-title" fill="#f5f5f5">Trainer</text>
-    <text x="380" y="386" text-anchor="middle" class="diagram-sub">FSDP, GRPO(actions) + &#955;&middot;CE(verified label)</text>
-    <text x="380" y="402" text-anchor="middle" class="diagram-sub">one optimizer step per batch</text>
-  </g>
-  <!-- arrows -->
-  <path d="M220,55 H280" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow)" fill="none"/>
-  <text x="250" y="48" text-anchor="middle" class="diagram-edge">task + tool calls</text>
-  <path d="M280,95 H220" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow)" fill="none"/>
-  <text x="250" y="112" text-anchor="middle" class="diagram-edge">results + verified outcome</text>
-
-  <path d="M480,60 H540" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow)" fill="none"/>
-  <text x="510" y="48" text-anchor="middle" class="diagram-edge">rollout request</text>
-  <path d="M540,95 H480" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow)" fill="none"/>
-  <text x="510" y="112" text-anchor="middle" class="diagram-edge">tokens + logprobs</text>
-
-  <path d="M380,116 V330" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow)" fill="none"/>
-  <text x="392" y="230" class="diagram-edge">GRPO groups</text>
-  <text x="392" y="246" class="diagram-edge">(advantages + CE labels)</text>
-
-  <path d="M480,350 C 600,350 660,250 640,116" stroke="#a9a9a9" stroke-width="1.6" marker-end="url(#arrow)" fill="none" stroke-dasharray="5 4"/>
-  <text x="660" y="230" text-anchor="middle" class="diagram-edge">broadcast updated</text>
-  <text x="660" y="246" text-anchor="middle" class="diagram-edge">policy weights</text>
-</svg></div>
 </section>
 
 <section class="section" id="data">
