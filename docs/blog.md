@@ -308,16 +308,17 @@ from digging into why the results looked the way they did.
    `KEEP`/`REVISE` control), holding the rest of the bundle fixed. This is
    the one piece that's actually new relative to ECHO, and it's never been
    tested in isolation.
-4. **Denser prediction target.** Predict the specific failing assertion or
-   expected/actual value instead of a 6-way outcome class. A coarse label
-   may be why the model never learned to simulate; a denser target forces
-   token-by-token reasoning the way ECHO's dense observation-token target
-   does.
-5. **Causal, not correlational, evaluation.** Decision-following is ~100%
-   by construction, so "predicted X" and "did X" are nearly tautological
-   here. Counterfactually rerun rollouts and measure whether reward
-   actually tracks prediction correctness, holding the rest of the policy
-   fixed.
+4. **Denser prediction target.** Not another SFT pass on the same label:
+   change what's being predicted. Today's target is a single token from a
+   6-way enum. Predicting the specific failing assertion or expected/actual
+   value instead forces multi-token, generative simulation of the test,
+   closer to how ECHO's dense observation-token target works, and may be why
+   the model never learned to simulate in the first place.
+5. **Isolate the causal effect.** Decision-following is ~100% by
+   construction, so "predicted X" and "did X" are nearly tautological: they
+   can't currently be told apart. Fix: force `KEEP` or `REVISE` independent
+   of the model's stated prediction on some rollouts, and see whether reward
+   actually moves with prediction correctness, or only with the decision.
 6. **Scale beyond one model and one benchmark.** n=500 on MBPP with a 4B
    model that may have seen MBPP in pretraining can't rule out idiosyncrasy.
    Replicating across model scale or on a benchmark unlikely to be

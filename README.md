@@ -1,13 +1,17 @@
 # PREDICT — Can a Coding Agent Predict Its Own Patch's Fate Before Running It?
 
-This is an early-stage experiment testing one question: can a coding agent
-predict its own patch's fate before running it, grounded only in what the
-environment actually verifies, never its own guess? Arm A is the standard
-loop: patch, test, react, trained with plain SFT then RLVR. Arm B shares the
-exact same harness but predicts the outcome first and commits to `KEEP` or
-`REVISE` before it ever sees the real result, trained with RLVR on
-everything else, and its own cross-entropy loss straight off the verified
-label.
+This is an early-stage experiment, inspired by Shrivastava, Kauffmann,
+Awadallah & Papailiopoulos, ["ECHO: Terminal Agents Learn World Models for
+Free"](https://arxiv.org/abs/2605.24517) (2026), probing a few open questions
+at once: can a coding agent's prediction be
+grounded by the environment at all, does RLVR's crude outcome-only reward end
+up reinforcing wrong predictions, and does predicting first refine the
+model's hidden states even with no scratchpad? Arm A is the standard loop:
+patch, test, react, trained with plain SFT then RLVR. Arm B shares the exact
+same harness but predicts the outcome first and commits to `KEEP` or
+`REVISE` before it ever sees the real result; the prediction is trained only
+against the verified environment outcome, never the model's own sampled
+guess.
 
 | Arm | Loop | Training |
 |---|---|---|
@@ -17,10 +21,10 @@ label.
 Arm B predicts one class before testing — `PASS`, `ASSERTION_FAILURE`,
 `RUNTIME_ERROR`, `SYNTAX_ERROR`, `TIMEOUT`, `OTHER` — then commits to `KEEP`
 (runs the real test) or `REVISE` (the rejected candidate is shadow-tested,
-hidden from the agent, then it patches again). The verified — ground-truth —
-execution label trains the prediction, never the model's own guess: a
-narrow, early step toward a coding agent with a real model of its
-environment, not just a reactive one. Details:
+hidden from the agent, then it patches again). The prediction is trained
+only against the verified — ground-truth — execution outcome, never the
+model's own sampled guess: a narrow, early step toward a coding agent with a
+real model of its environment, not just a reactive one. Details:
 [research_specs.md](docs/research_specs.md) ·
 [agent_trace.md](docs/agent_trace.md) · [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
@@ -39,12 +43,8 @@ Austin et al., ["Program Synthesis with Large Language Models"](https://arxiv.or
 setup directly inspired by Skopin & Kotelnikov,
 ["Improving Small Language Models for Code Generation with Reinforcement
 Learning from Verification Feedback"](https://arxiv.org/abs/2605.30478) (2026).
-The verified-label auxiliary CE design was inspired by Shrivastava, Kauffmann,
-Awadallah & Papailiopoulos, ["ECHO: Terminal Agents Learn World Models for
-Free"](https://arxiv.org/abs/2605.24517) (2026), which trains a
-complementary cross-entropy loss on environment-observation tokens within the
-same GRPO rollout; PREDICT's difference from ECHO is detailed in
-[research_specs.md § Novelty relative to ECHO](docs/research_specs.md#novelty-relative-to-echo).
+(The verified-label auxiliary CE design's own inspiration, ECHO, is credited
+above where the design is introduced.)
 Official MBPP, split by seed 42, disjoint SFT/RL/validation/test:
 
 | Split | Task IDs | n | Use |

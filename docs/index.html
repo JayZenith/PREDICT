@@ -167,12 +167,14 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <header class="hero">
   <p class="kicker">PREDICT &middot; RLVR on MBPP &middot; commit <a href="https://github.com/JayZenith/PREDICT/commit/9eefac7"><code>9eefac7</code></a></p>
   <h1 class="h1">PREDICT: Can a Coding Agent Predict Its Own Patch's Fate Before Running It?</h1>
-  <p class="tagline">This is an early-stage experiment testing one question: can a coding agent
-    predict its own patch's fate before running it, grounded only in what the environment actually
-    verifies, never its own guess? Arm A is the standard loop: patch, test, react, trained with
-    plain SFT then RLVR. Arm B shares the exact same harness but predicts the outcome first and
-    commits to KEEP or REVISE before it ever sees the real result, trained with RLVR on everything
-    else, and its own cross-entropy loss straight off the verified label.</p>
+  <p class="tagline">This is an early-stage experiment, inspired by ECHO's world-model result,
+    probing a few open questions at once: can a coding agent's prediction be grounded by the
+    environment at all, does RLVR's crude outcome-only reward end up reinforcing wrong
+    predictions, and does predicting first refine the model's hidden states even with no
+    scratchpad? Arm A is the standard loop: patch, test, react, trained with plain SFT then RLVR.
+    Arm B shares the exact same harness but predicts the outcome first and commits to KEEP or
+    REVISE before it ever sees the real result; the prediction is trained only against the
+    verified environment outcome, never the model's own sampled guess.</p>
   <div class="meta-row">
     <span class="chip"><b>n=500</b> held-out test</span>
     <span class="chip"><b>2&times;2</b> seed matrix, both arms</span>
@@ -187,7 +189,12 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <h2 class="section-title">One harness, two agents</h2>
   <p class="section-lede">Both arms share one harness. Arm A reacts to test output; Arm B must
     predict the outcome and commit to <b style="color:#007A5E">KEEP</b> or
-    <b style="color:#d03b3b">REVISE</b> before it's allowed to see the real result.</p>
+    <b style="color:#d03b3b">REVISE</b> before it's allowed to see the real result. The
+    verified-label auxiliary CE design was inspired by Shrivastava, Kauffmann, Awadallah &amp;
+    Papailiopoulos, <a href="https://arxiv.org/abs/2605.24517">&ldquo;ECHO: Terminal Agents Learn
+    World Models for Free&rdquo;</a> (2026); PREDICT's difference from ECHO:
+    <a href="../docs/research_specs.md#novelty-relative-to-echo">research_specs.md &sect; Novelty
+    relative to ECHO</a>.</p>
   <div class="card"><svg viewBox="0 0 800 620" class="diagram-svg" role="img" aria-label="Arm A versus Arm B execution flow">
 <defs><marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#a9a9a9"/></marker></defs>
@@ -243,14 +250,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     Models&rdquo;</a> (2021). The RLVR-on-MBPP-with-small-Qwen setup was directly inspired by
     Skopin &amp; Kotelnikov, <a href="https://arxiv.org/abs/2605.30478">&ldquo;Improving Small
     Language Models for Code Generation with Reinforcement Learning from Verification
-    Feedback&rdquo;</a> (2026). The verified-label auxiliary CE design was inspired by
-    Shrivastava, Kauffmann, Awadallah &amp; Papailiopoulos,
-    <a href="https://arxiv.org/abs/2605.24517">&ldquo;ECHO: Terminal Agents Learn World Models
-    for Free&rdquo;</a> (2026); ECHO trains a complementary CE loss on
-    environment-observation tokens within the same GRPO rollout, no separate reasoning step, and
-    doubles pass@1 on TerminalBench-2.0. PREDICT's difference from ECHO:
-    <a href="../docs/research_specs.md#novelty-relative-to-echo">research_specs.md &sect; Novelty
-    relative to ECHO</a>.</p>
+    Feedback&rdquo;</a> (2026).</p>
 
   <div class="stat-grid">
     <div class="stat-tile"><div class="stat-value">424</div><div class="stat-label">train pool &rarr; 212 SFT + 212 RL</div></div>
@@ -711,16 +711,19 @@ patch applied</code></div>
     <div class="next-card">
       <div class="next-num">04 &middot; harder</div>
       <div class="next-title" style="color:#d03b3b">Denser prediction target</div>
-      <p>Predict the specific failing assertion or expected/actual value, not a 6-way outcome
-      class. A coarse label may be why the model never learned to simulate; a dense target forces
-      token-by-token reasoning the way ECHO's own target does.</p>
+      <p>Not another SFT pass on the same label: change what's being predicted. Today's target is
+      a single token from a 6-way enum. Predicting the specific failing assertion or
+      expected/actual value instead forces multi-token, generative simulation of the test, closer
+      to how ECHO's dense observation-token target works, and may be why the model never learned
+      to simulate in the first place.</p>
     </div>
     <div class="next-card">
       <div class="next-num">05 &middot; rigor check</div>
-      <div class="next-title" style="color:#3987e5">Causal, not correlational, evaluation</div>
+      <div class="next-title" style="color:#3987e5">Isolate the causal effect</div>
       <p>Decision-following is ~100% by construction, so &ldquo;predicted X&rdquo; and &ldquo;did
-      X&rdquo; are nearly tautological here. Counterfactually rerun rollouts and measure whether
-      reward actually tracks prediction correctness, holding the rest of the policy fixed.</p>
+      X&rdquo; are nearly tautological: they can't currently be told apart. Fix: force KEEP or
+      REVISE independent of the model's stated prediction on some rollouts, and see whether reward
+      actually moves with prediction correctness, or only with the decision.</p>
     </div>
     <div class="next-card">
       <div class="next-num">06 &middot; generalize</div>
