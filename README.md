@@ -1,18 +1,21 @@
 # PREDICT — Can a Coding Agent Predict Its Own Patch's Fate Before Running It?
 
-This is an early-stage experiment, inspired by Shrivastava, Kauffmann,
-Awadallah & Papailiopoulos, ["ECHO: Terminal Agents Learn World Models for
-Free"](https://arxiv.org/abs/2605.24517) (2026), probing a few open questions
-at once: is world modeling actually the right direction for coding agents;
-does a prediction need its own direct supervision, a cross-entropy loss
-straight off the verified outcome, because RLVR's reward is far too crude to
-grade one; and does predicting first sharpen the model's internal state even
-with no visible tokens to reason in? Arm A is the standard loop:
-patch, test, react, trained with plain SFT then RLVR. Arm B shares the exact
-same harness but predicts the outcome first and commits to `KEEP` or
-`REVISE` before it ever sees the real result; the prediction is trained only
-against the verified environment outcome, never the model's own sampled
-guess.
+What this is really after: a coding agent with a working world model, one
+that doesn't just react to test output but predicts what the environment
+will do and stakes a decision on that prediction, the way we judge whether
+our own decisions are worth keeping before acting on them.
+[ECHO](https://arxiv.org/abs/2605.24517) (Shrivastava, Kauffmann, Awadallah
+& Papailiopoulos, 2026) showed prediction as a pure training signal helps;
+PREDICT takes the next step and makes the prediction *causally gate
+behavior*: Arm B must commit to `KEEP` or `REVISE` before it ever sees the
+real result. Two questions carry the design. Does a prediction need its own
+direct supervision, a cross-entropy loss straight off the verified outcome,
+because RLVR's reward is far too crude to grade one? And is a gate only as
+wise as its predictor, so calibration has to come before metacognition pays?
+Arm A, the matched comparator, is the standard loop: patch, test, react,
+trained with plain SFT then RLVR. This is early-stage: the mechanism is
+built and replicated across seeds; whether the gate itself earns its keep is
+what the next experiments are designed to answer.
 
 | Arm | Loop | Training |
 |---|---|---|
