@@ -14,8 +14,8 @@
   --border: rgba(57,255,20,0.11);
   --border-2: rgba(57,255,20,0.24);
   --ink: #eef7ef;
-  --ink-2: #b4c7b7;
-  --mute: #7e9482;
+  --ink-2: #dcebde;
+  --mute: #a3bba8;
   --green: #39ff14;
   --green-dim: #00d17a;
   --blue: #4d9fff;
@@ -102,15 +102,15 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 16.5px; ma
 .chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px 22px 10px; }
 .chart-svg, .diagram-svg { width: 100%; height: auto; display: block; overflow: visible; }
 .chart-svg text, .diagram-svg text { font-family: var(--sans); fill: var(--ink-2); }
-.axis-label { font-size: 13.5px; fill: var(--mute); }
-.axis-sub { font-size: 13px; fill: var(--mute); }
+.axis-label { font-size: 13.5px; fill: var(--ink-2); }
+.axis-sub { font-size: 13px; fill: var(--ink-2); }
 .line-end-label { font-size: 14px; font-weight: 600; }
 .bar-value { font-size: 15px; font-weight: 600; }
 .diagram-title { font-size: 16px; font-weight: 600; }
 .diagram-col-title { font-size: 17px; font-weight: 600; }
-.diagram-sub { font-size: 13px; fill: var(--mute); }
-.diagram-edge { font-size: 13px; fill: var(--mute); }
-.chart-caption { font-size: 15.5px; color: var(--mute); padding: 12px 2px 14px; line-height: 1.6; }
+.diagram-sub { font-size: 13px; fill: var(--ink-2); }
+.diagram-edge { font-size: 13px; fill: var(--ink-2); }
+.chart-caption { font-size: 15.5px; color: var(--ink-2); padding: 12px 2px 14px; line-height: 1.6; }
 .legend { display: flex; flex-wrap: wrap; gap: 18px; padding: 4px 2px 14px; font-size: 15px; color: var(--ink-2);
   font-family: var(--mono); }
 .legend-item { display: flex; align-items: center; gap: 8px; }
@@ -140,11 +140,11 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 16.5px; ma
   padding: 3px 10px; white-space: nowrap; flex: none; }
 .transcript-body { padding: 4px 4px 12px; }
 .turn { padding: 9px 16px; font-size: 15px; border-bottom: 1px solid rgba(57,255,20,.05); line-height: 1.6; }
-.turn code { white-space: pre-wrap; word-break: break-word; color: var(--ink-2);
+.turn code { white-space: pre-wrap; word-break: break-word; color: #e8f4ea;
   background: none; padding: 0; }
 .turn-tag { display: inline-block; min-width: 58px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
   color: var(--mute); margin-right: 10px; vertical-align: top; font-family: var(--mono); font-weight: 600; }
-.turn-user { color: var(--ink-2); background: rgba(57,255,20,.03); }
+.turn-user { color: #e8f4ea; background: rgba(57,255,20,.03); }
 .turn-tool-fail { background: rgba(239,68,68,.07); }
 .turn-final { background: rgba(57,255,20,.07); font-weight: 600; color: var(--ink); }
 .turn-predict code { color: var(--green); }
@@ -175,10 +175,10 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 16.5px; ma
   letter-spacing: .1em; text-transform: uppercase; }
 .next-title { font-size: 18px; font-weight: 650; margin: 0 0 9px; letter-spacing: -0.01em; }
 
-footer { padding: 40px 0 24px; color: var(--mute); font-size: 15.5px; }
+footer { padding: 40px 0 24px; color: var(--ink-2); font-size: 15.5px; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 16px 0 24px; font-family: var(--mono);
   font-size: 14.5px; }
-.footer-cite { font-size: 14.5px; color: var(--mute); margin-top: 6px; line-height: 1.6; }
+.footer-cite { font-size: 14.5px; color: var(--ink-2); margin-top: 6px; line-height: 1.6; }
 hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </style>
 </head>
@@ -445,7 +445,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <text x="310.0" y="202" text-anchor="middle" class="axis-label">RUNTIME_ERROR</text>
 <text x="310.0" y="214" text-anchor="middle" class="axis-sub">16% of verified outcomes</text>
 <rect x="460.9" y="182.5" width="90.2" height="3.5" fill="#ef4444"/>
-<text x="506.0" y="178.0" text-anchor="middle" class="bar-value" fill="#ef4444">0% recall (never guessed)</text>
+<text x="506.0" y="170.0" text-anchor="middle" class="bar-value" fill="#ef4444">0% recall (never guessed)</text>
 <text x="506.0" y="202" text-anchor="middle" class="axis-label">ASSERTION_FAILURE</text>
 <text x="506.0" y="214" text-anchor="middle" class="axis-sub">57% of verified outcomes</text>
 </svg></div>
