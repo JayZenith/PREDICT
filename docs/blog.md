@@ -53,8 +53,8 @@ by step 100, across two independent runs each. Whether either design is
 combination — the one number that once suggested Arm A had an edge (step 25)
 traced back to a single outlier run, not a reproducible effect. Step 100 is
 an interim checkpoint, not a destination: two of the four runs are still
-climbing there (+2.8 and +2.4 points over step 75), so training continues
-past it. What this phase establishes is the pipeline — custom SFT agent
+climbing there (+2.8 and +2.4 points over step 75), so longer runs are the
+first next step. What this phase establishes is the pipeline — custom SFT agent
 traces plus RLVR produce real, McNemar-confirmed gains — and the between-arm
 comparison is context. The decisive experiments compare Arm B to itself, one
 factor at a time (see "Where to go next").
