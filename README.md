@@ -1,4 +1,4 @@
-# PREDICT — Toward a Ground-Truth-Grounded World Model for Coding Agents
+# PREDICT — Can a Coding Agent Predict Its Own Patch's Fate Before Running It?
 
 This is an early-stage experiment testing one question: can a coding agent
 predict its own patch's fate before running it, grounded only in what the
