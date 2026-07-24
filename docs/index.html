@@ -197,6 +197,17 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     experiments below are designed to answer.</i></p>
 </header>
 
+<div class="callout info" style="margin-top:18px">
+  <div class="callout-label">What this is / isn't</div>
+  <b style="color:var(--green)">&#10003;</b> Mechanism built: the predict &rarr; KEEP/REVISE gate
+  runs end-to-end, replicated across two seeds.
+  <b style="color:var(--green)">&#10003;</b> RLVR signal confirmed: both arms beat their own SFT
+  baseline, McNemar-confirmed in both seeds.
+  <b style="color:var(--red)">&#10007;</b> Predictor not yet calibrated: 0% recall on the dominant
+  failure class. So the finding so far is the pipeline plus the diagnosis, not the null
+  between-arm gap; the decisive ablations are within Arm B.
+</div>
+
 <section class="section" id="architecture">
   <p class="section-kicker">Architecture</p>
   <h2 class="section-title">One harness, two agents</h2>
@@ -282,9 +293,20 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
 <section class="section" id="results">
   <p class="section-kicker">Results</p>
-  <h2 class="section-title">Pass@1 by RL step, n=500, greedy</h2>
-  <p class="section-lede">Both arms were trained twice, independently, from the same SFT checkpoints
-    with different seeds, specifically to check whether any Arm A vs. Arm B gap replicates.</p>
+  <h2 class="section-title">RLVR improves both arms over SFT; the between-arm comparison is preliminary</h2>
+  <p class="section-lede">Both arms were trained twice, independently, from the same SFT
+    checkpoints with different seeds (n=500, greedy pass@1). The replicated, load-bearing result
+    is within-arm: custom SFT agent traces plus RLVR reliably improve each arm over its own
+    baseline. Step 100 is an interim checkpoint, not a destination: two of the four runs are
+    still climbing there (+2.8 and +2.4 points over step 75), so training continues past it. The
+    Arm A vs. Arm B comparison is context; the decisive experiments compare Arm B to itself, one
+    factor at a time (<a href="#next">below</a>).</p>
+
+  <div class="callout good">
+    <div class="callout-label">&#10003; Replicated across two seeds</div>
+    RLVR improves <b>both</b> arms over their own SFT baseline by step 100, replicated across both
+    seeds for each arm: Arm A p=0.0003 and p=0.028; Arm B p=0.033 and p=0.0017.
+  </div>
 
   <div class="chart-wrap"><svg viewBox="0 0 720 300" class="chart-svg" role="img" aria-label="line chart">
 <line x1="40" y1="266.0" x2="646" y2="266.0" stroke="#242424" stroke-width="1"/>
@@ -338,16 +360,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   </div>
 
   <div class="callout crit">
-    <div class="callout-label">&#9888; Not confirmed</div>
+    <div class="callout-label">&#9888; Between-arm: preliminary, not confirmed</div>
     No checkpoint step shows a statistically confirmed difference between Arm A and Arm B across
     all four seed combinations (McNemar, p=0.026&ndash;0.86). The step-100 gap that first looked like
     an Arm A lead (56.4% vs 52.0%) shrinks to a coin flip once both arms have a second independent
     run (54.2% vs 53.6%, p=0.86).
-  </div>
-  <div class="callout good">
-    <div class="callout-label">&#10003; Replicated across two seeds</div>
-    RLVR improves <b>both</b> arms over their own SFT baseline by step 100, replicated across both
-    seeds for each arm: Arm A p=0.0003 and p=0.028; Arm B p=0.033 and p=0.0017.
   </div>
 
   <table class="data-table">
@@ -452,12 +469,16 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     GRPO's gradient nudge those tokens indirectly, just weakly.
   </div>
 
-  <p class="section-lede mt-md"><span class="block-label">Root cause: the SFT curriculum</span>Part of why it starts collapsed: half of Arm B's SFT recovery
-    traces hardcode the label PASS on a buggy candidate and let the real test catch the mistake, a
-    genuinely valid recovery pattern, but also exactly the shortcut the RL policy falls back on.
-    Not reward hacking; just indifference, since nothing directly penalizes it. The
-    <a href="#next">two experiments below</a> target this: reweighting the CE loss toward rare
-    classes, and reward-shaping GRPO to finally grade the two kinds of rollouts differently.</p>
+  <p class="section-lede mt-md"><span class="block-label">Root cause: reward never split the curriculum's two paths</span>The recovery
+    curriculum was deliberately symmetric: half of Arm B's recovery traces teach the visible path
+    (predict PASS on a buggy candidate, an honest mistake the real test catches, then fix), half
+    teach the shadow path (correctly predict the failure, REVISE, then fix), built that way so RL
+    would sample both recovery modes and improve both. RL did sample both: ASSERTION_FAILURE is a
+    third to half of every step's real outcomes. But reward pays the two paths identically, so the
+    policy collapsed onto the easier one, always guess PASS, and the shadow skill decayed. Not
+    reward hacking; indifference. The <a href="#next">experiments below</a> target exactly this:
+    reweight the CE toward the failure classes, and reward-shape GRPO so the two kinds of rollouts
+    finally grade differently.</p>
 
   <p class="section-lede mt-lg"><span class="block-label">Training dynamics</span>Real training dynamics, seed 42, both arms overlaid: reward from
     the orchestrator's per-step train-batch logs, entropy and loss from the trainer's per-step logs,
@@ -622,13 +643,13 @@ patch applied</code></div>
 
   <div class="card">
     <ol class="learned-list">
-      <li><span class="learned-tag">Reward shaping</span><b>Half the training examples quietly
-      taught the model to skip predicting honestly, and reward never punished it.</b> In half of
-      Arm B's recovery examples, the "correct" move was to guess PASS on a buggy candidate and let
-      the real test catch the mistake afterward, a legitimate fallback to teach. But reward pays
-      out the same either way, honest prediction or lazy guess, so the model had no reason to
-      prefer the harder, honest path: it learned the shortcut because nothing in the reward made
-      the shortcut cost anything.</li>
+      <li><span class="learned-tag">Reward shaping</span><b>The curriculum deliberately taught
+      both recovery paths; reward decided which one survived.</b> Half of Arm B's recovery
+      examples teach the visible path (predict PASS on a buggy candidate, honest mistake, the
+      real test catches it, fix), half the shadow path (correctly predict the failure, REVISE,
+      fix), symmetric on purpose so RL would sample and improve both. But reward pays out the
+      same either way, so the easier path won and the shadow skill decayed. The curriculum sets
+      the menu; reward sets the diet.</li>
       <li><span class="learned-tag">Exposure isn't learning</span><b>Rare at one stage isn't rare at
       another.</b> Only 37 of 302 SFT labels are real
       <code style="color:#ef4444">ASSERTION_FAILURE</code> examples, but RL logs show the model
@@ -649,6 +670,10 @@ patch applied</code></div>
 <section class="section" id="next">
   <p class="section-kicker">Where to go next</p>
   <h2 class="section-title">Cheap experiments first, then the harder tests</h2>
+  <p class="section-lede">The real experiment lives here, and it's within-arm: most of these
+    compare Arm B to itself with one factor changed, which is the only way a result can be
+    credited to a specific piece of the design. The A-vs-B table above was the guardrail that
+    kept seed noise out of the claims, not the verdict.</p>
   <div class="next-grid">
     <div class="next-card">
       <div class="next-num">01 &middot; try first</div>

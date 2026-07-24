@@ -51,7 +51,13 @@ Bottom line: RLVR reliably improves **both** arms over their own SFT baseline
 by step 100, across two independent runs each. Whether either design is
 *better than the other* remains unconfirmed at every step and seed
 combination — the one number that once suggested Arm A had an edge (step 25)
-traced back to a single outlier run, not a reproducible effect.
+traced back to a single outlier run, not a reproducible effect. Step 100 is
+an interim checkpoint, not a destination: two of the four runs are still
+climbing there (+2.8 and +2.4 points over step 75), so training continues
+past it. What this phase establishes is the pipeline — custom SFT agent
+traces plus RLVR produce real, McNemar-confirmed gains — and the between-arm
+comparison is context. The decisive experiments compare Arm B to itself, one
+factor at a time (see "Where to go next").
 
 **Scope**: none of this isolates "prediction" as a single causal variable —
 Arm B bundles the predict/decide protocol, an added action space, the
@@ -194,16 +200,17 @@ Root cause, in two parts:
    CE (`λ=0.1`) is the only *direct* teacher here, not the only thing
    capable of moving those probabilities. The step-25 blip is
    early-optimization noise nothing directly defends, so it doesn't last.
-2. **SFT starts collapsed by construction.** Across all 212 Arm B SFT
-   traces, `<PREDICTION>` labels split roughly 257 PASS : 45 real-failure
-   (85%/15%) — and half the 70 recovery traces (25 `visible` + 10
-   `deep_visible`) hardcode the label `PASS` on the buggy candidate itself,
-   demonstrating the "honest mistake, caught by the real test" recovery
-   path. Only the 25 `shadow` + 10 `deep_shadow` traces ever show a correct
-   non-PASS label. So SFT doesn't just fail to build the skill robustly —
-   for half its recovery examples it directly demonstrates that guessing
-   PASS and letting `python_test` sort it out is an acceptable pattern,
-   which is exactly the shortcut the RL policy settles back into.
+2. **SFT starts collapsed by construction — but the symmetry was
+   deliberate.** Across all 212 Arm B SFT traces, `<PREDICTION>` labels
+   split roughly 257 PASS : 45 real-failure (85%/15%). The 70 recovery
+   traces were built symmetric on purpose: half (25 `visible` + 10
+   `deep_visible`) teach recovery from a *wrong* PASS — honest mistake,
+   caught by the real test, then fixed — and half (25 `shadow` + 10
+   `deep_shadow`) teach recovery via a *correct* failure prediction and
+   REVISE. The intent was for RL to sample both modes and improve both. RL
+   did sample both — but with reward paying the two identically, the policy
+   settled into the easier one: guess PASS and let `python_test` sort it
+   out.
    `RUNTIME_ERROR` is detectable from surface code features (undefined
    vars, index risk) without simulating the algorithm against the test
    cases — a cheaper pattern, and the only non-PASS one that stuck.
@@ -238,13 +245,12 @@ from digging into why the results looked the way they did.
    low-weight, uniformly-weighted auxiliary CE as the only *direct* teacher
    for that skill. A weak sole teacher produces a weak skill, independent
    of how good the rest of the system is.
-3. **SFT curricula can bake in the shortcut they're trying to prevent.**
-   Half of Arm B's recovery traces demonstrate "guess PASS, let the real
-   test catch the mistake" as a valid, reward-preserving pattern — because
-   that's a real recovery mode worth training. It also happens to be the
-   exact shortcut the collapsed policy falls back on. A curriculum can be
-   correct about the behavior it demonstrates and still work against a
-   different goal of the same system.
+3. **A curriculum can teach both paths; reward decides which survives.**
+   Arm B's recovery traces deliberately teach two modes — recover from a
+   wrong PASS (visible), and recover via a correct failure prediction
+   (shadow) — split half and half so RL would sample and improve both. With
+   reward paying the two identically, the easier mode won and the shadow
+   skill decayed. The curriculum sets the menu; reward sets the diet.
 4. **Rare at one stage isn't rare at another.** Only 37 of 302 SFT
    prediction labels are real `ASSERTION_FAILURE` examples — genuinely
    thin. But checking real per-step RL logs (not just final eval) showed
@@ -273,7 +279,10 @@ from digging into why the results looked the way they did.
    more direct fix for the `ASSERTION_FAILURE` blind spot than reweighting
    the current, thin classification target.
 
-**Where to go next**, cheap experiments first, then the harder tests:
+**Where to go next**, cheap experiments first, then the harder tests. The
+real experiment is within-arm: most of these compare Arm B to itself with
+one factor changed — the A-vs-B table was the guardrail that kept seed noise
+out of the claims, not the verdict:
 
 1. **Turn up `λ`** (`orchestrator.algo.alpha` in `configs/arm_b_rl.toml`,
    currently `0.1`). `λ` is the weight on the auxiliary CE loss, so the only
