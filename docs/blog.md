@@ -142,7 +142,7 @@ capability, and the remaining gap is agent-loop overhead, not blind guessing.
 **A CUDA crash specific to `seq_len=1024`.** Longer prompts (test assertions
 now embedded) needed a higher token cap than the old 768. Both arms crashed
 with a CUDA illegal-memory-access under `torch.compile` on RTX PRO 6000
-Blackwell — reproduced deterministically on three separate fresh instances,
+Blackwell — reproduced deterministically on two separate fresh instances,
 ruling out instance degradation. A minimal 8-row synthetic run bisected it to
 the exact value: `seq_len=768` and `seq_len=1280` both train cleanly on
 identical hardware; `1024` alone doesn't. This is a narrow bug in the pinned

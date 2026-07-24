@@ -14,8 +14,10 @@ comparative systems, not a single-variable ablation.
 Arm B predicts one class before testing — `PASS`, `ASSERTION_FAILURE`,
 `RUNTIME_ERROR`, `SYNTAX_ERROR`, `TIMEOUT`, `OTHER` — then commits to `KEEP`
 (runs the real test) or `REVISE` (the rejected candidate is shadow-tested,
-hidden from the agent, then it patches again). The verified execution label
-trains the prediction; the agent never sees it. Details:
+hidden from the agent, then it patches again). The verified — ground-truth —
+execution label trains the prediction, never the model's own guess: a
+narrow, early step toward a coding agent with a real model of its
+environment, not just a reactive one. Details:
 [research_specs.md](docs/research_specs.md) ·
 [agent_trace.md](docs/agent_trace.md) · [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 

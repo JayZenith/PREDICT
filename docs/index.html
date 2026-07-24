@@ -169,8 +169,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <h1 class="h1">PREDICT &mdash; Toward a Ground-Truth-Grounded World Model for Coding Agents</h1>
   <p class="tagline">How does adding explicit outcome prediction and keep-or-revise control change a
     long-horizon coding agent? Arm A tests and reacts (SFT + RLVR). Arm B predicts the outcome
-    first, then commits to KEEP or REVISE, trained with an added verified-label cross-entropy
-    loss.</p>
+    first, then commits to KEEP or REVISE, trained only against the verified &mdash; ground-truth
+    &mdash; outcome, never its own guess: a narrow, early step toward a coding agent with a real
+    model of its environment.</p>
   <div class="meta-row">
     <span class="chip"><b>n=500</b> held-out test</span>
     <span class="chip"><b>2&times;2</b> seed matrix, both arms</span>
