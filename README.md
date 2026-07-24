@@ -3,10 +3,11 @@
 This is an early-stage experiment, inspired by Shrivastava, Kauffmann,
 Awadallah & Papailiopoulos, ["ECHO: Terminal Agents Learn World Models for
 Free"](https://arxiv.org/abs/2605.24517) (2026), probing a few open questions
-at once: can a coding agent's prediction be
-grounded by the environment at all, does RLVR's crude outcome-only reward end
-up reinforcing wrong predictions, and does predicting first refine the
-model's hidden states even with no scratchpad? Arm A is the standard loop:
+at once: is world modeling actually the right direction for coding agents;
+does a prediction need its own direct supervision, a cross-entropy loss
+straight off the verified outcome, because RLVR's reward is far too crude to
+grade one; and does predicting first sharpen the model's internal state even
+with no visible tokens to reason in? Arm A is the standard loop:
 patch, test, react, trained with plain SFT then RLVR. Arm B shares the exact
 same harness but predicts the outcome first and commits to `KEEP` or
 `REVISE` before it ever sees the real result; the prediction is trained only

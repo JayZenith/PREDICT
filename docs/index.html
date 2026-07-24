@@ -179,14 +179,15 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <header class="hero">
   <h1 class="h1">PREDICT: Can a Coding Agent Predict Its Own Patch's Fate Before Running It?</h1>
   <p class="tagline">This is an early-stage experiment, inspired by
-    <a href="https://arxiv.org/abs/2605.24517">ECHO</a>'s world-model result,
-    probing a few open questions at once: can a coding agent's prediction be grounded by the
-    environment at all, does RLVR's crude outcome-only reward end up reinforcing wrong
-    predictions, and does predicting first refine the model's hidden states even with no
-    scratchpad? Arm A is the standard loop: patch, test, react, trained with plain SFT then RLVR.
-    Arm B shares the exact same harness but predicts the outcome first and commits to KEEP or
-    REVISE before it ever sees the real result; the prediction is trained only against the
-    verified environment outcome, never the model's own sampled guess.</p>
+    <a href="https://arxiv.org/abs/2605.24517">ECHO</a>'s world-model result, probing a few open
+    questions at once: is world modeling actually the right direction for coding agents; does a
+    prediction need its own direct supervision, a cross-entropy loss straight off the verified
+    outcome, because RLVR's reward is far too crude to grade one; and does predicting first sharpen
+    the model's internal state even with no visible tokens to reason in? Arm A is the standard
+    loop: patch, test, react, trained with plain SFT then RLVR. Arm B shares the exact same harness
+    but predicts the outcome first and commits to KEEP or REVISE before it ever sees the real
+    result; the prediction is trained only against the verified environment outcome, never the
+    model's own sampled guess.</p>
 </header>
 
 <section class="section" id="architecture">
@@ -628,12 +629,12 @@ patch applied</code></div>
       <li><span class="learned-tag">Noise vs. real wins</span><b>One training run is an
       anecdote.</b> Seed 1 made Arm A look ahead at steps 25 and 100. Both effects were noise that
       vanished under a second independent run.</li>
-      <li><span class="learned-tag">Tokens aren't required to think</span><b>&ldquo;No
-      scratchpad&rdquo; isn't automatically a dead end.</b> ECHO
-      (<a href="#architecture">this project's inspiration</a>) trains a similarly scratchpad-free
-      CE loss and still doubles pass@1 elsewhere. The likely difference: its target is a dense,
-      multi-token observation; ours is one label from a 6-way enum, which may be why simulation
-      never took hold.</li>
+      <li><span class="learned-tag">Tokens aren't required to think</span><b>Predicting with no
+      visible tokens isn't automatically a dead end.</b> ECHO
+      (<a href="#architecture">this project's inspiration</a>) trains a CE loss with no visible
+      reasoning either, and still doubles pass@1 elsewhere. The likely difference: its target is a
+      dense, multi-token observation; ours is one label from a 6-way enum, which may be why
+      simulation never took hold.</li>
     </ol>
   </div>
 </section>

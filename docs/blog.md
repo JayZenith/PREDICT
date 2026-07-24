@@ -257,15 +257,15 @@ from digging into why the results looked the way they did.
    seed noise — gone under a second independent run with the same setup.
    Two-seed replication (now standard for both arms here) is what turned
    an appealing headline into a checked claim.
-6. **"No scratchpad" doesn't mean "no computation," and it isn't
+6. **No visible tokens doesn't mean "no computation," and it isn't
    automatically a dead end.** Every `<PREDICTION>` tag is emitted
    immediately after `apply_patch`, no reasoning tokens in between — but
    ECHO (Shrivastava, Kauffmann, Awadallah & Papailiopoulos,
    ["Terminal Agents Learn World Models for
    Free"](https://arxiv.org/abs/2605.24517), 2026, this project's own
-   inspiration) trains a similarly scratchpad-free CE loss and still
-   doubles pass@1 on TerminalBench-2.0. So scratchpad-free auxiliary
-   prediction plainly can work. The likely difference: ECHO's target is
+   inspiration) trains a CE loss with no visible reasoning either, and
+   still doubles pass@1 on TerminalBench-2.0. So auxiliary prediction with
+   no visible tokens plainly can work. The likely difference: ECHO's target is
    the full, dense, multi-token environment observation, forcing
    token-by-token computation through what happened — ours is a single
    terse label from a 6-way enum. A denser prediction target (the specific
