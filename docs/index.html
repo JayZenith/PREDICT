@@ -39,34 +39,34 @@ code { font-family: var(--mono); font-size: 0.86em; }
 .topnav a:hover { color: var(--ink); text-decoration: none; }
 
 /* ---- hero ---- */
-.hero { padding: 56px 0 32px; border-bottom: 1px solid var(--border); }
+.hero { padding: 36px 0 24px; border-bottom: 1px solid var(--border); }
 .kicker { font-size: 15px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 14px; }
 .h1 { font-size: 36px; line-height: 1.25; margin: 0 0 16px; font-weight: 600; letter-spacing: -0.01em; }
-.tagline { font-size: 18px; color: #e6e6e6; max-width: 700px; margin: 0 0 24px; }
+.tagline { font-size: 18px; color: #e6e6e6; margin: 0 0 24px; }
 .meta-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip { border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; font-size: 15px;
   color: var(--ink-2); font-family: var(--mono); }
 .chip b { color: var(--ink); font-weight: 600; }
 
 /* ---- sections ---- */
-.section { padding: 56px 0; border-bottom: 1px solid var(--border); scroll-margin-top: 54px; }
+.section { padding: 32px 0; border-bottom: 1px solid var(--border); scroll-margin-top: 54px; }
 .section:last-of-type { border-bottom: none; }
 .section-kicker { font-size: 14.5px; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 8px;
   color: var(--mute); font-weight: 600; }
 .section-title { font-size: 26px; font-weight: 600; margin: 0 0 14px; letter-spacing: -0.01em; }
-.section-lede { color: #e6e6e6; max-width: 760px; margin: 0 0 20px; font-size: 16.5px; }
+.section-lede { color: #e6e6e6; margin: 0 0 16px; font-size: 16.5px; }
 .section-lede:last-child { margin-bottom: 0; }
 .lede-narrow { max-width: 640px; }
-.mt-md { margin-top: 20px; }
-.mt-lg { margin-top: 32px; }
+.mt-md { margin-top: 14px; }
+.mt-lg { margin-top: 20px; }
 
 /* ---- cards / grid ---- */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 22px 24px; }
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 @media (max-width: 760px) { .grid-2, .grid-3, .transcript-grid { grid-template-columns: 1fr; } }
 
-.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 0 0 26px; }
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 0 0 16px; }
 @media (max-width: 700px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
 .stat-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; }
 .stat-value { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -101,15 +101,15 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 15.5px; ma
 
 /* ---- callouts ---- */
 .callout { border: 1px solid var(--border); border-left: 3px solid var(--c); border-radius: 4px;
-  padding: 14px 18px; margin: 14px 0; font-size: 16px; color: #e6e6e6; }
+  padding: 12px 16px; margin: 10px 0; font-size: 16px; color: #e6e6e6; }
 .callout-label { font-weight: 600; font-size: 14px; letter-spacing: .04em; text-transform: uppercase;
   color: var(--c); margin-bottom: 5px; display: flex; align-items: center; gap: 7px; }
 .good { --c: var(--green); } .warn { --c: var(--yellow); } .crit { --c: var(--red); } .info { --c: var(--blue); }
-.transcript-grid + .callout { margin-top: 20px; }
-.callout + .callout { margin-top: 16px; }
+.transcript-grid + .callout { margin-top: 14px; }
+.callout + .callout { margin-top: 10px; }
 
 /* ---- transcripts ---- */
-.transcript-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.transcript-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .transcript-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
 .transcript-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px;
   border-bottom: 1px solid var(--border); background: var(--surface-2); }
@@ -127,7 +127,7 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 15.5px; ma
 .turn-predict code { color: var(--yellow); }
 
 /* ---- appendix ---- */
-.appendix p { max-width: 760px; color: var(--ink-2); font-style: italic; margin: 0 0 16px; }
+.appendix p { color: var(--ink-2); font-style: italic; margin: 0 0 12px; }
 .appendix p:last-child { margin-bottom: 0; }
 
 /* ---- learned ---- */
@@ -136,12 +136,12 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 15.5px; ma
 .learned-list li:last-child { margin-bottom: 0; }
 
 /* ---- next steps ---- */
-.next-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.next-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .next-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px 22px; }
 .next-num { font-family: var(--mono); font-size: 14.5px; color: var(--ink-2); margin-bottom: 6px; }
 .next-title { font-size: 18px; font-weight: 600; margin: 0 0 8px; }
 
-footer { padding: 46px 0 20px; color: var(--ink-2); font-size: 16px; }
+footer { padding: 28px 0 20px; color: var(--ink-2); font-size: 16px; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 14px 0 22px; }
 .footer-cite { font-size: 15px; color: var(--mute); margin-top: 4px; }
 hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
@@ -472,8 +472,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <text x="326" y="146" text-anchor="end" class="axis-label">step 100</text>
 </svg>
     </div>
-    <div class="chart-wrap" style="grid-column:1/-1">
-      <div class="chart-caption" style="padding-top:0">GRPO(+CE) loss</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
+    <div class="chart-wrap">
+      <div class="chart-caption" style="padding-top:0">Arm A: GRPO loss</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
 <line x1="38" y1="130.0" x2="326" y2="130.0" stroke="#242424" stroke-width="1"/>
 <text x="30" y="133.5" text-anchor="end" class="axis-label">0.00</text>
 <line x1="38" y1="70.0" x2="326" y2="70.0" stroke="#242424" stroke-width="1"/>
@@ -481,6 +481,18 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <line x1="38" y1="10.0" x2="326" y2="10.0" stroke="#242424" stroke-width="1"/>
 <text x="30" y="13.5" text-anchor="end" class="axis-label">0.30</text>
 <path d="M38.0,124.7 L41.5,123.5 L44.9,121.4 L48.4,121.9 L51.9,120.6 L55.3,120.1 L58.8,121.7 L62.3,124.9 L65.8,123.7 L69.2,123.4 L72.7,122.5 L76.2,120.9 L79.6,120.4 L83.1,118.6 L86.6,120.8 L90.0,121.0 L93.5,121.8 L97.0,122.0 L100.5,124.6 L103.9,123.9 L107.4,125.2 L110.9,124.3 L114.3,123.8 L117.8,122.4 L121.3,122.3 L124.7,117.5 L128.2,118.6 L131.7,119.4 L135.2,120.8 L138.6,120.9 L142.1,124.7 L145.6,125.3 L149.0,123.7 L152.5,121.1 L156.0,120.7 L159.4,119.8 L162.9,119.9 L166.4,120.8 L169.9,124.2 L173.3,125.1 L176.8,127.2 L180.3,127.5 L183.7,128.4 L187.2,127.5 L190.7,125.4 L194.1,117.4 L197.6,116.1 L201.1,114.7 L204.6,114.5 L208.0,116.5 L211.5,124.0 L215.0,123.6 L218.4,124.5 L221.9,124.5 L225.4,124.9 L228.8,125.4 L232.3,121.8 L235.8,121.6 L239.3,121.8 L242.7,120.5 L246.2,119.0 L249.7,122.7 L253.1,117.4 L256.6,116.9 L260.1,118.8 L263.5,111.3 L267.0,112.0 L270.5,117.7 L274.0,115.8 L277.4,115.0 L280.9,103.1 L284.4,103.3 L287.8,100.5 L291.3,103.7 L294.8,104.1 L298.2,124.0 L301.7,123.2 L305.2,126.0 L308.7,121.4 L312.1,120.6 L315.6,121.2 L319.1,120.2 L322.5,118.1 L326.0,122.3" fill="none" stroke="#4d9fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+<text x="38" y="146" class="axis-label">step 1</text>
+<text x="326" y="146" text-anchor="end" class="axis-label">step 100</text>
+</svg>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-caption" style="padding-top:0">Arm B: GRPO + auxiliary CE loss (&lambda;=0.1)</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
+<line x1="38" y1="130.0" x2="326" y2="130.0" stroke="#242424" stroke-width="1"/>
+<text x="30" y="133.5" text-anchor="end" class="axis-label">0.00</text>
+<line x1="38" y1="70.0" x2="326" y2="70.0" stroke="#242424" stroke-width="1"/>
+<text x="30" y="73.5" text-anchor="end" class="axis-label">0.15</text>
+<line x1="38" y1="10.0" x2="326" y2="10.0" stroke="#242424" stroke-width="1"/>
+<text x="30" y="13.5" text-anchor="end" class="axis-label">0.30</text>
 <path d="M38.0,127.3 L41.2,127.4 L44.5,127.5 L47.7,127.4 L50.9,123.0 L54.2,123.4 L57.4,123.7 L60.7,123.4 L63.9,123.4 L67.1,127.4 L70.4,127.7 L73.6,127.4 L76.8,127.2 L80.1,127.2 L83.3,126.8 L86.5,126.9 L89.8,126.9 L93.0,127.4 L96.2,127.5 L99.5,128.1 L102.7,128.3 L106.0,128.4 L109.2,128.6 L112.4,128.5 L115.7,128.2 L118.9,127.8 L122.1,127.2 L125.4,127.5 L128.6,127.4 L131.8,127.5 L135.1,127.9 L138.3,128.1 L141.6,127.5 L144.8,127.6 L148.0,127.7 L151.3,127.3 L154.5,127.6 L157.7,128.2 L161.0,128.3 L164.2,128.4 L167.4,128.4 L170.7,128.6 L173.9,128.2 L177.1,128.4 L180.4,128.3 L183.6,126.9 L186.9,127.0 L190.1,126.6 L193.3,126.5 L196.6,126.5 L199.8,127.3 L203.0,126.9 L206.3,127.5 L209.5,127.6 L212.7,127.5 L216.0,128.2 L219.2,128.5 L222.4,128.3 L225.7,127.9 L228.9,127.7 L232.2,127.0 L235.4,126.8 L238.6,126.9 L241.9,125.8 L245.1,125.9 L248.3,126.1 L251.6,125.8 L254.8,124.6 L258.0,125.5 L261.3,125.9 L264.5,126.4 L267.8,126.2 L271.0,127.7 L274.2,127.7 L277.5,127.7 L280.7,127.4 L283.9,128.1 L287.2,128.0 L290.4,128.1 L293.6,127.8 L296.9,128.0 L300.1,127.9 L303.3,127.7 L306.6,128.0 L309.8,128.0 L313.1,127.3 L316.3,127.1 L319.5,127.5 L322.8,127.1 L326.0,126.9" fill="none" stroke="#f2a900" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
 <text x="38" y="146" class="axis-label">step 1</text>
 <text x="326" y="146" text-anchor="end" class="axis-label">step 100</text>
@@ -488,11 +500,10 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     </div>
   </div>
   <p class="chart-caption">Reward is the mean binary task reward over each 64-rollout training
-    batch, noisy by construction (a handful of distinct tasks per batch), and a per-batch
-    success-rate snapshot, not a windowed average itself (the 5-step smoothing above is applied on
-    top of it), distinct from the held-out pass@1 numbers earlier in this page. Arm A's loss
-    is plain GRPO; Arm B's adds the &lambda;=0.1 auxiliary prediction CE term, so the two are not
-    directly comparable in scale.</p>
+    batch, noisy by construction (a handful of distinct tasks per batch), a per-batch success-rate
+    snapshot, not a windowed average itself, distinct from the held-out pass@1 numbers earlier on
+    this page. The two loss charts are shown separately, not overlaid, because they aren't the same
+    quantity: Arm A's is plain GRPO, Arm B's also includes the auxiliary CE term.</p>
 </section>
 
 <section class="section" id="demo">
