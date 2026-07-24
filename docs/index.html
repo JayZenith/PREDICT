@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PREDICT &mdash; Toward a Ground-Truth-Grounded World Model for Coding Agents</title>
+<title>PREDICT: Toward a Ground-Truth-Grounded World Model for Coding Agents</title>
 <meta name="description" content="RLVR on MBPP: a test-and-recover coding agent vs. a predict-and-decide coding agent trained with SFT, RLVR, and verified-label cross-entropy. Results, training dynamics, and real rollouts.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='black'/%3E%3Cpath d='M13 2 L4 14 H11 L10 22 L20 9 H13 Z' fill='%23c98500'/%3E%3C/svg%3E">
 <style>
@@ -34,24 +34,24 @@ code { font-family: var(--mono); font-size: 0.86em; }
 .topnav { position: sticky; top: 0; z-index: 5; background: var(--bg);
   border-bottom: 1px solid var(--border); }
 .topnav-inner { max-width: 1040px; margin: 0 auto; padding: 12px 20px; display: flex; gap: 18px;
-  flex-wrap: wrap; font-size: 13.5px; }
+  flex-wrap: wrap; font-size: 15px; }
 .topnav a { color: var(--ink-2); }
 .topnav a:hover { color: var(--ink); text-decoration: none; }
 
 /* ---- hero ---- */
 .hero { padding: 56px 0 32px; border-bottom: 1px solid var(--border); }
-.kicker { font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 14px; }
+.kicker { font-size: 13.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 14px; }
 .h1 { font-size: 36px; line-height: 1.25; margin: 0 0 16px; font-weight: 600; letter-spacing: -0.01em; }
 .tagline { font-size: 16.5px; color: #cfcfcf; max-width: 700px; margin: 0 0 24px; }
 .meta-row { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; font-size: 12.5px;
+.chip { border: 1px solid var(--border); border-radius: 4px; padding: 5px 10px; font-size: 13.5px;
   color: var(--ink-2); font-family: var(--mono); }
 .chip b { color: var(--ink); font-weight: 600; }
 
 /* ---- sections ---- */
 .section { padding: 56px 0; border-bottom: 1px solid var(--border); scroll-margin-top: 54px; }
 .section:last-of-type { border-bottom: none; }
-.section-kicker { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 8px;
+.section-kicker { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 8px;
   color: var(--mute); font-weight: 600; }
 .section-title { font-size: 24px; font-weight: 600; margin: 0 0 14px; letter-spacing: -0.01em; }
 .section-lede { color: #cfcfcf; max-width: 760px; margin: 0 0 20px; font-size: 15px; }
@@ -70,14 +70,14 @@ code { font-family: var(--mono); font-size: 0.86em; }
 @media (max-width: 700px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
 .stat-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; }
 .stat-value { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.stat-label { font-size: 12.5px; color: var(--ink-2); margin-top: 4px; }
+.stat-label { font-size: 13.5px; color: var(--ink-2); margin-top: 4px; }
 
 /* ---- tables ---- */
 table.data-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 18px 0; }
 .data-table th, .data-table td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--border);
   font-variant-numeric: tabular-nums; }
 .data-table th:first-child, .data-table td:first-child { text-align: left; font-variant-numeric: normal; }
-.data-table thead th { color: var(--ink-2); font-weight: 500; font-size: 12.5px; text-transform: uppercase;
+.data-table thead th { color: var(--ink-2); font-weight: 500; font-size: 13.5px; text-transform: uppercase;
   letter-spacing: .04em; }
 .data-table tbody tr:last-child td { border-bottom: none; }
 
@@ -85,16 +85,16 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 14px; marg
 .chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px 20px 8px; }
 .chart-svg, .diagram-svg { width: 100%; height: auto; display: block; overflow: visible; }
 .chart-svg text, .diagram-svg text { font-family: var(--sans); fill: var(--ink-2); }
-.axis-label { font-size: 11px; fill: var(--ink-2); }
-.axis-sub { font-size: 9.5px; fill: var(--mute); }
-.line-end-label { font-size: 12px; font-weight: 600; }
-.bar-value { font-size: 13px; font-weight: 600; }
-.diagram-title { font-size: 14px; font-weight: 600; }
-.diagram-col-title { font-size: 14.5px; font-weight: 600; }
-.diagram-sub { font-size: 10.5px; fill: var(--ink-2); }
-.diagram-edge { font-size: 10.5px; fill: var(--ink-2); }
-.chart-caption { font-size: 13px; color: var(--ink-2); padding: 10px 4px 14px; }
-.legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 2px 4px 14px; font-size: 13px; color: var(--ink-2); }
+.axis-label { font-size: 12px; fill: var(--ink-2); }
+.axis-sub { font-size: 10.5px; fill: var(--mute); }
+.line-end-label { font-size: 13px; font-weight: 600; }
+.bar-value { font-size: 14px; font-weight: 600; }
+.diagram-title { font-size: 15px; font-weight: 600; }
+.diagram-col-title { font-size: 15.5px; font-weight: 600; }
+.diagram-sub { font-size: 11.5px; fill: var(--ink-2); }
+.diagram-edge { font-size: 11.5px; fill: var(--ink-2); }
+.chart-caption { font-size: 14.5px; color: var(--ink-2); padding: 10px 4px 14px; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 2px 4px 14px; font-size: 14.5px; color: var(--ink-2); }
 .legend-item { display: flex; align-items: center; gap: 7px; }
 .swatch { width: 13px; height: 13px; border-radius: 3px; display: inline-block; }
 .swatch.dashed { background: none; border: 2px dashed currentColor; width: 15px; height: 0; border-radius: 0; }
@@ -102,7 +102,7 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 14px; marg
 /* ---- callouts ---- */
 .callout { border: 1px solid var(--border); border-left: 3px solid var(--c); border-radius: 4px;
   padding: 14px 18px; margin: 14px 0; font-size: 14.5px; color: #d6d6d6; }
-.callout-label { font-weight: 600; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase;
+.callout-label { font-weight: 600; font-size: 12.5px; letter-spacing: .04em; text-transform: uppercase;
   color: var(--c); margin-bottom: 5px; display: flex; align-items: center; gap: 7px; }
 .good { --c: var(--green); } .warn { --c: var(--yellow); } .crit { --c: var(--red); } .info { --c: var(--blue); }
 .transcript-grid + .callout { margin-top: 20px; }
@@ -113,13 +113,13 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 14px; marg
 .transcript-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
 .transcript-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px;
   border-bottom: 1px solid var(--border); background: var(--surface-2); }
-.transcript-title { font-weight: 600; font-size: 14.5px; }
-.transcript-sub { color: var(--ink-2); font-size: 12.5px; margin-left: 10px; }
-.badge { font-family: var(--mono); font-size: 11px; border: 1px solid; border-radius: 4px; padding: 3px 10px; }
+.transcript-title { font-weight: 600; font-size: 15.5px; }
+.transcript-sub { color: var(--ink-2); font-size: 13.5px; margin-left: 10px; }
+.badge { font-family: var(--mono); font-size: 12px; border: 1px solid; border-radius: 4px; padding: 3px 10px; }
 .transcript-body { padding: 6px 6px 14px; max-height: 560px; overflow-y: auto; }
-.turn { padding: 8px 16px; font-size: 12.8px; border-bottom: 1px solid rgba(255,255,255,.045); }
+.turn { padding: 8px 16px; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,.045); }
 .turn code { white-space: pre-wrap; word-break: break-word; color: #e6e6e6; }
-.turn-tag { display: inline-block; min-width: 52px; font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+.turn-tag { display: inline-block; min-width: 56px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
   color: var(--mute); margin-right: 10px; vertical-align: top; }
 .turn-user { color: #cfcfcf; background: rgba(255,255,255,.02); }
 .turn-tool-fail { background: rgba(208,59,59,.07); }
@@ -138,12 +138,12 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 14px; marg
 /* ---- next steps ---- */
 .next-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .next-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px 22px; }
-.next-num { font-family: var(--mono); font-size: 12px; color: var(--ink-2); margin-bottom: 6px; }
+.next-num { font-family: var(--mono); font-size: 13px; color: var(--ink-2); margin-bottom: 6px; }
 .next-title { font-size: 16px; font-weight: 600; margin: 0 0 8px; }
 
-footer { padding: 46px 0 20px; color: var(--ink-2); font-size: 13.5px; }
+footer { padding: 46px 0 20px; color: var(--ink-2); font-size: 15px; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 14px 0 22px; }
-.footer-cite { font-size: 12.5px; color: var(--mute); margin-top: 4px; }
+.footer-cite { font-size: 13.5px; color: var(--mute); margin-top: 4px; }
 hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </style>
 </head>
@@ -166,11 +166,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
 <header class="hero">
   <p class="kicker">PREDICT &middot; RLVR on MBPP &middot; commit <a href="https://github.com/JayZenith/PREDICT/commit/9eefac7"><code>9eefac7</code></a></p>
-  <h1 class="h1">PREDICT &mdash; Toward a Ground-Truth-Grounded World Model for Coding Agents</h1>
+  <h1 class="h1">PREDICT: Toward a Ground-Truth-Grounded World Model for Coding Agents</h1>
   <p class="tagline">How does adding explicit outcome prediction and keep-or-revise control change a
     long-horizon coding agent? Arm A tests and reacts (SFT + RLVR). Arm B predicts the outcome
-    first, then commits to KEEP or REVISE, trained only against the verified &mdash; ground-truth
-    &mdash; outcome, never its own guess: a narrow, early step toward a coding agent with a real
+    first, then commits to KEEP or REVISE, trained only against the verified, ground-truth
+    outcome, never its own guess: a narrow, early step toward a coding agent with a real
     model of its environment.</p>
   <div class="meta-row">
     <span class="chip"><b>n=500</b> held-out test</span>
@@ -190,8 +190,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <div class="card"><svg viewBox="0 0 800 620" class="diagram-svg" role="img" aria-label="Arm A versus Arm B execution flow">
 <defs><marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#a9a9a9"/></marker></defs>
-<text x="180" y="26" text-anchor="middle" class="diagram-col-title" fill="#3987e5">Arm A &mdash; test-and-recover</text>
-<text x="580" y="26" text-anchor="middle" class="diagram-col-title" fill="#c98500">Arm B &mdash; predict-and-decide</text>
+<text x="180" y="26" text-anchor="middle" class="diagram-col-title" fill="#3987e5">Arm A: test-and-recover</text>
+<text x="580" y="26" text-anchor="middle" class="diagram-col-title" fill="#c98500">Arm B: predict-and-decide</text>
 <rect x="60" y="46" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.3"/><text x="180.0" y="75.0" text-anchor="middle" class="diagram-title" fill="#3987e5">read_file</text>
 <rect x="60" y="130" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.3"/><text x="180.0" y="159.0" text-anchor="middle" class="diagram-title" fill="#3987e5">apply_patch</text>
 <rect x="60" y="214" width="240" height="50" rx="6" fill="#0a0a0a" stroke="#3987e5" stroke-width="1.3"/><text x="180.0" y="243.0" text-anchor="middle" class="diagram-title" fill="#3987e5">python_test</text>
@@ -229,7 +229,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
   <p class="section-lede mt-lg">That harness runs inside PRIME-RL's training
     loop: the orchestrator dispatches each rollout into a separate Verifiers subprocess execution
-    environment, scores it, forms GRPO groups, and sends batches to the trainer &mdash; which broadcasts
+    environment, scores it, forms GRPO groups, and sends batches to the trainer, which broadcasts
     updated policy weights straight back to the inference server every step.</p>
 </section>
 
@@ -245,7 +245,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     Feedback&rdquo;</a> (2026). The verified-label auxiliary CE design was inspired by
     Shrivastava, Kauffmann, Awadallah &amp; Papailiopoulos,
     <a href="https://arxiv.org/abs/2605.24517">&ldquo;ECHO: Terminal Agents Learn World Models
-    for Free&rdquo;</a> (2026) &mdash; ECHO trains a complementary CE loss on
+    for Free&rdquo;</a> (2026); ECHO trains a complementary CE loss on
     environment-observation tokens within the same GRPO rollout, no separate reasoning step, and
     doubles pass@1 on TerminalBench-2.0. PREDICT's difference from ECHO:
     <a href="../docs/research_specs.md#novelty-relative-to-echo">research_specs.md &sect; Novelty
@@ -253,17 +253,17 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
   <div class="stat-grid">
     <div class="stat-tile"><div class="stat-value">424</div><div class="stat-label">train pool &rarr; 212 SFT + 212 RL</div></div>
-    <div class="stat-tile"><div class="stat-value">40</div><div class="stat-label">validation &mdash; checkpoint / &lambda; selection</div></div>
-    <div class="stat-tile"><div class="stat-value">500</div><div class="stat-label">final test &mdash; touched once</div></div>
+    <div class="stat-tile"><div class="stat-value">40</div><div class="stat-label">validation, checkpoint / &lambda; selection</div></div>
+    <div class="stat-tile"><div class="stat-value">500</div><div class="stat-label">final test, touched once</div></div>
     <div class="stat-tile"><div class="stat-value">212</div><div class="stat-label">SFT traces / arm: 142 direct + 70 recovery</div></div>
   </div>
 
   <div class="callout info">
     <div class="callout-label">Scope</div>
     Arm A is a matched comparator, not a single-variable ablation. Arm B bundles the predict/decide
-    protocol, an added action space, the auxiliary CE loss, and a different SFT trace format together
-    &mdash; this compares two complete systems, it does not isolate &ldquo;prediction&rdquo; as one
-    causal factor. Full caveat in
+    protocol, an added action space, the auxiliary CE loss, and a different SFT trace format
+    together: this compares two complete systems, it does not isolate &ldquo;prediction&rdquo; as
+    one causal factor. Full caveat in
     <a href="../docs/research_specs.md#limits-to-report">research_specs.md &sect; Limits to report</a>.
   </div>
 </section>
@@ -321,8 +321,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <text x="654.0" y="110.2" class="line-end-label" fill="#c98500">53.6%</text>
 </svg></div>
   <div class="legend">
-    <span class="legend-item"><span class="swatch" style="background:#3987e5"></span>Arm A &mdash; seed 42 (solid) / seed 43 (dashed)</span>
-    <span class="legend-item"><span class="swatch" style="background:#c98500"></span>Arm B &mdash; seed 42 (solid) / seed 43 (dashed)</span>
+    <span class="legend-item"><span class="swatch" style="background:#3987e5"></span>Arm A: seed 42 (solid) / seed 43 (dashed)</span>
+    <span class="legend-item"><span class="swatch" style="background:#c98500"></span>Arm B: seed 42 (solid) / seed 43 (dashed)</span>
   </div>
 
   <div class="callout crit">
@@ -335,7 +335,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <div class="callout good">
     <div class="callout-label">&#10003; Replicated across two seeds</div>
     RLVR improves <b>both</b> arms over their own SFT baseline by step 100, replicated across both
-    seeds for each arm &mdash; Arm A: p=0.0003 and p=0.028; Arm B: p=0.033 and p=0.0017.
+    seeds for each arm: Arm A p=0.0003 and p=0.028; Arm B p=0.033 and p=0.0017.
   </div>
 
   <table class="data-table">
@@ -356,8 +356,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="section-kicker">Efficiency</p>
   <h2 class="section-title">Step-100 seed-42 traces: not a clean win either way</h2>
   <p class="section-lede">Arm B doesn't use fewer tool calls or turns. It does use fewer visible
-    test executions &mdash; shadow-testing on REVISE moves some cycles off the visible ledger &mdash;
-    but spends noticeably more generation length per task on
+    test executions (shadow-testing on REVISE moves some cycles off the visible ledger), but
+    spends noticeably more generation length per task on
     <code style="color:#c98500">&lt;PREDICTION&gt;</code>/<code style="color:#c98500">&lt;DECISION&gt;</code> tags.</p>
   <div class="grid-3">
     <div class="chart-wrap"><div class="chart-caption" style="padding-top:0">visible tool calls</div><svg viewBox="0 0 300 190" class="chart-svg" role="img" aria-label="paired bar">
@@ -397,12 +397,12 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="diagnosis">
   <p class="section-kicker">Diagnosis</p>
   <h2 class="section-title">What was actually hindering Arm B</h2>
-  <p class="section-lede">Decision-following is solid &mdash; REVISE follows a non-PASS prediction 100% of
+  <p class="section-lede">Decision-following is solid: REVISE follows a non-PASS prediction 100% of
     the time, KEEP follows a PASS prediction 96.4% of the time (seed 42) / 99.4% of the time (seed 43).
     That's not the problem. The problem is <b>discrimination</b>: telling, from the candidate code alone,
     before it ever runs, whether it will pass, crash (<code style="color:#c98500">RUNTIME_ERROR</code>),
-    or run fine but fail the assertion (<code style="color:#d03b3b">ASSERTION_FAILURE</code>) &mdash;
-    the harder case, since it requires simulating the candidate's logic against the test, not just
+    or run fine but fail the assertion (<code style="color:#d03b3b">ASSERTION_FAILURE</code>), the
+    harder case, since it requires simulating the candidate's logic against the test, not just
     spotting a surface-level crash pattern. Measured by outcome class, RL step 100, seed 42:</p>
 
   <div class="chart-wrap"><svg viewBox="0 0 620 260" class="chart-svg" role="img" aria-label="bar chart">
@@ -422,28 +422,28 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </svg></div>
   <p class="chart-caption">Sub-label = share of execution-verified outcomes in that class (the real
     or shadow test result, not the model's guess). Recall = the model's own sampled prediction
-    matching that verified outcome. The model has not once correctly predicted ASSERTION_FAILURE
-    &mdash; despite it being the actual verified outcome 57% of the time, the dominant failure mode
-    &mdash; at RL step 50, 75, or 100, in either independent seed.</p>
+    matching that verified outcome. The model has not once correctly predicted ASSERTION_FAILURE,
+    despite it being the actual verified outcome 57% of the time (the dominant failure mode), at
+    RL step 50, 75, or 100, in either independent seed.</p>
 
   <div class="callout crit">
     <div class="callout-label">Blind spot</div>
     100% PASS at the SFT checkpoint, i.e. RL step 0 (fully collapsed) &rarr; a brief 1&ndash;2%
     ASSERTION_FAILURE recall at RL step 25 &rarr; extinguished back to 0% by RL step 50, never
-    recovering through step 100. These are RLVR (GRPO) steps, not SFT steps &mdash; SFT is already
+    recovering through step 100. These are RLVR (GRPO) steps, not SFT steps: SFT is already
     finished and frozen by the time this trajectory starts.
   </div>
 
   <div class="callout warn">
     <div class="callout-label">Why GRPO can't fix it directly</div>
     Prediction-label tokens are masked out of the GRPO loss by design (see
-    <a href="../docs/research_specs.md#arm-b--consequence-predictor">research_specs.md</a>) &mdash;
-    final reward depends only on whether <code>apply_patch</code>/<code>python_test</code>/<code>FINAL</code>
+    <a href="../docs/research_specs.md#arm-b--consequence-predictor">research_specs.md</a>): final
+    reward depends only on whether <code>apply_patch</code>/<code>python_test</code>/<code>FINAL</code>
     eventually succeed, never on what <code>&lt;PREDICTION&gt;</code> said. So GRPO carries no
     <i>direct</i> loss term on those tokens. It's not zero effect, though: GRPO and the auxiliary CE
     update the same shared transformer weights, so gradient at the surrounding
     <code>&lt;DECISION&gt;</code>/action tokens can still reshape the masked positions indirectly.
-    The auxiliary CE (&lambda;=0.1) is the only <i>direct</i> teacher here &mdash; not the only thing
+    The auxiliary CE (&lambda;=0.1) is the only <i>direct</i> teacher here, not the only thing
     capable of moving those probabilities. The RL step-25 blip is early-optimization noise nothing
     directly defends, so it doesn't last.
   </div>
@@ -451,22 +451,22 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="section-lede mt-md">The SFT curriculum is part of why it starts collapsed: across all
     212 Arm B SFT traces, <code>&lt;PREDICTION&gt;</code> labels split roughly 257 PASS : 45
     real-failure (85% / 15%), and half the 70 recovery traces (25 <code>visible</code> + 10
-    <code>deep_visible</code>) hardcode the label <code>PASS</code> on the buggy candidate itself
-    &mdash; the &ldquo;honest mistake, caught by the real test&rdquo; path. Only the 25
+    <code>deep_visible</code>) hardcode the label <code>PASS</code> on the buggy candidate itself:
+    the &ldquo;honest mistake, caught by the real test&rdquo; path. Only the 25
     <code>shadow</code> + 10 <code>deep_shadow</code> traces ever show a correct non-PASS label. So
     half of Arm B's own recovery curriculum demonstrates that guessing PASS and letting
-    <code>python_test</code> sort it out is an acceptable pattern &mdash; exactly the shortcut the
+    <code>python_test</code> sort it out is an acceptable pattern, exactly the shortcut the
     RL policy falls back on. Not reward hacking, since there's nothing for GRPO to game here, only
     indifference. The <a href="#next">two experiments below</a> target this directly: reweighting
     the CE loss toward rare classes, and reward-shaping GRPO itself to finally grade the two kinds
     of rollouts differently.</p>
 
-  <p class="section-lede mt-lg">Real training dynamics, seed 42 &mdash; reward
+  <p class="section-lede mt-lg">Real training dynamics, seed 42: reward
     from the orchestrator's per-step train-batch logs, entropy and loss from the trainer's per-step
     logs, not eval. Faint line = raw per-step value; bold line = 5-step centered moving average.</p>
   <div class="grid-2">
     <div class="chart-wrap">
-      <div class="chart-caption" style="padding-top:0">train-batch reward (success rate) &mdash; Arm A</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
+      <div class="chart-caption" style="padding-top:0">train-batch reward (success rate), Arm A</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
 <line x1="38" y1="130.0" x2="326" y2="130.0" stroke="#242424" stroke-width="1"/>
 <text x="30" y="133.5" text-anchor="end" class="axis-label">0.0</text>
 <line x1="38" y1="70.0" x2="326" y2="70.0" stroke="#242424" stroke-width="1"/>
@@ -480,7 +480,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </svg>
     </div>
     <div class="chart-wrap">
-      <div class="chart-caption" style="padding-top:0">train-batch reward (success rate) &mdash; Arm B</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
+      <div class="chart-caption" style="padding-top:0">train-batch reward (success rate), Arm B</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
 <line x1="38" y1="130.0" x2="326" y2="130.0" stroke="#242424" stroke-width="1"/>
 <text x="30" y="133.5" text-anchor="end" class="axis-label">0.0</text>
 <line x1="38" y1="70.0" x2="326" y2="70.0" stroke="#242424" stroke-width="1"/>
@@ -494,7 +494,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </svg>
     </div>
     <div class="chart-wrap">
-      <div class="chart-caption" style="padding-top:0">policy entropy &mdash; Arm A</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
+      <div class="chart-caption" style="padding-top:0">policy entropy, Arm A</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
 <line x1="38" y1="130.0" x2="326" y2="130.0" stroke="#242424" stroke-width="1"/>
 <text x="30" y="133.5" text-anchor="end" class="axis-label">0.04</text>
 <line x1="38" y1="70.0" x2="326" y2="70.0" stroke="#242424" stroke-width="1"/>
@@ -508,7 +508,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </svg>
     </div>
     <div class="chart-wrap">
-      <div class="chart-caption" style="padding-top:0">policy entropy &mdash; Arm B</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
+      <div class="chart-caption" style="padding-top:0">policy entropy, Arm B</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
 <line x1="38" y1="130.0" x2="326" y2="130.0" stroke="#242424" stroke-width="1"/>
 <text x="30" y="133.5" text-anchor="end" class="axis-label">0.04</text>
 <line x1="38" y1="70.0" x2="326" y2="70.0" stroke="#242424" stroke-width="1"/>
@@ -522,7 +522,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </svg>
     </div>
     <div class="chart-wrap">
-      <div class="chart-caption" style="padding-top:0">GRPO loss &mdash; Arm A</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
+      <div class="chart-caption" style="padding-top:0">GRPO loss, Arm A</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
 <line x1="38" y1="130.0" x2="326" y2="130.0" stroke="#242424" stroke-width="1"/>
 <text x="30" y="133.5" text-anchor="end" class="axis-label">0.00</text>
 <line x1="38" y1="70.0" x2="326" y2="70.0" stroke="#242424" stroke-width="1"/>
@@ -536,7 +536,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </svg>
     </div>
     <div class="chart-wrap">
-      <div class="chart-caption" style="padding-top:0">GRPO+CE loss &mdash; Arm B</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
+      <div class="chart-caption" style="padding-top:0">GRPO+CE loss, Arm B</div><svg viewBox="0 0 340 150" class="chart-svg" role="img" aria-label="training curve">
 <line x1="38" y1="130.0" x2="326" y2="130.0" stroke="#242424" stroke-width="1"/>
 <text x="30" y="133.5" text-anchor="end" class="axis-label">0.00</text>
 <line x1="38" y1="70.0" x2="326" y2="70.0" stroke="#242424" stroke-width="1"/>
@@ -551,9 +551,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     </div>
   </div>
   <p class="chart-caption">Reward is the mean binary task reward over each 64-rollout training
-    batch &mdash; noisy by construction (a handful of distinct tasks per batch), and a per-batch
+    batch, noisy by construction (a handful of distinct tasks per batch), and a per-batch
     success-rate snapshot, not a windowed average itself (the 5-step smoothing above is applied on
-    top of it) &mdash; distinct from the held-out pass@1 numbers earlier in this page. Arm A's loss
+    top of it), distinct from the held-out pass@1 numbers earlier in this page. Arm A's loss
     is plain GRPO; Arm B's adds the &lambda;=0.1 auxiliary prediction CE term, so the two are not
     directly comparable in scale.</p>
 </section>
@@ -562,7 +562,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="section-kicker">Rollout demo</p>
   <h2 class="section-title">Same task, same checkpoint step, two loops</h2>
   <p class="section-lede">Real step-100 (seed 42) test-set traces for <code>mbpp_127</code>
-    (&ldquo;multiply two integers without <code>*</code>&rdquo;) &mdash; picked because both arms
+    (&ldquo;multiply two integers without <code>*</code>&rdquo;), picked because both arms
     got reward 1.0, so the loop shape is the only difference. Verbatim from
     <code>PREDICT_RL_RESULTS/RL_ARM_{A,B}_100/eval/</code>.</p>
 
@@ -630,10 +630,10 @@ patch applied</code></div>
   <div class="callout warn">
     <div class="callout-label">What this shows</div>
     On the first two candidates (wrong arithmetic operator, still valid Python), Arm B predicts
-    <code style="color:#007A5E">PASS</code> and <code style="color:#007A5E">KEEP</code>s &mdash;
+    <code style="color:#007A5E">PASS</code> and <code style="color:#007A5E">KEEP</code>s,
     but the verified outcome once each candidate actually runs is
     <code style="color:#d03b3b">ASSERTION_FAILURE</code> both times, exactly the class it has 0%
-    recall on. This isn't hypothetical &mdash; it's this exact real trace: two wrong PASS
+    recall on. This isn't hypothetical; it's this exact real trace: two wrong PASS
     predictions, in a row, then a real test failure it reacts to exactly like Arm A would have
     anyway (no benefit from having predicted at all). Only the third candidate passes the tests,
     so that PASS prediction happens to be right. Arm A solves the stated problem correctly on the
@@ -643,15 +643,15 @@ patch applied</code></div>
   </div>
   <div class="callout crit">
     <div class="callout-label">Verifier gap</div>
-    Arm B's winning candidate is <code>z = x * y</code> &mdash; it uses the exact operator the task
+    Arm B's winning candidate is <code>z = x * y</code>: it uses the exact operator the task
     says not to. The test suite is three numeric asserts (<code>multiply_int(10,20)==200</code>,
     etc.); it checks the output, not what operators produced it, so this rollout still scores
     reward 1.0. Both arms &ldquo;solved&rdquo; the task by the only thing that's actually measured
     (the given tests), but only Arm A solved what was actually <i>asked</i>. This is a verifier
-    gap, not a bug in this demo &mdash; it's a real, verified property of grading purely by assert
+    gap, not a bug in this demo: it's a real, verified property of grading purely by assert
     statements: any part of a prompt's spec that isn't encoded as a test is simply not checked or
     rewarded. (A quick check across the 500-task test set found this exact
-    &ldquo;without using X&rdquo; phrasing on only this one task &mdash; a real but isolated case
+    &ldquo;without using X&rdquo; phrasing on only this one task, a real but isolated case
     here, not a systemic pattern in this dataset.)
   </div>
 </section>
@@ -659,7 +659,7 @@ patch applied</code></div>
 <section class="section" id="learned">
   <p class="section-kicker">What I learned</p>
   <h2 class="section-title">Six things this run actually taught</h2>
-  <p class="section-lede">Not the results table &mdash; the methodology and architecture lessons
+  <p class="section-lede">Not the results table: the methodology and architecture lessons
     that came from digging into why the results looked the way they did.</p>
 
   <div class="card">
@@ -676,27 +676,27 @@ patch applied</code></div>
       weak skill, independent of how good the rest of the system is.</li>
       <li><b>SFT curricula can bake in the shortcut they're trying to prevent.</b> Half of Arm B's
       recovery traces demonstrate &ldquo;guess PASS, let the real test catch the mistake&rdquo; as
-      a valid, reward-preserving pattern &mdash; because that's a real recovery mode worth
+      a valid, reward-preserving pattern, because that's a real recovery mode worth
       training. It also happens to be the exact shortcut the collapsed policy falls back on. A
       curriculum can be correct about the behavior it demonstrates and still work against a
       different goal of the same system.</li>
       <li><b>Rare at one stage isn't rare at another.</b> Only 37 of 302 SFT prediction labels are
-      real <code style="color:#d03b3b">ASSERTION_FAILURE</code> examples &mdash; genuinely thin. But
+      real <code style="color:#d03b3b">ASSERTION_FAILURE</code> examples, genuinely thin. But
       checking real per-step RL logs (not just final eval) showed the model sees this outcome
       constantly during RL, a third to half of every step. Diagnosing a persistent 0% recall as
       &ldquo;not enough examples&rdquo; would have been wrong; checking the actual training-time
       logs instead of assuming the SFT-time distribution still applied caught that.</li>
       <li><b>One training run is an anecdote.</b> The first seed made Arm A look ahead at step 100
-      and significantly ahead at step 25. Both effects were seed noise &mdash; gone under a second
+      and significantly ahead at step 25. Both effects were seed noise, gone under a second
       independent run with the same setup. Two-seed replication (now standard for both arms here)
       is what turned an appealing headline into a checked claim.</li>
       <li><b>&ldquo;No scratchpad&rdquo; doesn't mean &ldquo;no computation,&rdquo; and it isn't
       automatically a dead end.</b> Every &lt;PREDICTION&gt; tag is emitted immediately after
-      <code>apply_patch</code>, no reasoning tokens in between &mdash; but ECHO
+      <code>apply_patch</code>, no reasoning tokens in between, but ECHO
       (<a href="#data">this project's inspiration</a>) trains a similarly scratchpad-free CE loss
       and still doubles pass@1 on TerminalBench-2.0. So scratchpad-free auxiliary prediction
       plainly can work. The likely difference: ECHO's target is the full, dense, multi-token
-      environment observation, forcing token-by-token computation through what happened &mdash;
+      environment observation, forcing token-by-token computation through what happened;
       ours is a single terse label from a 6-way enum. A denser prediction target (the specific
       failing assertion or expected value, not just an outcome class) may be a more direct fix for
       the <code style="color:#d03b3b">ASSERTION_FAILURE</code> blind spot than reweighting the
@@ -712,21 +712,17 @@ patch applied</code></div>
     <div class="next-card">
       <div class="next-num">01 &middot; try first</div>
       <div class="next-title" style="color:#3987e5">Sweep &lambda;</div>
-      <p>Rare is a claim about the <b>SFT set</b>, not RL: counting the actual 212 Arm B SFT traces
-      directly, <code>&lt;PREDICTION&gt;</code> labels split 257 PASS : 37
-      <code style="color:#d03b3b">ASSERTION_FAILURE</code> : 8
-      <code style="color:#c98500">RUNTIME_ERROR</code> &mdash; only 37 real examples, ever, and
-      none of them show any reasoning before the label; the tag is emitted immediately after
-      <code>apply_patch</code>, no scratchpad. During RL itself <code>ASSERTION_FAILURE</code> is
-      <i>not</i> rare &mdash; it's routinely a third to half of every step's real outcomes (118 of
-      236 at step 1, 72 of 103 at step 50) &mdash; so the model isn't short on raw exposure during
-      RL, it just never learns from it. That points at <i>hard</i>, not just <i>rare</i>:
-      correctly calling it requires simulating the candidate's logic against the test, unlike
-      <code style="color:#c98500">RUNTIME_ERROR</code>, which surface features (undefined names,
-      index risk) can flag without simulating anything. Reweighting the CE loss toward this class
-      raises the gradient on examples the model already sees &mdash; it doesn't add a missing
-      demonstration of <i>how</i> to simulate. Tests whether this is a fixable weighting problem or
-      a real ceiling on one-shot, no-scratchpad code simulation at this model size.</p>
+      <p>Rare is a claim about the <b>SFT set</b>, not RL: the 212 Arm B SFT traces split 257 PASS :
+      37 <code style="color:#d03b3b">ASSERTION_FAILURE</code> : 8
+      <code style="color:#c98500">RUNTIME_ERROR</code>, none with reasoning before the label. During
+      RL itself <code>ASSERTION_FAILURE</code> is routinely a third to half of every step's real
+      outcomes (118 of 236 at step 1, 72 of 103 at step 50), so the model isn't short on exposure,
+      it just never learns from it. That points at <i>hard</i>, not <i>rare</i>: it requires
+      simulating the candidate's logic, unlike <code style="color:#c98500">RUNTIME_ERROR</code>,
+      which surface features alone can flag. Reweighting raises the gradient on examples already
+      seen, not missing knowledge of <i>how</i> to simulate, so this tests whether it's a fixable
+      weighting problem or a real ceiling on one-shot, no-scratchpad simulation at this model
+      size.</p>
     </div>
     <div class="next-card">
       <div class="next-num">02 &middot; then</div>
@@ -735,19 +731,18 @@ patch applied</code></div>
       GRPO carries no direct incentive toward good predictions. Hypothesis: extra reward for
       <code>true failure + predicted failure + REVISE</code> and
       <code>true PASS + predicted PASS + KEEP</code>. One nuance (see <a href="#diagnosis">Diagnosis</a>):
-      GRPO already masks prediction-label tokens from its own loss, so a shaped reward's <i>direct</i>
+      GRPO already masks prediction-label tokens from its own loss, so this reward's <i>direct</i>
       gradient still lands on the surrounding <code>&lt;DECISION&gt;</code>/action tokens, not the
-      label positions &mdash; a real indirect effect via shared weights, but not a direct grade on
-      the label choice. Decision-following is already 96&ndash;100% consistent, so there's limited
-      headroom there. Squarely targeting prediction correctness likely still means lifting the
-      mask, not just adding a reward term.</p>
+      label positions: real but indirect, and decision-following is already 96&ndash;100% consistent,
+      so there's little headroom left to gain. Squarely targeting prediction correctness likely
+      still means lifting the mask, not just adding a reward term.</p>
     </div>
     <div class="next-card">
       <div class="next-num">03 &middot; the real test</div>
       <div class="next-title" style="color:#007A5E">Ablate the gate</div>
       <p>The one piece here that's actually new relative to ECHO is that the prediction causally
-      gates <code>KEEP</code>/<code>REVISE</code>. That's never been tested in isolation &mdash;
-      run prediction-as-pure-auxiliary-signal (ECHO-style, no behavioral control) against current
+      gates <code>KEEP</code>/<code>REVISE</code>. That's never been tested in isolation: run
+      prediction-as-pure-auxiliary-signal (ECHO-style, no behavioral control) against current
       Arm B, holding everything else fixed.</p>
     </div>
     <div class="next-card">
@@ -778,7 +773,7 @@ patch applied</code></div>
     strengthens the indirect one, by making the surrounding decision/action tokens' reward depend
     on prediction quality. Neither is a full fix alone: reweighting doesn't add missing information
     about <i>how</i> to simulate, and reward shaping's effect on the label positions, absent a
-    direct term there, still depends on shared-weight spillover &mdash; real, but unmeasured and not
+    direct term there, still depends on shared-weight spillover, real but unmeasured and not
     targeted.
   </div>
 </section>
@@ -791,7 +786,7 @@ patch applied</code></div>
     changed the trace format, action protocol, auxiliary loss, and decision space. The two arms are
     better understood as comparative training systems, not a strict causal ablation.</p>
   <p>The coding agent helped build and document the project, but it did not challenge that
-    experimental claim. Code has hard verifiers&mdash;tests, syntax, execution, and logs. Research
+    experimental claim. Code has hard verifiers: tests, syntax, execution, and logs. Research
     judgment has no equivalent oracle. Auditing a claim requires reconstructing the entire
     experiment, identifying every differing factor, and testing whether the conclusion is actually
     supported.</p>
