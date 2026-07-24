@@ -1,10 +1,13 @@
 # PREDICT — Toward a Ground-Truth-Grounded World Model for Coding Agents
 
-How does adding explicit outcome prediction and keep-or-revise control change
-a long-horizon coding agent? Arm A is a standard test-and-recover system
-trained with SFT and RLVR. Arm B adds a custom prediction-and-decision trace
-trained with verified-label cross-entropy alongside RLVR. The arms are
-comparative systems, not a single-variable ablation.
+This is an early-stage experiment testing one question: can a coding agent
+predict its own patch's fate before running it, grounded only in what the
+environment actually verifies, never its own guess? Arm A is the standard
+loop: patch, test, react, trained with plain SFT then RLVR. Arm B shares the
+exact same harness but predicts the outcome first and commits to `KEEP` or
+`REVISE` before it ever sees the real result, trained with RLVR on
+everything else, and its own cross-entropy loss straight off the verified
+label.
 
 | Arm | Loop | Training |
 |---|---|---|

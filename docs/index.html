@@ -167,11 +167,12 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <header class="hero">
   <p class="kicker">PREDICT &middot; RLVR on MBPP &middot; commit <a href="https://github.com/JayZenith/PREDICT/commit/9eefac7"><code>9eefac7</code></a></p>
   <h1 class="h1">PREDICT: Toward a Ground-Truth-Grounded World Model for Coding Agents</h1>
-  <p class="tagline">How does adding explicit outcome prediction and keep-or-revise control change a
-    long-horizon coding agent? Arm A tests and reacts (SFT + RLVR). Arm B predicts the outcome
-    first, then commits to KEEP or REVISE, trained only against the verified, ground-truth
-    outcome, never its own guess: a narrow, early step toward a coding agent with a real
-    model of its environment.</p>
+  <p class="tagline">This is an early-stage experiment testing one question: can a coding agent
+    predict its own patch's fate before running it, grounded only in what the environment actually
+    verifies, never its own guess? Arm A is the standard loop: patch, test, react, trained with
+    plain SFT then RLVR. Arm B shares the exact same harness but predicts the outcome first and
+    commits to KEEP or REVISE before it ever sees the real result, trained with RLVR on everything
+    else, and its own cross-entropy loss straight off the verified label.</p>
   <div class="meta-row">
     <span class="chip"><b>n=500</b> held-out test</span>
     <span class="chip"><b>2&times;2</b> seed matrix, both arms</span>
