@@ -753,7 +753,7 @@ patch applied</code></div>
 
 <section class="section" id="next">
   <p class="section-kicker">Where to go next</p>
-  <h2 class="section-title">Two directions, sweep first</h2>
+  <h2 class="section-title">Sweep first, then the harder tests</h2>
   <div class="next-grid">
     <div class="next-card">
       <div class="next-num">01 &middot; try first</div>
@@ -787,6 +787,35 @@ patch applied</code></div>
       the label choice. Decision-following is already 96&ndash;100% consistent, so there's limited
       headroom there. Squarely targeting prediction correctness likely still means lifting the
       mask, not just adding a reward term.</p>
+    </div>
+    <div class="next-card">
+      <div class="next-num">03 &middot; the real test</div>
+      <div class="next-title" style="color:#007A5E">Ablate the gate</div>
+      <p>The one piece here that's actually new relative to ECHO is that the prediction causally
+      gates <code>KEEP</code>/<code>REVISE</code>. That's never been tested in isolation &mdash;
+      run prediction-as-pure-auxiliary-signal (ECHO-style, no behavioral control) against current
+      Arm B, holding everything else fixed.</p>
+    </div>
+    <div class="next-card">
+      <div class="next-num">04 &middot; harder</div>
+      <div class="next-title" style="color:#d03b3b">Denser prediction target</div>
+      <p>Predict the specific failing assertion or expected/actual value, not a 6-way outcome
+      class. A coarse label may be why the model never learned to simulate; a dense target forces
+      token-by-token reasoning the way ECHO's own target does.</p>
+    </div>
+    <div class="next-card">
+      <div class="next-num">05 &middot; rigor check</div>
+      <div class="next-title" style="color:#3987e5">Causal, not correlational, evaluation</div>
+      <p>Decision-following is ~100% by construction, so &ldquo;predicted X&rdquo; and &ldquo;did
+      X&rdquo; are nearly tautological here. Counterfactually rerun rollouts and measure whether
+      reward actually tracks prediction correctness, holding the rest of the policy fixed.</p>
+    </div>
+    <div class="next-card">
+      <div class="next-num">06 &middot; generalize</div>
+      <div class="next-title" style="color:#c98500">Scale beyond one model, one benchmark</div>
+      <p>n=500 on MBPP with a 4B model that may have seen MBPP in pretraining can't rule out
+      idiosyncrasy. Replicating across model scale, or on a benchmark unlikely to be memorized, is
+      what would make this a claim rather than a run.</p>
     </div>
   </div>
   <div class="callout warn mt-md">

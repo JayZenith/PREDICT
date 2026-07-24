@@ -292,7 +292,7 @@ from digging into why the results looked the way they did.
    direct fix for the `ASSERTION_FAILURE` blind spot than reweighting the
    current, thin classification target.
 
-**Where to go next**, two directions, sweep first:
+**Where to go next**, sweep first, then the harder tests:
 
 1. **Sweep `λ`** (`orchestrator.algo.alpha` in `configs/arm_b_rl.toml`,
    currently `0.1`) upward, or reweight the auxiliary CE loss toward the
@@ -325,6 +325,25 @@ from digging into why the results looked the way they did.
    so there's limited headroom on the direct side. Making this experiment
    squarely target prediction correctness likely still means lifting the
    mask, not just adding a reward term.
+3. **Ablate the gate.** Test prediction-with-behavioral-gating (current
+   Arm B) against prediction-as-pure-auxiliary-signal (ECHO-style, no
+   `KEEP`/`REVISE` control), holding the rest of the bundle fixed. This is
+   the one piece that's actually new relative to ECHO, and it's never been
+   tested in isolation.
+4. **Denser prediction target.** Predict the specific failing assertion or
+   expected/actual value instead of a 6-way outcome class. A coarse label
+   may be why the model never learned to simulate; a denser target forces
+   token-by-token reasoning the way ECHO's dense observation-token target
+   does.
+5. **Causal, not correlational, evaluation.** Decision-following is ~100%
+   by construction, so "predicted X" and "did X" are nearly tautological
+   here. Counterfactually rerun rollouts and measure whether reward
+   actually tracks prediction correctness, holding the rest of the policy
+   fixed.
+6. **Scale beyond one model and one benchmark.** n=500 on MBPP with a 4B
+   model that may have seen MBPP in pretraining can't rule out idiosyncrasy.
+   Replicating across model scale or on a benchmark unlikely to be
+   memorized is what would make this a claim, not just a run.
 
 The actual crux: GRPO and the auxiliary CE update the same shared
 transformer weights, so calling them fully separate is too strong — but
