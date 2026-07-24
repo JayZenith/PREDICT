@@ -593,17 +593,12 @@ patch applied</code></div>
 
 <section class="section" id="learned">
   <p class="section-kicker">What I learned</p>
-  <h2 class="section-title">Five things this run actually taught</h2>
+  <h2 class="section-title">Four things this run actually taught</h2>
   <p class="section-lede">Not the results table: the methodology and architecture lessons
     that came from digging into why the results looked the way they did.</p>
 
   <div class="card">
     <ol class="learned-list">
-      <li><b>The reward never actually grades the prediction, so nothing forces it to improve.</b>
-      Whether the task passes or fails depends only on the final code, never on what
-      <code>&lt;PREDICTION&gt;</code> said (<a href="#diagnosis">why</a>). The only thing training
-      the prediction itself is the small auxiliary CE loss, so if that one signal is weak, the
-      prediction skill stays weak, no matter how well the rest of the agent performs.</li>
       <li><b>Half the training examples quietly taught the model to skip predicting honestly.</b>
       In half of Arm B's recovery examples, the "correct" move was to guess PASS on a buggy
       candidate and let the real test catch the mistake afterward. That's a legitimate fallback to
