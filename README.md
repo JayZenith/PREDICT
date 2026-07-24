@@ -1,4 +1,4 @@
-# PREDICT — Can a Coding Agent Predict Its Own Patch's Fate Before Running It?
+# PREDICT — Giving a Coding Agent a World Model It Must Act On
 
 What this is really after: a coding agent with a working world model, one
 that doesn't just react to test output but predicts what the environment
