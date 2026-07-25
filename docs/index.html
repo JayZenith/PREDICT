@@ -705,13 +705,13 @@ patch applied</code></div>
       signal-shape problem, not a signal-strength problem &mdash; more pressure to emit the token, no
       real reasoning lift on what token/state pattern actually precedes an assertion failure. Ruled out.</p>
     </div>
-    <div class="next-card">
-      <div class="next-num">02 &middot; try first</div>
-      <div class="next-title" style="color:#00d17a">Train longer than 100 steps</div>
-      <p>100 GRPO steps may simply be too short to judge this. Nothing has plateaued: two of the
-      four runs are still climbing at step 100 (+2.8 and +2.4 points over step 75), and the other
-      two are down only 0.6, inside the noise. Comparing arms at a point where both are still
-      moving risks reading a transient as a result. Run to convergence, then compare.</p>
+    <div class="next-card" style="opacity:0.7">
+      <div class="next-num" style="color:#ef4444">02 &middot; ruled out</div>
+      <div class="next-title" style="color:var(--mute); text-decoration:line-through">Train longer than 100 steps</div>
+      <p>To save compute for more probable fixes, I combined two follow-ups in one run: &lambda;
+      increased from 0.1 to 1.0 and training extended from 100 to 200 steps.
+      <code>ASSERTION_FAILURE</code> recall still stayed at 0%, so neither was sufficient in
+      combination, though this does not isolate their individual effects.</p>
     </div>
     <div class="next-card">
       <div class="next-num">03 &middot; then</div>
@@ -777,10 +777,6 @@ patch applied</code></div>
 
 <footer>
   <hr class="rule">
-  <p>SFT commit <a href="https://github.com/JayZenith/PREDICT/commit/6884983"><code>6884983</code></a>
-  &middot; RLVR commit <a href="https://github.com/JayZenith/PREDICT/commit/9eefac7"><code>9eefac7</code></a>
-  &middot; checkpoints <code>RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0</code> (seed 42) /
-  <code>..._V1</code> (seed 43).</p>
   <p class="footer-cite">MBPP: Austin et al., <i>Program Synthesis with Large Language Models</i>, 2021
   (arXiv:2108.07732). RLVR-on-small-Qwen inspiration: Skopin &amp; Kotelnikov,
   <i>Improving Small Language Models for Code Generation with Reinforcement Learning from
