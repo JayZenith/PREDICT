@@ -1,5 +1,16 @@
 # PREDICT — Giving a Coding Agent a World Model It Must Act On
 
+[Blog](docs/index.html) ·
+[blog.md](docs/blog.md) ·
+[REPRODUCTION.md](docs/REPRODUCTION.md) ·
+[research_specs.md](docs/research_specs.md) ·
+[ARCHITECTURE.md](docs/ARCHITECTURE.md) ·
+[agent_trace.md](docs/agent_trace.md) ·
+[SFT_ARM_A](https://huggingface.co/JayZenith/SFT_ARM_A) ·
+[SFT_ARM_B](https://huggingface.co/JayZenith/SFT_ARM_B) ·
+[Twitter](https://x.com/jayz3nith) ·
+[jayzenith.me](https://jayzenith.me/)
+
 What this is really after: a coding agent with a working world model, one
 that doesn't just react to test output but predicts what the environment
 will do and stakes a decision on that prediction, the way we judge whether
