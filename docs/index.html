@@ -664,6 +664,15 @@ patch applied</code></div>
       reasoning either, and still doubles pass@1 elsewhere. The likely difference: its target is a
       dense, multi-token observation; ours is one label from a 6-way enum, which may be why
       simulation never took hold.</li>
+      <li><span class="learned-tag">Pressure vs. reasoning</span><b>Loss weight moves emission,
+      not understanding.</b> The &lambda; sweep (10&times; weight, 2&times; steps, 0% recall
+      unchanged) suggests RLVR's exploration here was never generating the useful gradient to
+      begin with &mdash; no amount of CE weight rescues a signal that isn't shaped right. That
+      points at a broader split: RLVR's exploratory rollouts are what would have to discover
+      &ldquo;this state pattern precedes an assertion failure,&rdquo; while CE/distillation-style
+      losses mainly reinforce imitation of labels the model already can or can't produce. Turning
+      up &lambda; leans harder on the imitation side; it can't buy the exploratory discovery that
+      was missing.</li>
     </ol>
   </div>
 </section>
@@ -676,14 +685,17 @@ patch applied</code></div>
     credited to a specific piece of the design. The A-vs-B table above was the guardrail that
     kept seed noise out of the claims, not the verdict.</p>
   <div class="next-grid">
-    <div class="next-card">
-      <div class="next-num">01 &middot; try first</div>
-      <div class="next-title" style="color:#39ff14">Turn up &lambda;</div>
-      <p>&lambda; is the weight on the auxiliary CE loss, currently <code>0.1</code>. So the only
-      thing that directly trains the prediction is also the smallest term in the loss. Turn it up,
-      and weight the rare failure classes above PASS, then see whether prediction quality moves at
-      all. Cheapest experiment here, and it separates &ldquo;the signal was too weak&rdquo; from
-      &ldquo;a 4B model can't do this.&rdquo;</p>
+    <div class="next-card" style="opacity:0.7">
+      <div class="next-num">01 &middot; ruled out</div>
+      <div class="next-title" style="color:var(--mute); text-decoration:line-through">Turn up &lambda;</div>
+      <p><b>Tried: &lambda; 0.1&rarr;1.0 (10&times;), 100&rarr;200 steps.</b> Result: ASSERTION_FAILURE
+      recall stayed at 0.0%, byte-for-byte the same blind spot as the original run &mdash; test pass@1
+      also flat (53.0% vs. 52&ndash;53.6% at step 100). No movement at all.</p>
+      <p>Judgment: if the model's rollouts rarely produce ASSERTION_FAILURE examples with a useful
+      gradient in the first place, a bigger loss weight on that same sparse signal just means
+      &ldquo;learn the same wrong thing faster/harder,&rdquo; not learn something new. It's a
+      signal-shape problem, not a signal-strength problem &mdash; more pressure to emit the token, no
+      real reasoning lift on what token/state pattern actually precedes an assertion failure. Ruled out.</p>
     </div>
     <div class="next-card">
       <div class="next-num">02 &middot; try first</div>
