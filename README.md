@@ -8,7 +8,7 @@
 [agent_trace.md](docs/agent_trace.md) ·
 [SFT_ARM_A](https://huggingface.co/JayZenith/SFT_ARM_A) ·
 [SFT_ARM_B](https://huggingface.co/JayZenith/SFT_ARM_B) ·
-[Twitter](https://x.com/jayz3nith) ·
+[X](https://x.com/jayz3nith) ·
 [jayzenith.me](https://jayzenith.me/)
 
 What this is really after: a coding agent with a working world model, one
