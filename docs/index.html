@@ -773,11 +773,12 @@ patch applied</code></div>
     span no context window holds directly, which forces summarization and compression, and RL over
     that compressed history has much cruder credit assignment than single-rollout code
     verification: the reward is many steps removed from the framing decision that produced it.</p>
-  <p>Underneath that, it's hard to say why this particular miss happened. Maybe the model simply
-    overlooked it in the moment. Or maybe it hasn't seen much strong research engineering at that
-    level in its RL training data, and catching a bad framing over a long, messy, self-generated
-    trajectory is a specific skill that data barely exists for yet. Either way, nothing here shows
-    it's structurally impossible.</p>
+  <p>Underneath that, my best guess is this wasn't just a momentary lapse. Catching it required
+    holding a design decision made early against everything that happened after, and noticing they
+    no longer cohere, which is a different skill from spotting a bug in the diff in front of you.
+    Models get heavy RL exposure to the latter and very little to the former, so it's plausible the
+    skill just isn't well-formed yet, not that it's structurally impossible. Though I can't rule out
+    plain inattention either.</p>
 </section>
 
 <footer>
