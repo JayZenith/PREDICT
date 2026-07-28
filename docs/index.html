@@ -767,12 +767,23 @@ patch applied</code></div>
     better understood as comparative training systems, not a strict causal ablation.</p>
   <p>The coding agent helped build and document the project, and was also used as an adversarial
     reviewer of the blog and project framing itself, but it did not catch that experimental claim
-    on its own. Code has hard verifiers: tests, syntax, execution, and logs. Research judgment's
-    oracle is much messier: there's no pass/fail signal, so auditing a claim requires
-    reconstructing the entire experiment, identifying every differing factor, and testing whether
-    the conclusion is actually supported.</p>
-  <p>A stronger research agent would need to do more than make a project coherent and functional.
-    It would need to actively falsify the researcher's framing.</p>
+    on its own. It's not that research judgment has no verifier at all: reconstructing the
+    experiment, listing every differing factor, and checking whether the conclusion follows is a
+    checkable task. The harder problem is horizon. A real research project runs for days to
+    months, not one rollout, and the parts worth auditing (why did I frame it this way, what did I
+    actually change) are scattered across that whole span. Fitting that into a context window
+    forces summarization and compression, and training an agent to act well over a compressed,
+    lossy history of its own reasoning is a much harder RL problem than single-rollout code
+    verification: the reward is still tied to a final outcome many steps removed from the
+    framing decision that produced it, so credit assignment back to "this is where the claim went
+    wrong" is crude at best.</p>
+  <p>And underneath that, there's a simpler reason the agent didn't catch it: nothing in its
+    training ever taught it what doing research engineering actually looks like, day to day, over
+    that kind of horizon. Catching a bad framing isn't a general reasoning trick applied at
+    review time; it's a skill that would have to come from practice on long, messy, self-generated
+    research trajectories, which is exactly the kind of data and RL setup that doesn't exist yet. A
+    stronger research agent would need more than a longer context window and a better reward. It
+    would need to have actually been trained on doing this job.</p>
 </section>
 
 <footer>
