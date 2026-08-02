@@ -1,4 +1,4 @@
-# Arm B: matched GRPO plus verified-label prediction CE.
+# Arm B: matched GRPO plus RLVR + verified-label CE on the prediction span.
 max_steps = 100
 seq_len = 4096
 output_dir = "outputs/arm_b_rl"
@@ -24,6 +24,8 @@ base_url = ["http://localhost:8001/v1"]
 
 [orchestrator.algo]
 type = "predict"
+alpha = 0.1
+max_aux_tokens = 4096
 
 [orchestrator.renderer]
 name = "default"
