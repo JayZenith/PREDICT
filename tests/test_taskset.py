@@ -277,8 +277,9 @@ async def test_prediction_reward_is_gated_by_config_weight(tmp_path: Path) -> No
         ],
         "protocol_errors": [],
     }
-    # One correct prediction (+1) and one false-PASS-on-a-failure (-1) net to zero.
-    assert await task.prediction_reward(trace) == pytest.approx(0.0)
+    # One correct failure-class prediction (+2, the harder case) and one
+    # false-PASS-on-a-failure (-1) average to +0.5, scaled by weight 0.2.
+    assert await task.prediction_reward(trace) == pytest.approx(0.2 * 0.5)
 
 
 @pytest.mark.asyncio
@@ -327,6 +328,61 @@ async def test_prediction_reward_penalizes_false_pass_collapse(tmp_path: Path) -
         }
     ]
     assert await task.prediction_reward(trace) == pytest.approx(0.0)
+
+
+@pytest.mark.asyncio
+async def test_prediction_reward_penalizes_other_dodge_and_favors_hard_correct(
+    tmp_path: Path,
+) -> None:
+    [task] = _taskset(tmp_path).load()
+    task.config.prediction_reward_weight = 1.0
+    trace = _trace(
+        task,
+        [
+            ("assistant", 'CALL python_test {"id":"c2"}', None),
+            ("tool", "RESULT c2:\nstatus: success", "c2"),
+            ("assistant", "FINAL: done.", None),
+        ],
+    )
+    trace.info["glyph"] = {
+        "arm": "b",
+        "calls": [{"tool": "python_test", "id": "c2", "params": {}}],
+        "final_verification": {"success": True, "outcome": "PASS"},
+        "results": {"c2": {"success": True, "outcome": "PASS"}},
+        "prediction_targets": [
+            {
+                "sampled_prediction": "OTHER",
+                "actual": "ASSERTION_FAILURE",
+                "decision": "REVISE",
+                "shadow": False,
+            }
+        ],
+        "protocol_errors": [],
+    }
+    # Guessing the vague catch-all on a real failure dodges the harder work
+    # of naming the specific failure mode -- penalize it like a PASS dodge.
+    assert await task.prediction_reward(trace) == pytest.approx(-1.0)
+
+    # A correct failure-class call is worth more than a correct PASS call,
+    # since PASS is the cheap majority-class default guess.
+    trace.info["glyph"]["prediction_targets"] = [
+        {
+            "sampled_prediction": "ASSERTION_FAILURE",
+            "actual": "ASSERTION_FAILURE",
+            "decision": "REVISE",
+            "shadow": False,
+        }
+    ]
+    assert await task.prediction_reward(trace) == pytest.approx(2.0)
+    trace.info["glyph"]["prediction_targets"] = [
+        {
+            "sampled_prediction": "PASS",
+            "actual": "PASS",
+            "decision": "KEEP",
+            "shadow": False,
+        }
+    ]
+    assert await task.prediction_reward(trace) == pytest.approx(0.5)
 
 
 @pytest.mark.asyncio

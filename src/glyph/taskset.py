@@ -159,16 +159,27 @@ class GlyphTask(vf.Task[GlyphTaskData, vf.State, GlyphTaskConfig]):
             and bool((results.get(first_test.get("id")) or {}).get("success"))
         )
 
+    #: Correctly calling a real failure class is the hard case -- PASS is
+    #: the majority class and the easy default guess, so a correct PASS call
+    #: is worth much less than correctly naming an actual failure mode.
+    _CORRECT_PASS_SCORE = 0.5
+    _CORRECT_FAILURE_SCORE = 2.0
+
     @staticmethod
     def _prediction_score(item: dict) -> float:
         predicted = item.get("sampled_prediction")
         actual = item.get("actual")
         if predicted == actual:
-            return 1.0
-        if predicted == "PASS" and actual != "PASS":
-            # Predicting PASS on an actual failure costs nothing under plain
-            # accuracy, so it's the cheapest way to dodge the harder failure
-            # classes -- penalize it directly instead of staying neutral.
+            return (
+                GlyphTask._CORRECT_PASS_SCORE
+                if actual == "PASS"
+                else GlyphTask._CORRECT_FAILURE_SCORE
+            )
+        if predicted in ("PASS", "OTHER") and actual != "PASS":
+            # PASS and OTHER are both cheap dodges on a real failure: PASS
+            # costs nothing under plain accuracy, and OTHER lets the model
+            # concede "something's wrong" without doing the harder work of
+            # naming which specific failure mode it is. Penalize either.
             return -1.0
         return 0.0
 

@@ -53,7 +53,7 @@ def test_matched_rl_configs_differ_only_in_arm_and_algorithm() -> None:
     assert arm_b_raw["model"]["name"] == "JayZenith/SFT_ARM_B"
     assert arm_b_raw["orchestrator"]["algo"] == {
         "type": "predict",
-        "alpha": 0.1,
+        "alpha": 0.5,
         "max_aux_tokens": 4096,
     }
     assert arm_a.seq_len == 4096
@@ -108,7 +108,7 @@ def test_patched_prime_rl_schema_accepts_predict_algorithm() -> None:
                 "from prime_rl.configs.rl import RLConfig;"
                 "c=RLConfig.model_validate(tomllib.load(open(sys.argv[1],'rb')));"
                 "assert c.orchestrator.algo.type=='predict';"
-                "assert c.orchestrator.algo.alpha==0.1;"
+                "assert c.orchestrator.algo.alpha==0.5;"
                 "assert c.orchestrator.algo.max_aux_tokens==4096"
             ),
             str(ROOT / "configs/arm_b_rl.toml"),

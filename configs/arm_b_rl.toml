@@ -24,7 +24,7 @@ base_url = ["http://localhost:8001/v1"]
 
 [orchestrator.algo]
 type = "predict"
-alpha = 0.1
+alpha = 0.5
 max_aux_tokens = 4096
 
 [orchestrator.renderer]
