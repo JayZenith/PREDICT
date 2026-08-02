@@ -198,8 +198,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     the model's internal state even with no visible tokens to reason in?)</p>
   <p class="tagline">Arm A, the matched comparator, is the standard loop: patch,
     test, react, trained with plain SFT then RLVR. <i>This is early-stage: the mechanism is built and
-    replicated across seeds. The predictor's calibration turned out to hinge on how CE and RLVR
-    split the work, which is where the project is now.</i></p>
+    replicated across seeds. The first question above now has a real answer &mdash; yes, prediction
+    needs its own direct supervision, because RLVR's policy gradient literally cannot reach a token
+    the model doesn't sample (<a href="#next">below</a>). The second question, whether the gate is
+    only as wise as its predictor, is still open: the predictor isn't calibrated enough yet to test
+    it.</i></p>
 </header>
 
 <div class="callout info" style="margin-top:18px">
@@ -209,11 +212,12 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <b style="color:var(--green)">&#10003;</b> RLVR signal confirmed: both arms beat their own SFT
   baseline, McNemar-confirmed in both seeds.
   <b style="color:var(--green)">&#10003;</b> Mechanism diagnosed: pure on-policy RLVR can't lift a
-  token it never samples; a CE auxiliary loss on the verified label broke that collapse for one
-  rare class (<a href="#next">below</a>).
-  <b style="color:var(--red)">&#10007;</b> Predictor still not fully calibrated: rare-class recall
-  went from 0% to low-single-digits on one class, still 0% on the rarest two. So the finding so far
-  is the pipeline plus a working diagnosis and partial fix, not a calibrated predictor yet.
+  token it never samples; a CE auxiliary loss on the verified label recovers some of what unmasked
+  RLVR loses (<a href="#next">below</a>).
+  <b style="color:var(--red)">&#10007;</b> Predictor still not calibrated: ASSERTION_FAILURE recall
+  is still ~0%, and the CE+RLVR follow-up work is training-diagnostic snapshots so far, not a
+  finished run evaluated at n=500 like the table below. Pipeline plus a working diagnosis, not a
+  calibrated predictor yet.
 </div>
 
 <section class="section" id="architecture">
@@ -687,28 +691,22 @@ patch applied</code></div>
       up &lambda; leans harder on the imitation side; it can't buy the exploratory discovery that
       was missing.</li>
       <li><span class="learned-tag">On-policy RL can't lift a token it never samples</span><b>The
-      real mechanism behind the blind spot, confirmed by unmasking the prediction span for RLVR
-      directly.</b> Plain RLVR on the span, an asymmetric penalty for false-PASS, and a 4&times;
-      group-size bump for more exploration all collapsed identically: the SFT-init policy samples
-      non-PASS predictions so rarely (~5%) that GRPO's policy gradient has almost nothing to credit
-      or blame, regardless of reward shape or sample count. A CE loss straight off the verified
-      label doesn't have this problem, because it doesn't need the token sampled first &mdash;
-      reintroducing it (without masking RL off the span this time) is what finally moved one class's
-      recall off zero.</li>
+      real mechanism behind the blind spot.</b> An SFT-init policy that samples a class ~5% of the
+      time gives GRPO's policy gradient almost nothing to credit or blame, no matter how reward or
+      exploration is tuned; a CE loss on the verified label doesn't have that problem, since it
+      doesn't need the token sampled first. Full experiment log in
+      <a href="#next">follow-up experiments</a> below.</li>
       <li><span class="learned-tag">The label isn't a fixed dataset stat</span><b>&ldquo;Rare
-      outcome&rdquo; can mean two different things, and only one of them is fixable by reward
-      design.</b> <code>actual</code> is whatever happens when the model's own generated code gets
-      executed, not a static class balance in a training file. RUNTIME_ERROR responded to heavier
-      CE/reward weighting; SYNTAX_ERROR and TIMEOUT didn't, most likely because a reasonably
-      competent policy just doesn't write code that's syntactically broken or hangs very often. No
-      reward multiplier manufactures an occurrence that doesn't happen &mdash; that's a ceiling on
-      the signal itself, not a mis-tuned weight.</li>
+      outcome&rdquo; can mean two different things, and only one is fixable by reward design.</b>
+      <code>actual</code> is whatever happens when the model's own generated code gets executed, not
+      a static class balance in a training file &mdash; so no reward or CE weight can manufacture an
+      occurrence that doesn't happen. Details in <a href="#next">follow-up experiments</a> below.</li>
     </ol>
   </div>
 </section>
 
 <section class="section" id="next">
-  <p class="section-kicker">Where to go next</p>
+  <p class="section-kicker">Follow-up experiments</p>
   <h2 class="section-title">Pure RLVR can't lift a token it never samples; CE can</h2>
   <p class="section-lede">Follow-up runs since the table above converged on one mechanism: GRPO's
     policy gradient only reaches tokens a rollout actually sampled. An SFT-init policy that
@@ -722,24 +720,28 @@ patch applied</code></div>
       <p>Tried three variants, all from the same SFT init: plain RLVR on the span, an asymmetric
       penalty for false-PASS-on-a-failure, and a 4&times; group-size bump (16&rarr;64) for more
       exploration density. All three collapsed to the same place &mdash; always predict PASS,
-      always decide KEEP &mdash; with rare-class recall flat at 0.0% from step 1 in every run.
-      Reward shape and sample count don't matter if the token is never sampled to begin with.</p>
+      always decide KEEP &mdash; with rare-class recall flat at 0.0% from step 1 in every run,
+      including RUNTIME_ERROR, which had been at 63% recall under the original masked-CE design
+      above. Reward shape and sample count don't matter if the token is never sampled to begin
+      with.</p>
     </div>
     <div class="next-card">
       <div class="next-num" style="color:#39ff14">confirmed, partial</div>
       <div class="next-title">CE + RLVR hybrid</div>
       <p>Reintroducing a verified-label CE auxiliary sample &mdash; without masking the sampled
-      span from RL, so both losses land on the same tokens &mdash; broke a class out of its
-      flat-zero collapse for the first time: RUNTIME_ERROR recall went from 0.0% to consistently
-      nonzero (~2&ndash;4%) across a real run. SYNTAX_ERROR and TIMEOUT stayed at zero.</p>
+      span from RL, so both losses land on the same tokens &mdash; partially undid damage the
+      unmasking itself caused, more than it broke new ground: RUNTIME_ERROR recall was 63% under
+      the original masked-CE design above, collapsed to 0.0% once RLVR touched the span directly
+      (the row above), then recovered to consistently nonzero (~2&ndash;4%) with the hybrid &mdash;
+      still well short of 63%. SYNTAX_ERROR and TIMEOUT stayed at zero throughout.</p>
     </div>
     <div class="next-card">
       <div class="next-num" style="color:#f5e400">in progress</div>
-      <div class="next-title">Rarity-weighted reward and CE alpha</div>
-      <p>Scaled both the RL reward and the CE weight by measured class rarity (ASSERTION_FAILURE
-      common, RUNTIME_ERROR rarer, SYNTAX_ERROR/TIMEOUT rarer still) instead of one flat bonus.
-      Early read: doesn't obviously beat the flat version yet within the steps checked so far
-      &mdash; open question below.</p>
+      <div class="next-title">Rarity-weighted reward and CE weight</div>
+      <p>Scaled both the RL reward and the CE weight (&lambda;) by measured class rarity
+      (ASSERTION_FAILURE common, RUNTIME_ERROR rarer, SYNTAX_ERROR/TIMEOUT rarer still) instead of
+      one flat bonus. Early read: doesn't obviously beat the flat version yet within the steps
+      checked so far &mdash; open question below.</p>
     </div>
     <div class="next-card">
       <div class="next-num" style="color:#4d9fff">open question</div>
