@@ -159,6 +159,19 @@ class GlyphTask(vf.Task[GlyphTaskData, vf.State, GlyphTaskConfig]):
             and bool((results.get(first_test.get("id")) or {}).get("success"))
         )
 
+    @staticmethod
+    def _prediction_score(item: dict) -> float:
+        predicted = item.get("sampled_prediction")
+        actual = item.get("actual")
+        if predicted == actual:
+            return 1.0
+        if predicted == "PASS" and actual != "PASS":
+            # Predicting PASS on an actual failure costs nothing under plain
+            # accuracy, so it's the cheapest way to dodge the harder failure
+            # classes -- penalize it directly instead of staying neutral.
+            return -1.0
+        return 0.0
+
     @vf.reward(weight=1.0)
     async def prediction_reward(self, trace: vf.Trace) -> float:
         if not self.config.prediction_reward_weight:
@@ -166,11 +179,8 @@ class GlyphTask(vf.Task[GlyphTaskData, vf.State, GlyphTaskConfig]):
         _, _, predictions = self._state(trace)
         if not predictions:
             return 0.0
-        accuracy = sum(
-            item.get("sampled_prediction") == item.get("actual")
-            for item in predictions
-        ) / len(predictions)
-        return self.config.prediction_reward_weight * accuracy
+        score = sum(self._prediction_score(item) for item in predictions) / len(predictions)
+        return self.config.prediction_reward_weight * score
 
     @vf.metric
     async def prediction_accuracy(self, trace: vf.Trace) -> float:

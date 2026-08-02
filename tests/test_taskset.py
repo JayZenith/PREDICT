@@ -277,7 +277,56 @@ async def test_prediction_reward_is_gated_by_config_weight(tmp_path: Path) -> No
         ],
         "protocol_errors": [],
     }
-    assert await task.prediction_reward(trace) == pytest.approx(0.1)
+    # One correct prediction (+1) and one false-PASS-on-a-failure (-1) net to zero.
+    assert await task.prediction_reward(trace) == pytest.approx(0.0)
+
+
+@pytest.mark.asyncio
+async def test_prediction_reward_penalizes_false_pass_collapse(tmp_path: Path) -> None:
+    [task] = _taskset(tmp_path).load()
+    task.config.prediction_reward_weight = 0.5
+    trace = _trace(
+        task,
+        [
+            ("assistant", 'CALL python_test {"id":"c2"}', None),
+            ("tool", "RESULT c2:\nstatus: success", "c2"),
+            ("assistant", "FINAL: done.", None),
+        ],
+    )
+    trace.info["glyph"] = {
+        "arm": "b",
+        "calls": [{"tool": "python_test", "id": "c2", "params": {}}],
+        "final_verification": {"success": True, "outcome": "PASS"},
+        "results": {"c2": {"success": True, "outcome": "PASS"}},
+        "prediction_targets": [
+            {
+                "sampled_prediction": "PASS",
+                "actual": "ASSERTION_FAILURE",
+                "decision": "KEEP",
+                "shadow": False,
+            },
+            {
+                "sampled_prediction": "PASS",
+                "actual": "RUNTIME_ERROR",
+                "decision": "KEEP",
+                "shadow": False,
+            },
+        ],
+        "protocol_errors": [],
+    }
+    # Always guessing PASS on real failures nets a negative reward, not a
+    # neutral one -- guards against collapsing to "always PASS, always KEEP".
+    assert await task.prediction_reward(trace) == pytest.approx(-0.5)
+    # An honest miss on a non-PASS guess stays neutral, not penalized.
+    trace.info["glyph"]["prediction_targets"] = [
+        {
+            "sampled_prediction": "RUNTIME_ERROR",
+            "actual": "ASSERTION_FAILURE",
+            "decision": "REVISE",
+            "shadow": True,
+        }
+    ]
+    assert await task.prediction_reward(trace) == pytest.approx(0.0)
 
 
 @pytest.mark.asyncio
