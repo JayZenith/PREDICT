@@ -161,20 +161,27 @@ class GlyphTask(vf.Task[GlyphTaskData, vf.State, GlyphTaskConfig]):
 
     #: Correctly calling a real failure class is the hard case -- PASS is
     #: the majority class and the easy default guess, so a correct PASS call
-    #: is worth much less than correctly naming an actual failure mode.
-    _CORRECT_PASS_SCORE = 0.5
-    _CORRECT_FAILURE_SCORE = 2.0
+    #: is worth much less than correctly naming an actual failure mode. Among
+    #: failure classes, ASSERTION_FAILURE dominates the training distribution
+    #: (candidates that run but produce a wrong answer), so RUNTIME_ERROR and
+    #: SYNTAX_ERROR see far fewer positive examples per pass over the data --
+    #: weight them higher so they get compensating gradient/reward density
+    #: rather than lagging just because they're rarer.
+    _CORRECT_SCORE_BY_CLASS = {
+        "PASS": 0.5,
+        "ASSERTION_FAILURE": 1.5,
+        "OTHER": 2.0,
+        "RUNTIME_ERROR": 3.0,
+        "SYNTAX_ERROR": 3.0,
+        "TIMEOUT": 3.0,
+    }
 
     @staticmethod
     def _prediction_score(item: dict) -> float:
         predicted = item.get("sampled_prediction")
         actual = item.get("actual")
         if predicted == actual:
-            return (
-                GlyphTask._CORRECT_PASS_SCORE
-                if actual == "PASS"
-                else GlyphTask._CORRECT_FAILURE_SCORE
-            )
+            return GlyphTask._CORRECT_SCORE_BY_CLASS.get(actual, 2.0)
         if predicted in ("PASS", "OTHER") and actual != "PASS":
             # PASS and OTHER are both cheap dodges on a real failure: PASS
             # costs nothing under plain accuracy, and OTHER lets the model

@@ -277,9 +277,9 @@ async def test_prediction_reward_is_gated_by_config_weight(tmp_path: Path) -> No
         ],
         "protocol_errors": [],
     }
-    # One correct failure-class prediction (+2, the harder case) and one
-    # false-PASS-on-a-failure (-1) average to +0.5, scaled by weight 0.2.
-    assert await task.prediction_reward(trace) == pytest.approx(0.2 * 0.5)
+    # One correct ASSERTION_FAILURE call (+1.5) and one false-PASS-on-a-failure
+    # (-1) average to +0.25, scaled by weight 0.2.
+    assert await task.prediction_reward(trace) == pytest.approx(0.2 * 0.25)
 
 
 @pytest.mark.asyncio
@@ -364,7 +364,10 @@ async def test_prediction_reward_penalizes_other_dodge_and_favors_hard_correct(
     assert await task.prediction_reward(trace) == pytest.approx(-1.0)
 
     # A correct failure-class call is worth more than a correct PASS call,
-    # since PASS is the cheap majority-class default guess.
+    # since PASS is the cheap majority-class default guess -- and among
+    # failure classes, the rarer ones (RUNTIME_ERROR/SYNTAX_ERROR) are worth
+    # more than the dominant ASSERTION_FAILURE class, to compensate for
+    # seeing far fewer positive examples of them per pass over the data.
     trace.info["glyph"]["prediction_targets"] = [
         {
             "sampled_prediction": "ASSERTION_FAILURE",
@@ -373,7 +376,25 @@ async def test_prediction_reward_penalizes_other_dodge_and_favors_hard_correct(
             "shadow": False,
         }
     ]
-    assert await task.prediction_reward(trace) == pytest.approx(2.0)
+    assert await task.prediction_reward(trace) == pytest.approx(1.5)
+    trace.info["glyph"]["prediction_targets"] = [
+        {
+            "sampled_prediction": "RUNTIME_ERROR",
+            "actual": "RUNTIME_ERROR",
+            "decision": "REVISE",
+            "shadow": False,
+        }
+    ]
+    assert await task.prediction_reward(trace) == pytest.approx(3.0)
+    trace.info["glyph"]["prediction_targets"] = [
+        {
+            "sampled_prediction": "SYNTAX_ERROR",
+            "actual": "SYNTAX_ERROR",
+            "decision": "REVISE",
+            "shadow": False,
+        }
+    ]
+    assert await task.prediction_reward(trace) == pytest.approx(3.0)
     trace.info["glyph"]["prediction_targets"] = [
         {
             "sampled_prediction": "PASS",
