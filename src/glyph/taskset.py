@@ -45,6 +45,7 @@ class GlyphTaskData(vf.TaskData):
 
 class GlyphTaskConfig(vf.TaskConfig):
     max_trace_tokens: int = 4096
+    prediction_reward_weight: float = 0.0
 
 
 def _archive_blueprint(source: Path, trace_prefix: str) -> bytes:
@@ -157,6 +158,19 @@ class GlyphTask(vf.Task[GlyphTaskData, vf.State, GlyphTaskConfig]):
             bool(first_test)
             and bool((results.get(first_test.get("id")) or {}).get("success"))
         )
+
+    @vf.reward(weight=1.0)
+    async def prediction_reward(self, trace: vf.Trace) -> float:
+        if not self.config.prediction_reward_weight:
+            return 0.0
+        _, _, predictions = self._state(trace)
+        if not predictions:
+            return 0.0
+        accuracy = sum(
+            item.get("sampled_prediction") == item.get("actual")
+            for item in predictions
+        ) / len(predictions)
+        return self.config.prediction_reward_weight * accuracy
 
     @vf.metric
     async def prediction_accuracy(self, trace: vf.Trace) -> float:

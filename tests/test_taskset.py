@@ -241,6 +241,43 @@ async def test_prediction_metrics_use_shadow_execution_records(
     assert await task.unnecessary_rejection_rate(trace) == 0.0
     assert await task.visible_test_calls(trace) == 1.0
     assert await task.mbpp_reward(trace) == 1.0
+    assert await task.prediction_reward(trace) == 0.0
+
+
+@pytest.mark.asyncio
+async def test_prediction_reward_is_gated_by_config_weight(tmp_path: Path) -> None:
+    [task] = _taskset(tmp_path).load()
+    task.config.prediction_reward_weight = 0.2
+    trace = _trace(
+        task,
+        [
+            ("assistant", 'CALL python_test {"id":"c2"}', None),
+            ("tool", "RESULT c2:\nstatus: success", "c2"),
+            ("assistant", "FINAL: done.", None),
+        ],
+    )
+    trace.info["glyph"] = {
+        "arm": "b",
+        "calls": [{"tool": "python_test", "id": "c2", "params": {}}],
+        "final_verification": {"success": True, "outcome": "PASS"},
+        "results": {"c2": {"success": True, "outcome": "PASS"}},
+        "prediction_targets": [
+            {
+                "sampled_prediction": "ASSERTION_FAILURE",
+                "actual": "ASSERTION_FAILURE",
+                "decision": "REVISE",
+                "shadow": True,
+            },
+            {
+                "sampled_prediction": "PASS",
+                "actual": "TEST_FAILURE",
+                "decision": "KEEP",
+                "shadow": False,
+            },
+        ],
+        "protocol_errors": [],
+    }
+    assert await task.prediction_reward(trace) == pytest.approx(0.1)
 
 
 @pytest.mark.asyncio
