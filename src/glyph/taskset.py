@@ -163,17 +163,18 @@ class GlyphTask(vf.Task[GlyphTaskData, vf.State, GlyphTaskConfig]):
     #: the majority class and the easy default guess, so a correct PASS call
     #: is worth much less than correctly naming an actual failure mode. Among
     #: failure classes, ASSERTION_FAILURE dominates the training distribution
-    #: (candidates that run but produce a wrong answer), so RUNTIME_ERROR and
-    #: SYNTAX_ERROR see far fewer positive examples per pass over the data --
-    #: weight them higher so they get compensating gradient/reward density
-    #: rather than lagging just because they're rarer.
+    #: (candidates that run but produce a wrong answer). Measured over a real
+    #: run: ASSERTION_FAILURE ~58% of verified labels, RUNTIME_ERROR ~11%,
+    #: SYNTAX_ERROR ~1.4%, TIMEOUT effectively unseen -- so SYNTAX_ERROR and
+    #: TIMEOUT need noticeably more reward than RUNTIME_ERROR, not the same
+    #: flat "rare" bucket.
     _CORRECT_SCORE_BY_CLASS = {
         "PASS": 0.5,
         "ASSERTION_FAILURE": 1.5,
-        "OTHER": 2.0,
-        "RUNTIME_ERROR": 3.0,
-        "SYNTAX_ERROR": 3.0,
-        "TIMEOUT": 3.0,
+        "OTHER": 2.5,
+        "RUNTIME_ERROR": 4.0,
+        "SYNTAX_ERROR": 6.0,
+        "TIMEOUT": 8.0,
     }
 
     @staticmethod

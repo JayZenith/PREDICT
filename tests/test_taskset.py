@@ -365,9 +365,9 @@ async def test_prediction_reward_penalizes_other_dodge_and_favors_hard_correct(
 
     # A correct failure-class call is worth more than a correct PASS call,
     # since PASS is the cheap majority-class default guess -- and among
-    # failure classes, the rarer ones (RUNTIME_ERROR/SYNTAX_ERROR) are worth
-    # more than the dominant ASSERTION_FAILURE class, to compensate for
-    # seeing far fewer positive examples of them per pass over the data.
+    # failure classes, the rarer ones are worth progressively more than the
+    # dominant ASSERTION_FAILURE class: SYNTAX_ERROR is rarer than
+    # RUNTIME_ERROR, so it scores higher still, not the same flat bucket.
     trace.info["glyph"]["prediction_targets"] = [
         {
             "sampled_prediction": "ASSERTION_FAILURE",
@@ -385,7 +385,7 @@ async def test_prediction_reward_penalizes_other_dodge_and_favors_hard_correct(
             "shadow": False,
         }
     ]
-    assert await task.prediction_reward(trace) == pytest.approx(3.0)
+    assert await task.prediction_reward(trace) == pytest.approx(4.0)
     trace.info["glyph"]["prediction_targets"] = [
         {
             "sampled_prediction": "SYNTAX_ERROR",
@@ -394,7 +394,7 @@ async def test_prediction_reward_penalizes_other_dodge_and_favors_hard_correct(
             "shadow": False,
         }
     ]
-    assert await task.prediction_reward(trace) == pytest.approx(3.0)
+    assert await task.prediction_reward(trace) == pytest.approx(6.0)
     trace.info["glyph"]["prediction_targets"] = [
         {
             "sampled_prediction": "PASS",

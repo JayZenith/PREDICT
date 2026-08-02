@@ -5,6 +5,8 @@ import types
 from dataclasses import dataclass
 from types import SimpleNamespace
 
+import pytest
+
 
 @dataclass
 class _TrainingSample:
@@ -150,8 +152,11 @@ def test_predict_algorithm_amplifies_alpha_for_rare_failure_classes(
 
     # ASSERTION_FAILURE is the dominant failure class -- no amplification.
     assert ce_weight_for("ASSERTION_FAILURE") == 0.25
-    # RUNTIME_ERROR/SYNTAX_ERROR show up far less often as a verified label,
-    # so each occurrence needs to pull harder to get comparable gradient mass.
-    assert ce_weight_for("RUNTIME_ERROR") == 0.5
-    assert ce_weight_for("SYNTAX_ERROR") == 0.5
+    # RUNTIME_ERROR/SYNTAX_ERROR/TIMEOUT show up far less often as a verified
+    # label, so each occurrence needs to pull harder -- and SYNTAX_ERROR is
+    # rarer than RUNTIME_ERROR, so it gets amplified more, not the same flat
+    # "rare" multiplier.
+    assert ce_weight_for("RUNTIME_ERROR") == pytest.approx(1.0)
+    assert ce_weight_for("SYNTAX_ERROR") == pytest.approx(1.5)
+    assert ce_weight_for("TIMEOUT") == pytest.approx(2.0)
     sys.modules.pop("glyph.prime_rl", None)
