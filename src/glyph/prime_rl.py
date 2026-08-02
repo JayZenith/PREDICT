@@ -20,6 +20,22 @@ from prime_rl.transport import TrainingSample
 
 from .program import OUTCOME_CLASSES
 
+#: ASSERTION_FAILURE dominates the failure distribution (candidates that run
+#: but return the wrong answer), so RUNTIME_ERROR/SYNTAX_ERROR/TIMEOUT show up
+#: far less often as a verified label -- the auxiliary CE sample only fires
+#: when one appears in a rollout, so rarer classes get proportionally fewer
+#: gradient updates no matter how correct-answer reward is shaped. Multiply
+#: alpha up for those classes so each occurrence pulls harder, compensating
+#: for how rarely they occur at all.
+_ALPHA_MULTIPLIER_BY_CLASS = {
+    "PASS": 1.0,
+    "ASSERTION_FAILURE": 1.0,
+    "OTHER": 1.5,
+    "RUNTIME_ERROR": 2.0,
+    "SYNTAX_ERROR": 2.0,
+    "TIMEOUT": 2.0,
+}
+
 
 def _encoding(tokenizer: Any, text: str) -> tuple[list[int], list[tuple[int, int]]]:
     encoded = tokenizer(
@@ -72,8 +88,9 @@ class PredictAlgorithm(GRPOAlgorithm):
                 f"PREDICT auxiliary sample has {len(token_ids)} tokens; "
                 f"limit is {self.max_aux_tokens}"
             )
+        class_alpha = self.alpha * _ALPHA_MULTIPLIER_BY_CLASS.get(actual, 1.0)
         ce_weights = [0.0] * len(prefix_ids) + [
-            self.alpha if selected else 0.0 for selected in label_mask
+            class_alpha if selected else 0.0 for selected in label_mask
         ]
         return TrainingSample(
             token_ids=token_ids,

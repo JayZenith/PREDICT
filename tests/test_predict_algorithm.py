@@ -106,3 +106,52 @@ def test_predict_algorithm_adds_verified_label_ce_without_masking_sampled_span(
     assert set(weight for weight in auxiliary.ce_weights if weight) == {0.25}
     assert auxiliary.rl_weights == [0.0] * len(auxiliary.token_ids)
     sys.modules.pop("glyph.prime_rl", None)
+
+
+def test_predict_algorithm_amplifies_alpha_for_rare_failure_classes(
+    monkeypatch,
+) -> None:
+    class GRPOAlgorithm:
+        action_loss_type = "rl"
+
+        def __init__(self, config, policy_pool):
+            self.policy_pool = policy_pool
+            self.policy_renderer = None
+            self.policy_tokenizer = None
+
+    grpo = types.ModuleType("prime_rl.orchestrator.algo.grpo")
+    grpo.GRPOAlgorithm = GRPOAlgorithm
+    transport = types.ModuleType("prime_rl.transport")
+    transport.TrainingSample = _TrainingSample
+    monkeypatch.setitem(sys.modules, "prime_rl.orchestrator.algo.grpo", grpo)
+    monkeypatch.setitem(sys.modules, "prime_rl.transport", transport)
+    sys.modules.pop("glyph.prime_rl", None)
+    module = importlib.import_module("glyph.prime_rl")
+
+    algorithm = module.PredictAlgorithm(
+        SimpleNamespace(alpha=0.25, max_aux_tokens=256),
+        None,
+    )
+    algorithm.policy_tokenizer = _Tokenizer()
+    algorithm.policy_renderer = _Renderer()
+
+    def ce_weight_for(actual: str) -> float:
+        rollout = SimpleNamespace(env_name="arm-b")
+        sample = algorithm._auxiliary_sample(
+            rollout,
+            {
+                "context_messages": [
+                    {"role": "user", "content": "problem and candidate"}
+                ],
+                "actual": actual,
+            },
+        )
+        return max(sample.ce_weights)
+
+    # ASSERTION_FAILURE is the dominant failure class -- no amplification.
+    assert ce_weight_for("ASSERTION_FAILURE") == 0.25
+    # RUNTIME_ERROR/SYNTAX_ERROR show up far less often as a verified label,
+    # so each occurrence needs to pull harder to get comparable gradient mass.
+    assert ce_weight_for("RUNTIME_ERROR") == 0.5
+    assert ce_weight_for("SYNTAX_ERROR") == 0.5
+    sys.modules.pop("glyph.prime_rl", None)
