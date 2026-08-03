@@ -312,8 +312,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <path d="M210,264 L245,340" stroke="#93a897" stroke-width="1.6" marker-end="url(#arrow2)" fill="none"/>
 <path d="M115,390 L150,430" stroke="#93a897" stroke-width="1.6" marker-end="url(#arrow2)" fill="none"/>
 <path d="M300,365 C 350,365 350,155 302,155" stroke="#93a897" stroke-width="1.6" marker-end="url(#arrow2)" fill="none"/>
-<text x="378" y="252" text-anchor="middle" class="diagram-edge">revise &amp;</text>
-<text x="378" y="268" text-anchor="middle" class="diagram-edge">retest</text>
+<text x="378" y="252" text-anchor="middle" class="diagram-edge">recovery loop:</text>
+<text x="378" y="268" text-anchor="middle" class="diagram-edge">fix &amp; retest</text>
 
 <rect x="540" y="46" width="240" height="50" rx="7" fill="#080d09" stroke="#39ff14" stroke-width="1.6"/><text x="660" y="76" text-anchor="middle" class="diagram-title" fill="#39ff14">read_file</text>
 <rect x="540" y="130" width="240" height="50" rx="7" fill="#080d09" stroke="#39ff14" stroke-width="1.6"/><text x="660" y="160" text-anchor="middle" class="diagram-title" fill="#39ff14">apply_patch</text>
@@ -331,10 +331,18 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <path d="M725,372 L725,406" stroke="#93a897" stroke-width="1.6" marker-end="url(#arrow2)" fill="none"/>
 <path d="M595,464 L630,520" stroke="#93a897" stroke-width="1.6" marker-end="url(#arrow2)" fill="none"/>
 <path d="M780,435 C 838,435 838,155 782,155" stroke="#93a897" stroke-width="1.6" marker-end="url(#arrow2)" fill="none" stroke-dasharray="5 4"/>
-<text x="856" y="295" text-anchor="middle" class="diagram-edge" transform="rotate(90 856 295)">apply_patch again</text>
+<text x="856" y="295" text-anchor="middle" class="diagram-edge" transform="rotate(90 856 295)">shadow recovery: caught before the real test ran</text>
 <path d="M540,435 C 482,435 482,155 538,155" stroke="#ef4444" stroke-width="1.6" marker-end="url(#arrowR)" fill="none" stroke-dasharray="5 4" opacity="0.9"/>
-<text x="464" y="295" text-anchor="middle" class="diagram-edge" fill="#ef4444" transform="rotate(90 464 295)">test still fails &rarr; apply_patch</text>
+<text x="464" y="295" text-anchor="middle" class="diagram-edge" fill="#ef4444" transform="rotate(90 464 295)">visible recovery: the prediction was wrong</text>
 </svg></div>
+  <p class="chart-caption">Both arms recover from a failed test; they differ in <i>when</i> the
+    decision to recover gets made. Arm A has one recovery path: run the real test, see it fail,
+    patch again. Arm B has two &mdash; the <b>visible</b> one (predicted PASS, kept, and the real
+    test caught it) and the <b>shadow</b> one (predicted a failure, revised before the real test
+    ever ran). Only the shadow path uses the predictor. The SFT curriculum teaches both deliberately,
+    in equal share. On the held-out set both arms do recover, on 12&ndash;17% of the rollouts whose
+    first test failed &mdash; and a hundred steps of RLVR moved that number in neither arm
+    (<a href="#diagnosis">diagnosis</a>).</p>
 
   <div class="callout info mt-lg">
     <div class="callout-label">Scope</div>
