@@ -246,8 +246,10 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     </div>
     <div class="next-card">
       <div class="next-title">The pipeline still had to be built from scratch</div>
-      <p>That prior result is single-turn code generation with LoRA on 0.6B&ndash;1B models. PREDICT
-      is a multi-turn tool-using agent on Qwen3-4B-Base, so almost none of it transfers. The SFT
+      <p>What transferred was the finding itself &mdash; that MBPP carries a real RLVR signal at
+      small scale &mdash; which is exactly what made it a usable substrate. The implementation
+      didn't: that prior result is single-turn code generation with LoRA on 0.6B&ndash;1B models,
+      while PREDICT is a multi-turn tool-using agent on Qwen3-4B-Base. The SFT
       behavior structure is hand-designed here: direct-solution traces, two-step recovery traces,
       prediction labels, and the KEEP/REVISE decision paths &mdash; plus the environment, the
       auxiliary-loss wiring, and a complete SFT&rarr;RL pipeline around them.</p>
@@ -272,10 +274,10 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
   <div class="callout info mt-md">
     <div class="callout-label">What follows from that</div>
-    Every limitation on this page &mdash; the uncalibrated predictor, the unconfirmed between-arm
-    comparison, the training-diagnostic follow-ups &mdash; is a consequence of that budget rather
-    than a discovery about it. The findings that survive those limits are the mechanism and the
-    failure diagnosis, and those are what the rest of this page is about.
+    The uncalibrated predictor, the unconfirmed between-arm comparison, the training-diagnostic
+    follow-ups: the budget constrained how decisively these limitations could be resolved; the
+    findings that remain well-supported are the implemented mechanism, the replicated within-arm
+    RLVR gains, and the failure diagnosis.
   </div>
 </section>
 
