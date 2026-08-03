@@ -447,9 +447,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     the time, KEEP follows a PASS prediction 96.4% of the time (seed 42) / 99.4% of the time (seed 43).
     That's not the problem. The problem is <b>discrimination</b>: telling, from the candidate code alone,
     before it ever runs, whether it will pass, crash (<code style="color:#f5e400">RUNTIME_ERROR</code>),
-    or run fine but fail the assertion (<code style="color:#ef4444">ASSERTION_FAILURE</code>), the
-    harder case, since it requires simulating the candidate's logic against the test, not just
-    spotting a surface-level crash pattern. Measured by outcome class, RL step 100, seed 42:</p>
+    or run fine but fail the assertion (<code style="color:#ef4444">ASSERTION_FAILURE</code>), a
+    harder case in principle, since it requires simulating the candidate's logic against the test,
+    not just spotting a surface-level crash pattern. That's a plausible reason the model might
+    struggle here; it isn't the reason the struggle never improved &mdash; the sections below trace
+    that to training dynamics, not task difficulty. Measured by outcome class, RL step 100, seed 42:</p>
 
   <span class="block-label">Prediction recall by outcome class</span>
   <div class="chart-wrap"><svg viewBox="0 0 620 220" class="chart-svg" role="img" aria-label="bar chart">
@@ -486,17 +488,18 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     them &mdash; the follow-ups below test what happens once that mask comes off.
   </div>
 
-  <p class="section-lede mt-md"><span class="block-label">Root cause: reward never split the curriculum's two paths</span>The recovery
+  <p class="section-lede mt-md"><span class="block-label">A contributing factor: reward never split the curriculum's two paths</span>The recovery
     curriculum was deliberately symmetric: half of Arm B's recovery traces teach the visible path
     (predict PASS on a buggy candidate, an honest mistake the real test catches, then fix), half
     teach the shadow path (correctly predict the failure, REVISE, then fix), built that way so RL
     would sample both recovery modes and improve both. RL did sample both: ASSERTION_FAILURE is a
     third to half of every step's real outcomes. But reward pays the two paths identically, so the
     policy collapsed onto the easier one, always guess PASS, and the shadow skill decayed. Not
-    reward hacking; indifference. That framing turned out to be half the story: the
-    <a href="#next">follow-ups below</a> found that letting RLVR train the prediction span directly
-    (instead of masking it for CE alone) doesn't fix this on its own either &mdash; it collapses the
-    same way, for a sharper reason than indifferent reward.</p>
+    reward hacking; indifference. That's still only a contributing factor, not the deepest one: the
+    <a href="#next">follow-ups below</a> found the actual mechanism underneath it &mdash; on-policy
+    RLVR can't lift a token it never samples, so no reward shape fixes this until CE gives it a
+    path that doesn't depend on sampling first. Task difficulty (above) explains why the miss was
+    plausible; this is why it never corrected itself.</p>
 
   <p class="section-lede mt-lg"><span class="block-label">Training dynamics</span>Real training dynamics, seed 42, both arms overlaid: reward from
     the orchestrator's per-step train-batch logs, entropy and loss from the trainer's per-step logs,
