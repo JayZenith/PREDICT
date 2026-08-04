@@ -206,30 +206,23 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
   <div class="grid-2">
     <div class="next-card">
-      <div class="next-title">MBPP, because the signal was already known</div>
-      <p>Prior work showed small-model RLVR produces measurable gains on MBPP
-      (<a href="https://arxiv.org/abs/2605.30478">Skopin &amp; Kotelnikov</a>), so the base RL setup
-      didn't need validating first and the budget could go to the new part. MBPP is ~1,000 short
-      Python problems with gold test assertions
-      (<a href="https://arxiv.org/abs/2108.07732">Austin et al.</a>, 2021).</p>
-    </div>
-    <div class="next-card">
       <div class="next-title">The pipeline was built from scratch</div>
-      <p>That prior result is single-turn generation with LoRA on 0.6B&ndash;1B models. PREDICT is
-      a multi-turn tool-using agent on Qwen3-4B-Base: hand-designed SFT traces (direct-solution,
-      two-step recovery, prediction labels, KEEP/REVISE paths), the environment, the auxiliary-loss
-      wiring, and the full SFT&rarr;RL pipeline.</p>
+      <p>MBPP is ~1,000 short Python problems with gold test assertions
+      (<a href="https://arxiv.org/abs/2108.07732">Austin et al.</a>, 2021), picked because prior
+      work already showed small-model RLVR produces measurable gains on it
+      (<a href="https://arxiv.org/abs/2605.30478">Skopin &amp; Kotelnikov</a>). That prior result is
+      single-turn generation with LoRA on 0.6B&ndash;1B models. PREDICT is a multi-turn tool-using
+      agent on Qwen3-4B-Base: hand-designed SFT traces (direct-solution, two-step recovery,
+      prediction labels, KEEP/REVISE paths), the environment, the auxiliary-loss wiring, and the
+      full SFT&rarr;RL pipeline.</p>
     </div>
     <div class="next-card">
       <div class="next-title">424 problems, split deliberately</div>
-      <p>The RL stage never trains on a problem SFT already saw, and the test set was scored
-      exactly once, after every design decision was frozen. Small n, so every number here has wide
-      error bars.</p>
-    </div>
-    <div class="next-card">
-      <div class="next-title">What 212 examples per arm buys</div>
-      <p>Enough to install a protocol: emit the tags, honor the gate, keep the loop coherent. Not
-      enough to calibrate a world model over 6 outcome classes.</p>
+      <p>Split 212 SFT / 212 RL, plus 40 validation and 500 test scored exactly once, after every
+      design decision was frozen. The RL stage never trains on a problem SFT already saw. 212
+      traces per arm is enough to install a protocol &mdash; emit the tags, honor the gate, keep
+      the loop coherent &mdash; and not enough to teach it to tell 6 outcome classes apart. Small
+      n, so every number here has wide error bars.</p>
     </div>
   </div>
 
