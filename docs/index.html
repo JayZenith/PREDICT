@@ -192,15 +192,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     predictor collapsed anyway. It called PASS on 79% of candidates while only 30% of them actually
     passed, and never once correctly called ASSERTION_FAILURE &mdash; the single most common
     outcome, at 50%. Not for lack of exposure: its own patches failed roughly 70% of the time.</p>
-  <p class="tagline"><b style="color:#39ff14">Why:</b> reward doesn't just ignore the prediction,
-    it pushes against it. GRPO upweights tokens from rollouts that succeeded, and those are
-    disproportionately ones where PASS was the right call &mdash; so it reinforces PASS whether or
-    not the prediction earned it. Training CE and RL on the same span points straight at this: with
-    five times the CE weight, PASS predictions still sat at 95.5%, against 73% when the span was
-    masked from RL. And once the policy stops sampling a class, on-policy RL has nothing left to
-    credit or blame. CE on the verified label is the one thing that moves it, because it doesn't
-    need the token sampled first. <i>In progress: the fix is partial, the two runs differ in more
-    than the mask, and no checkpoint shows a confirmed Arm A vs. Arm B difference.</i></p>
+  <p class="tagline"><b style="color:#39ff14">Why:</b> reward doesn't ignore the prediction, it
+    fights it. GRPO reinforces tokens from rollouts that succeeded, and those are mostly ones where
+    PASS was right &mdash; so PASS gets upweighted whether the prediction earned it or not. With
+    five times the CE weight it still sat at 95.5%; masked from RL, 73%. CE is the only thing that
+    moves it. <i>In progress: partial fix, no confirmed Arm A vs. Arm B difference.</i></p>
 </header>
 
 <section class="section" id="setup">
