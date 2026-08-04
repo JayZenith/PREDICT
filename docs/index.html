@@ -190,14 +190,18 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     trains the prediction directly. The matched comparator is test-and-recover (Arm A): patch, test, react. Same SFT-then-RLVR
     recipe for both.</p>
   <p class="tagline"><b style="color:#39ff14">What happened:</b> RLVR beat SFT for both agents. The
-    predictor collapsed anyway. It called PASS on 79% of candidates while only 30% of them actually
-    passed, and never once correctly called ASSERTION_FAILURE &mdash; the single most common
-    outcome, at 50%. Not for lack of exposure: its own patches failed roughly 70% of the time.</p>
-  <p class="tagline"><b style="color:#39ff14">Why:</b> the reward never scores the prediction. It
-    grades one thing &mdash; whether the final test passes. So the prediction span gets a gradient
-    from GRPO but no signal about whether the call was right, and the only thing training it is the
-    CE loss on the verified label, at weight 0.1, against outcomes that are 50% ASSERTION_FAILURE
-    and 30% PASS. That wasn't enough. <i>Neither agent is confirmed better than the other.</i></p>
+    predictor was already dead before RL started &mdash; the SFT checkpoint called PASS on
+    <b>100%</b> of eval candidates, when PASS was the true outcome 20% of the time. RLVR plus CE
+    partially revived it: RUNTIME_ERROR went from never predicted to 16% of predictions at 63%
+    recall, and prediction accuracy rose 44.7% &rarr; 53.2% in both seeds. ASSERTION_FAILURE, the
+    true outcome 57&ndash;61% of the time, was never once predicted correctly at any checkpoint.</p>
+  <p class="tagline"><b style="color:#39ff14">Why:</b> the reward never scores the prediction. GRPO
+    does train those tokens &mdash; they carry the rollout's advantage &mdash; but that advantage
+    is uncorrelated with whether the call was right, so it is loud noise on that span. The only
+    informative gradient is CE, at weight 0.1. And the one class CE never moved is the one that
+    can't be read off the code's surface: knowing a patch will fail its assertion is the same
+    problem as knowing the patch is wrong. <i>Neither agent is confirmed better than the
+    other.</i></p>
 </header>
 
 <section class="section" id="setup">
@@ -375,12 +379,10 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="diagnosis">
   <p class="section-kicker">Diagnosis</p>
   <h2 class="section-title">RLVR gains concentrated in first-attempt correctness</h2>
-  <p class="section-lede">Decomposing the pass@1 gain: RLVR gains were concentrated in
-    first-attempt correctness, with no clear improvement in prediction or recovery. First-attempt
-    correctness is the one thing the agent does on every rollout. Predicting an outcome and
-    recovering after a failure are both <i>conditional</i>, and neither has a learning signal
-    aligned with it: reward grades only whether the final test passes, so it never scores the
-    prediction, and it pays a recovered task exactly what it pays a first-try task.</p>
+  <p class="section-lede">Decomposing the pass@1 gain: it came from first-attempt correctness, not
+    from recovery. First-attempt correctness is the one thing the agent does on every rollout.
+    Recovery is <i>conditional</i>, and reward pays a recovered task exactly what it pays a
+    first-try task, so nothing trains it &mdash; it sits where SFT left it in all four runs.</p>
 
   <table class="data-table">
     <thead><tr><th>SFT &rarr; RL 100</th><th>first patch correct</th><th>p</th><th>recovery | failure</th><th>p</th></tr></thead>
@@ -417,9 +419,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <text x="506.0" y="214" text-anchor="middle" class="axis-sub">57% of verified outcomes</text>
 </svg></div>
   <p class="chart-caption">Recall = how often the model's own sampled prediction matched the
-    verified outcome. ASSERTION_FAILURE is the most common outcome at 57%, and the model has never
-    once predicted it correctly &mdash; at step 50, 75 or 100, in either seed. It reached 1&ndash;2%
-    at step 25 and was extinguished by step 50.</p>
+    verified outcome. Two opposite movements, both replicated across seeds. RUNTIME_ERROR was
+    <i>created</i>: the SFT checkpoint never predicted it, and by RL 100 it is 16% of predictions
+    at 63% recall. ASSERTION_FAILURE is the most common outcome at 57% and was never predicted
+    correctly once &mdash; not at SFT, not at any RL checkpoint. In training rollouts it starts at
+    6&ndash;7% of predictions and decays to 0&ndash;1.5% by step 100.</p>
 
   <p class="section-lede mt-md"><span class="block-label">Not a lack of exposure</span>Across Arm
     B's RL training rollouts (steps 1&ndash;101, 15,122 verified labels), the model's own patches
@@ -444,14 +448,18 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
   <div class="callout crit">
     <div class="callout-label">Why the signal never arrives</div>
-    Two layers. First, reward is indifferent: it depends only on whether the final test passes, so
-    it never scores <code>&lt;PREDICTION&gt;</code>, and it pays the curriculum's two recovery
-    paths identically &mdash; so the policy collapsed onto the cheaper one (always guess PASS) and
-    the shadow skill decayed. Not reward hacking; indifference. Second, and underneath it: GRPO's
-    policy gradient only reaches tokens a rollout actually sampled. Once the policy stopped
-    predicting a class, no reward shape could bring it back, because there was nothing to credit
-    or blame. A CE loss on the verified label is the only path that doesn't require sampling first
-    (<a href="#next">follow-ups</a>).
+    The reward is indifferent to the prediction: it depends only on whether the final test passes,
+    so it never scores <code>&lt;PREDICTION&gt;</code>. Those tokens are still trained &mdash; they
+    sit in the loss mask and carry the rollout's advantage &mdash; but that advantage says nothing
+    about whether the call was right. Measured on both seeds: among candidates whose true outcome
+    was <i>not</i> PASS, saying PASS anyway shifts group-relative advantage by 0.005, and the sign
+    flips between seeds. Loud gradient, zero information. The only informative term is CE at
+    weight 0.1.
+    <div style="margin-top:9px">That explains the noise floor, not which classes survive it. The
+    split there is discriminability, not exposure: RUNTIME_ERROR came back from near-zero because
+    a crash is legible in the code, while ASSERTION_FAILURE started higher and still died &mdash;
+    calling it means judging whether your own patch is semantically correct, which is the task
+    itself (<a href="#next">follow-ups</a>).</div>
   </div>
 </section>
 
@@ -525,14 +533,13 @@ patch applied</code></div>
   <div class="card">
     <ol class="learned-list">
       <li><span class="learned-tag">Aligned signal</span><b>RL improves what the policy does on
-      every rollout.</b> First-attempt correctness improved in all four runs; prediction and
-      recovery, which fire only conditionally, showed no clear improvement in any. A behavior that
-      happens on a subset of rollouts needs a term that grades it, not a task reward that averages
-      over it.</li>
-      <li><span class="learned-tag">On-policy limits</span><b>Policy gradient can't lift a token
-      it never samples.</b> Once the model stopped predicting a class, reward shape, penalty
-      asymmetry and 4&times; the rollouts all failed to bring it back &mdash; there was nothing to
-      credit or blame. CE on the verified label works because it doesn't need the sample first.</li>
+      every rollout.</b> First-attempt correctness improved in all four runs; recovery, which fires
+      only conditionally, moved in none. A behavior that happens on a subset of rollouts needs a
+      term that grades it, not a task reward that averages over it.</li>
+      <li><span class="learned-tag">Ungraded &ne; untrained</span><b>An ungraded span still gets a
+      gradient.</b> The prediction tokens sat in the loss mask and carried the task advantage the
+      whole time. Nothing was masked off; the gradient was simply uninformative, and it drowned a
+      CE term ten times smaller. Leaving a span out of the reward doesn't leave it alone.</li>
       <li><span class="learned-tag">Two kinds of rare</span><b>The label is generated, not looked
       up.</b> <code>actual</code> is whatever happens when the model's own code runs. A class can be
       rare because the policy stopped predicting it (fixable) or because the policy rarely writes
@@ -567,8 +574,9 @@ patch applied</code></div>
   <div class="callout info mt-lg">
     <div class="callout-label">What this run establishes, and what it doesn't</div>
     <b>Established:</b> the mechanism trains end-to-end and replicates across seeds; RLVR improves
-    both arms over their own SFT baselines in all four runs; and the predictor's blind spot has a
-    diagnosed cause &mdash; no reward term scores the prediction.
+    both arms over their own SFT baselines in all four runs; the predictor arrives from SFT already
+    collapsed onto PASS and RLVR+CE partially reverses that, replicated across seeds; and the
+    blind spot has a diagnosed cause &mdash; no reward term scores the prediction.
     <div style="margin-top:9px"><b>Not established:</b> that prediction improves performance. No
     checkpoint shows a confirmed Arm A vs. Arm B difference, the predictor is not calibrated, and
     Arm B changes several things at once &mdash; the protocol, the action space, the CE loss, and
@@ -577,6 +585,55 @@ patch applied</code></div>
   </div>
 </section>
 
+
+<section class="section" id="provenance">
+  <p class="section-kicker">Provenance</p>
+  <h2 class="section-title">Where every number on this page comes from</h2>
+  <p class="section-lede">Scope is the four headline runs only: Arm A and Arm B, seeds 42 and 43.
+    Nothing here is drawn from the CE-hybrid or other exploratory runs.</p>
+  <div class="card">
+    <ol class="learned-list">
+      <li><span class="learned-tag">Runs</span>Seed 42 is <code>RL_ARM_{A,B}_{sft,25,50,75,100}</code>;
+      seed 43 is <code>RL_ARM_{A,B}_V1_*</code>. Configs at
+      <code>RL_ARM_*_shared/run_default/control/orch.toml</code> &mdash; Arm A is
+      <code>algo.type = "grpo"</code>, Arm B is <code>"predict"</code> with
+      <code>alpha = 0.1</code>. Neither sets <code>prediction_reward_weight</code>, so it is 0.</li>
+
+      <li><span class="learned-tag">pass@1, recovery, McNemar</span>Per-task metrics from
+      <code>RL_ARM_*/eval/**/traces.jsonl</code>, n=500. Pair on
+      <code>task.data.name</code> (e.g. <code>mbpp_73</code>) &mdash; <b>not</b>
+      <code>task.name</code> and not <code>id</code>, which is a per-run UUID that will silently
+      match nothing. Metrics used: <code>passed</code>, <code>first_patch_correct</code>,
+      <code>had_executed_failure</code>, <code>recovered_after_executed_failure</code>,
+      <code>prediction_accuracy</code>.</li>
+
+      <li><span class="learned-tag">Prediction recall</span>Per-candidate predictions from
+      <code>info.glyph.prediction_targets[]</code> in the same eval traces:
+      <code>sampled_prediction</code> vs. <code>actual</code>. Eval, not training rollouts &mdash;
+      the two differ, because training samples at temperature. The SFT 100%-PASS figure is
+      <code>RL_ARM_B_sft</code>.</li>
+
+      <li><span class="learned-tag">Per-step trajectories</span>Training rollouts at
+      <code>RL_ARM_B{,_V1}_shared/run_default/rollouts/step_*/train/all/traces.jsonl</code>,
+      steps 1&ndash;101. Same <code>prediction_targets</code> shape. Per-step n is small
+      (36&ndash;236 candidates), so read the trend across steps and seeds, not any single point.</li>
+
+      <li><span class="learned-tag">Advantage on the prediction</span>Same rollout files. Group by
+      <code>group_id</code>, take <code>rewards.mbpp_reward</code> minus its group mean, then split
+      candidates by whether the model said PASS when <code>actual != "PASS"</code>. Result: 0.005
+      apart on seed 42, sign-flipped on seed 43.</li>
+
+      <li><span class="learned-tag">The span is trained</span>Not inferred from config &mdash; read
+      it off the rollout. In any trace's <code>nodes[]</code>, the assistant node containing
+      <code>&lt;PREDICTION&gt;</code> has <code>sampled: true</code> and <code>mask</code> true on
+      45 of 48 tokens; the three false entries are the chat-template prefix. With PRIME-RL's
+      <code>action_loss_type = "rl"</code> (<code>orchestrator/algo/routing.py</code>: rl "ships
+      nothing &mdash; absent streams mean rl weight 1.0 on the loss mask"), masked tokens take rl
+      weight 1.0 and the rollout's advantage. The CE auxiliary sample is separate and additive
+      (<code>src/glyph/prime_rl.py</code>, <code>rl_weights = [0.0] * len</code>).</li>
+    </ol>
+  </div>
+</section>
 
 <footer>
   <hr class="rule">
