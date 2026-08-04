@@ -192,12 +192,15 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     predictor collapsed anyway. It called PASS on 79% of candidates while only 30% of them actually
     passed, and never once correctly called ASSERTION_FAILURE &mdash; the single most common
     outcome, at 50%. Not for lack of exposure: its own patches failed roughly 70% of the time.</p>
-  <p class="tagline"><b style="color:#39ff14">Why:</b> nothing graded the prediction. Reward checks
-    only whether the final test passes. And once the policy stopped sampling a class, on-policy RL
-    had nothing to credit or blame, so no reward shape brought it back. A cross-entropy loss on the
-    verified label is the one thing that moves it, because it doesn't need the token sampled first.
-    <i>In progress: the fix is partial, and no checkpoint shows a confirmed Arm A vs. Arm B
-    difference.</i></p>
+  <p class="tagline"><b style="color:#39ff14">Why:</b> reward doesn't just ignore the prediction,
+    it pushes against it. GRPO upweights tokens from rollouts that succeeded, and those are
+    disproportionately ones where PASS was the right call &mdash; so it reinforces PASS whether or
+    not the prediction earned it. Training CE and RL on the same span points straight at this: with
+    five times the CE weight, PASS predictions still sat at 95.5%, against 73% when the span was
+    masked from RL. And once the policy stops sampling a class, on-policy RL has nothing left to
+    credit or blame. CE on the verified label is the one thing that moves it, because it doesn't
+    need the token sampled first. <i>In progress: the fix is partial, the two runs differ in more
+    than the mask, and no checkpoint shows a confirmed Arm A vs. Arm B difference.</i></p>
 </header>
 
 <section class="section" id="setup">
@@ -565,13 +568,8 @@ patch applied</code></div>
       collapsed to 0% once RLVR alone touched the span, and came back to a consistent 2&ndash;4%
       with the hybrid &mdash; real, and well short of 63%. Variants of RLVR alone (asymmetric
       penalty, 4&times; group size) never moved it off 0%.</p>
-      <p style="margin-top:12px">Letting RL reach the span looks like it works <i>against</i> the
-      CE gradient. At matched training steps the masked CE-only run had pulled PASS predictions down
-      to 73%; the hybrid sat at 95.5% with five times the CE weight. The likely reason: GRPO
-      upweights tokens that appeared in rollouts that succeeded, and successful rollouts are
-      disproportionately ones where PASS was the right call &mdash; so it reinforces PASS whether or
-      not the prediction earned it. Two runs with several settings changed, so this is suggestive,
-      not clean.</p>
+      <p style="margin-top:12px">It also stayed worse than the original masked design, which is
+      the PASS-reinforcement effect described up top. Isolating it is the next run.</p>
     </div>
     <div class="next-card">
       <div class="next-num">next</div>
