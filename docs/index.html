@@ -442,6 +442,27 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     once predicted it correctly &mdash; at step 50, 75 or 100, in either seed. It reached 1&ndash;2%
     at step 25 and was extinguished by step 50.</p>
 
+  <p class="section-lede mt-md"><span class="block-label">Not a lack of exposure</span>Across Arm
+    B's RL training rollouts (steps 1&ndash;101, 15,122 verified labels), the model's own patches
+    failed about 70% of the time. It saw the failure classes constantly and still predicted them at
+    nowhere near their real rate:</p>
+
+  <table class="data-table">
+    <thead><tr><th>outcome class</th><th>share of real outcomes</th><th>share of predictions</th></tr></thead>
+    <tbody>
+      <tr><td>ASSERTION_FAILURE</td><td>49.5%</td><td>3.2%</td></tr>
+      <tr><td>PASS</td><td>29.8%</td><td>78.7%</td></tr>
+      <tr><td>RUNTIME_ERROR</td><td>18.2%</td><td>18.0%</td></tr>
+      <tr><td>SYNTAX_ERROR</td><td>2.2%</td><td>0.1%</td></tr>
+      <tr><td>TIMEOUT</td><td>0.3%</td><td>0.0%</td></tr>
+    </tbody>
+  </table>
+  <p class="chart-caption">The training set is small, but scarcity isn't what broke the predictor.
+    ASSERTION_FAILURE is the single most common thing that happens and the model calls it 3% of the
+    time. RUNTIME_ERROR is the one class it predicts at close to the right rate, and the one class
+    it had real recall on. Counted from
+    <code>run_default/rollouts/step_*/train/all/traces.jsonl</code>.</p>
+
   <div class="callout crit">
     <div class="callout-label">Why the signal never arrives</div>
     Two layers. First, reward is indifferent: it depends only on whether the final test passes, so
