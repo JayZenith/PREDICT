@@ -191,17 +191,17 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     recipe for both.</p>
   <p class="tagline"><b style="color:#39ff14">What happened:</b> RLVR beat SFT for both agents. The
     predictor was already dead before RL started &mdash; the SFT checkpoint called PASS on
-    <b>100%</b> of eval candidates, when PASS was the true outcome 20% of the time. RLVR plus CE
-    partially revived it: RUNTIME_ERROR went from never predicted to 16% of predictions at 63%
-    recall, and prediction accuracy rose 44.7% &rarr; 53.2% in both seeds. ASSERTION_FAILURE, the
-    true outcome 57&ndash;61% of the time, was never once predicted correctly at any checkpoint.</p>
-  <p class="tagline"><b style="color:#39ff14">Why:</b> the reward never scores the prediction. GRPO
-    does train those tokens &mdash; they carry the rollout's advantage &mdash; but that advantage
-    is uncorrelated with whether the call was right, so it is loud noise on that span. The only
-    informative gradient is CE, at weight 0.1. And the one class CE never moved is the one that
-    can't be read off the code's surface: knowing a patch will fail its assertion is the same
-    problem as knowing the patch is wrong. <i>Neither agent is confirmed better than the
-    other.</i></p>
+    <b>100%</b> of eval candidates, when PASS was the true outcome 20% of the time. CE partially
+    revived it: RUNTIME_ERROR went from never predicted to 16% of predictions at 63% recall, and
+    prediction accuracy rose 44.7% &rarr; 53.2% in both seeds. ASSERTION_FAILURE, the true outcome
+    57&ndash;61% of the time, was never once predicted correctly at any checkpoint.</p>
+  <p class="tagline"><b style="color:#39ff14">Why:</b> not a plumbing problem. The prediction span
+    is trained by CE alone, by construction &mdash; the policy-gradient weight on those tokens is
+    zeroed, so RLVR never competes for them. CE had a clean channel and still only moved one class.
+    The split is what each class requires: a crash is legible in the code, so RUNTIME_ERROR came
+    back from nothing. Calling ASSERTION_FAILURE means knowing your own patch is semantically
+    wrong, which is the task itself &mdash; and that never came back. <i>Neither agent is confirmed
+    better than the other.</i></p>
 </header>
 
 <section class="section" id="setup">
@@ -447,19 +447,17 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     <code>run_default/rollouts/step_*/train/all/traces.jsonl</code>.</p>
 
   <div class="callout crit">
-    <div class="callout-label">Why the signal never arrives</div>
-    The reward is indifferent to the prediction: it depends only on whether the final test passes,
-    so it never scores <code>&lt;PREDICTION&gt;</code>. Those tokens are still trained &mdash; they
-    sit in the loss mask and carry the rollout's advantage &mdash; but that advantage says nothing
-    about whether the call was right. Measured on both seeds: among candidates whose true outcome
-    was <i>not</i> PASS, saying PASS anyway shifts group-relative advantage by 0.005, and the sign
-    flips between seeds. Loud gradient, zero information. The only informative term is CE at
-    weight 0.1.
-    <div style="margin-top:9px">That explains the noise floor, not which classes survive it. The
-    split there is discriminability, not exposure: RUNTIME_ERROR came back from near-zero because
-    a crash is legible in the code, while ASSERTION_FAILURE started higher and still died &mdash;
-    calling it means judging whether your own patch is semantically correct, which is the task
-    itself (<a href="#next">follow-ups</a>).</div>
+    <div class="callout-label">It isn't a routing problem</div>
+    The obvious suspect is loss routing &mdash; RLVR drowning CE on a shared span. That was
+    designed out. <code>PredictAlgorithm._mask_sampled_labels</code> zeroes the policy-gradient
+    weight on exactly the sampled outcome-label tokens, so the prediction is trained by CE on the
+    verified label and nothing else, while GRPO trains the rest of the rollout normally. The two
+    losses never touch the same tokens.
+    <div style="margin-top:9px">So CE had an uncontested channel, and the result splits by class
+    anyway. RUNTIME_ERROR was resurrected from near-zero: a crash leaves marks in the code an
+    inspector can find. ASSERTION_FAILURE never came back at any checkpoint, in either seed,
+    because calling it means judging whether your own patch is semantically correct &mdash; the
+    same problem as writing correct code. No loss weight buys that (<a href="#next">follow-ups</a>).</div>
   </div>
 </section>
 
@@ -536,10 +534,11 @@ patch applied</code></div>
       every rollout.</b> First-attempt correctness improved in all four runs; recovery, which fires
       only conditionally, moved in none. A behavior that happens on a subset of rollouts needs a
       term that grades it, not a task reward that averages over it.</li>
-      <li><span class="learned-tag">Ungraded &ne; untrained</span><b>An ungraded span still gets a
-      gradient.</b> The prediction tokens sat in the loss mask and carried the task advantage the
-      whole time. Nothing was masked off; the gradient was simply uninformative, and it drowned a
-      CE term ten times smaller. Leaving a span out of the reward doesn't leave it alone.</li>
+      <li><span class="learned-tag">Clean signal isn't enough</span><b>A dedicated loss on a clean
+      channel still can't teach what the model can't perceive.</b> The prediction had CE on
+      verified labels with RLVR masked off the span &mdash; no competing gradient, no reward
+      hacking, direct supervision. One class came back; the class that requires judging your own
+      code's semantics never did.</li>
       <li><span class="learned-tag">Two kinds of rare</span><b>The label is generated, not looked
       up.</b> <code>actual</code> is whatever happens when the model's own code runs. A class can be
       rare because the policy stopped predicting it (fixable) or because the policy rarely writes
@@ -618,19 +617,29 @@ patch applied</code></div>
       steps 1&ndash;101. Same <code>prediction_targets</code> shape. Per-step n is small
       (36&ndash;236 candidates), so read the trend across steps and seeds, not any single point.</li>
 
-      <li><span class="learned-tag">Advantage on the prediction</span>Same rollout files. Group by
-      <code>group_id</code>, take <code>rewards.mbpp_reward</code> minus its group mean, then split
-      candidates by whether the model said PASS when <code>actual != "PASS"</code>. Result: 0.005
-      apart on seed 42, sign-flipped on seed 43.</li>
+      <li><span class="learned-tag">The prediction is CE-only &mdash; read the right commit</span>
+      <b>Do not read <code>src/glyph/prime_rl.py</code> at HEAD to understand these runs.</b> At
+      HEAD the prediction span is trained by RLVR and CE together; in these runs it was CE only.
+      The version in force was <code>9f452aa</code> (19 Jul), whose
+      <code>PredictAlgorithm._mask_sampled_labels</code> sets <code>rl_weights = 0.0</code> on the
+      sampled outcome-label tokens, so the policy gradient never reaches them. That method was
+      <i>deleted</i> on 1 Aug by <code>c5b261b</code> ("RLVR the prediction span directly"); HEAD is
+      four commits past it.
+      <div style="margin-top:9px"><b>No git sha was recorded with these runs</b> &mdash; not in
+      <code>orch.toml</code>, the wandb files, or the eval logs; the only sha-shaped string there is
+      a vLLM compile-cache hash. The version above is inferred from two independent facts: all four
+      runs started 21 Jul 2026, ten days before the deletion, and their <code>alpha = 0.1</code>
+      carries no per-class multiplier, which arrived in <code>c7c9991</code> on 2 Aug. Recording the
+      sha is the first thing to fix in the next run.</div></li>
 
-      <li><span class="learned-tag">The span is trained</span>Not inferred from config &mdash; read
-      it off the rollout. In any trace's <code>nodes[]</code>, the assistant node containing
-      <code>&lt;PREDICTION&gt;</code> has <code>sampled: true</code> and <code>mask</code> true on
-      45 of 48 tokens; the three false entries are the chat-template prefix. With PRIME-RL's
-      <code>action_loss_type = "rl"</code> (<code>orchestrator/algo/routing.py</code>: rl "ships
-      nothing &mdash; absent streams mean rl weight 1.0 on the loss mask"), masked tokens take rl
-      weight 1.0 and the rollout's advantage. The CE auxiliary sample is separate and additive
-      (<code>src/glyph/prime_rl.py</code>, <code>rl_weights = [0.0] * len</code>).</li>
+      <li><span class="learned-tag">Why the traces can't tell you this</span>The <code>mask</code>
+      field on a trace node is the <i>tokenization</i> loss mask, not the RL weight. It is true on
+      the prediction tokens in every run, masked or not. The <code>rl_weights</code> stream lives on
+      PRIME-RL's <code>TrainingSample</code> and is never written to <code>traces.jsonl</code>.
+      PRIME-RL fills only <i>absent</i> streams with 1.0 (<code>trainer/batch.py</code>,
+      <code>STREAM_FILL</code>) and <code>stamp_loss_routing</code> returns early for
+      <code>action_loss_type = "rl"</code> without clobbering a stream the algorithm already wrote
+      &mdash; which is why the explicit zeros survive and why this can only be settled from source.</li>
     </ol>
   </div>
 </section>
