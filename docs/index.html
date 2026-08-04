@@ -192,12 +192,10 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     <a href="https://arxiv.org/abs/2605.24517">ECHO</a> showed prediction helps as a pure training
     signal; here it also gates behavior.</p>
   <p class="tagline">Arm A is the matched comparator: patch, test, react. Same SFT-then-RLVR
-    recipe. <i>Status: the mechanism runs and replicates across seeds, and RLVR beats SFT in both
-    arms. The predictor is not calibrated, and no checkpoint shows a confirmed Arm A vs. Arm B
-    difference. The result here is the failure diagnosis, not a performance win. The original side
-    question &mdash; whether predicting first sharpens the model's internal state with no visible
-    tokens to reason in &mdash; stayed untested. The model predicts PASS on nearly everything, so
-    the prediction is close to a constant, and a constant can't sharpen anything.</i></p>
+    recipe. <i>Status: in progress. The mechanism runs and replicates
+    across seeds, and RLVR beats SFT in both arms. The predictor still collapses to PASS, and no
+    checkpoint shows a confirmed Arm A vs. Arm B difference. What this run produced is a diagnosis
+    of why, and a first fix that measurably moves it.</i></p>
 </header>
 
 <section class="section" id="setup">
