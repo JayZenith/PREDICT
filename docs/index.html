@@ -223,8 +223,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
       <p>Split 212 SFT / 212 RL, plus 40 validation and 500 test scored exactly once, after every
       design decision was frozen. The RL stage never trains on a problem SFT already saw. 212
       traces per arm is enough to install a protocol &mdash; emit the tags, honor the gate, keep
-      the loop coherent &mdash; and not enough to teach it to tell 6 outcome classes apart. Small
-      n, so every number here has wide error bars.</p>
+      the loop coherent. Teaching the outcome classes is a separate job the curriculum only half
+      did: the agent may predict 6 classes, but the SFT traces demonstrate 3, and SYNTAX_ERROR and
+      TIMEOUT appear zero times. Small n, so every number here has wide error bars.</p>
     </div>
   </div>
 
@@ -440,14 +441,15 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
       <tr><td>ASSERTION_FAILURE</td><td>49.5%</td><td>3.2%</td></tr>
       <tr><td>PASS</td><td>29.8%</td><td>78.7%</td></tr>
       <tr><td>RUNTIME_ERROR</td><td>18.2%</td><td>18.0%</td></tr>
-      <tr><td>SYNTAX_ERROR</td><td>2.2%</td><td>0.1%</td></tr>
-      <tr><td>TIMEOUT</td><td>0.3%</td><td>0.0%</td></tr>
+      <tr><td>SYNTAX_ERROR <span style="opacity:.6">&mdash; never taught</span></td><td>2.2%</td><td>0.1%</td></tr>
+      <tr><td>TIMEOUT <span style="opacity:.6">&mdash; never taught</span></td><td>0.3%</td><td>0.0%</td></tr>
     </tbody>
   </table>
   <p class="chart-caption">The training set is small, but scarcity isn't what broke the predictor.
     ASSERTION_FAILURE is the single most common thing that happens and the model calls it 3% of the
     time. RUNTIME_ERROR is the one class it predicts at close to the right rate, and the one class
-    it had real recall on. Counted from
+    it had real recall on. The bottom two rows aren't results: SYNTAX_ERROR and TIMEOUT appear zero
+    times in the SFT curriculum, so nothing was ever asked of them. Counted from
     <code>run_default/rollouts/step_*/train/all/traces.jsonl</code>.</p>
 
   <p class="section-lede mt-md"><span class="block-label">And not a lack of demonstrations</span>The
@@ -565,9 +567,17 @@ patch applied</code></div>
 <section class="section" id="next">
   <p class="section-kicker">Follow-up experiments</p>
   <h2 class="section-title">Where this goes next</h2>
-  <p class="section-lede">Both follow from the diagnosis: the prediction has no reward term, and
-    CE alone at 0.1 didn't carry it.</p>
+  <p class="section-lede">All three follow from the diagnosis: half the label space was never
+    demonstrated, nothing grades the prediction, and CE alone at 0.1 didn't carry it.</p>
   <div class="next-grid">
+    <div class="next-card">
+      <div class="next-num" style="color:#f5e400">first</div>
+      <div class="next-title">Teach all six classes</div>
+      <p>The curriculum demonstrates PASS, ASSERTION_FAILURE and RUNTIME_ERROR, and never shows
+      SYNTAX_ERROR or TIMEOUT once. Before any conclusion about what the predictor can't learn,
+      it should be shown every class it is asked to emit, with ASSERTION_FAILURE far above 12% of
+      labels. This is a data-generation change, not a training change &mdash; the cheapest fix here.</p>
+    </div>
     <div class="next-card">
       <div class="next-num">next</div>
       <div class="next-title">Score the prediction</div>
@@ -588,13 +598,17 @@ patch applied</code></div>
     <div class="callout-label">What this run establishes, and what it doesn't</div>
     <b>Established:</b> the mechanism trains end-to-end and replicates across seeds; RLVR improves
     both arms over their own SFT baselines in all four runs; the predictor arrives from SFT already
-    collapsed onto PASS and RLVR+CE partially reverses that, replicated across seeds; and the
+    collapsed onto PASS and CE partially reverses that, replicated across seeds; and the
     blind spot has a diagnosed cause &mdash; no reward term scores the prediction.
     <div style="margin-top:9px"><b>Not established:</b> that prediction improves performance. No
     checkpoint shows a confirmed Arm A vs. Arm B difference, the predictor is not calibrated, and
     Arm B changes several things at once &mdash; the protocol, the action space, the CE loss, and
     the SFT trace format &mdash; so this compares two systems, not one variable
     (<a href="https://github.com/JayZenith/PREDICT/blob/main/docs/research_specs.md#limits-to-report">full caveat</a>).</div>
+    <div style="margin-top:9px"><b>Not a verdict on Arm B.</b> The predictor was trained once, at
+    one CE weight, on a curriculum that demonstrates 3 of its 6 outcome classes and never shows two
+    of them at all. What failed is this configuration, not the idea. The experiments that would
+    make it a verdict are below and haven't been run.</div>
   </div>
 </section>
 
