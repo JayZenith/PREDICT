@@ -482,7 +482,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <h2 class="section-title">One rollout: three wrong predictions, and a verifier gap</h2>
   <p class="section-lede">One real Arm B rollout, step 100, seed 42, on <code>mbpp_127</code>
     (&ldquo;multiply two integers without <code>*</code>&rdquo;). Verbatim from
-    <code>PREDICT_RL_RESULTS/RL_ARM_B_100/eval/</code>. It predicts PASS three times, is wrong
+    <code>RESULTS_PUBLISHED/RL_ARM_B_100/eval/</code>. It predicts PASS three times, is wrong
     twice, and still scores reward 1.0.</p>
 
   <div>
@@ -617,7 +617,9 @@ patch applied</code></div>
   <p class="section-kicker">Provenance</p>
   <h2 class="section-title">Where every number on this page comes from</h2>
   <p class="section-lede">Scope is the four headline runs only: Arm A and Arm B, seeds 42 and 43.
-    Nothing here is drawn from the CE-hybrid or other exploratory runs.</p>
+    They live in <code>RESULTS_PUBLISHED/</code>, and nothing on this page comes from anywhere else
+    &mdash; exploratory runs are quarantined in <code>RESULTS_EXPLORATORY/</code>, which has its own
+    README explaining why they aren't comparable.</p>
   <div class="card">
     <ol class="learned-list">
       <li><span class="learned-tag">Runs</span>Seed 42 is <code>RL_ARM_{A,B}_{sft,25,50,75,100}</code>;

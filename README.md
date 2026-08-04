@@ -100,7 +100,7 @@ for each arm (Arm A: p=0.0003 and p=0.028; Arm B: p=0.033 and p=0.0017). Both
 arms show good within-arm reproducibility (seed 42 vs seed 43 never
 significantly differ, either arm, any step). Full stats and efficiency
 numbers: [REPRODUCTION.md](docs/REPRODUCTION.md),
-[`PREDICT_RL_RESULTS/`](PREDICT_RL_RESULTS/).
+[`RESULTS_PUBLISHED/`](RESULTS_PUBLISHED/).
 
 Checkpoints: [`SFT_ARM_A`](https://huggingface.co/JayZenith/SFT_ARM_A),
 [`SFT_ARM_B`](https://huggingface.co/JayZenith/SFT_ARM_B),

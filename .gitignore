@@ -18,8 +18,9 @@ runs/
 wandb/
 logs/
 *.log
-PREDICT_SFT_RESULTS/
-PREDICT_RL_RESULTS/
+RESULTS_SFT/
+RESULTS_PUBLISHED/
+RESULTS_EXPLORATORY/
 
 # Editors and operating systems
 .idea/
