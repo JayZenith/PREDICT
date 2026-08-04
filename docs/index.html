@@ -565,6 +565,13 @@ patch applied</code></div>
       collapsed to 0% once RLVR alone touched the span, and came back to a consistent 2&ndash;4%
       with the hybrid &mdash; real, and well short of 63%. Variants of RLVR alone (asymmetric
       penalty, 4&times; group size) never moved it off 0%.</p>
+      <p style="margin-top:12px">Letting RL reach the span looks like it works <i>against</i> the
+      CE gradient. At matched training steps the masked CE-only run had pulled PASS predictions down
+      to 73%; the hybrid sat at 95.5% with five times the CE weight. The likely reason: GRPO
+      upweights tokens that appeared in rollouts that succeeded, and successful rollouts are
+      disproportionately ones where PASS was the right call &mdash; so it reinforces PASS whether or
+      not the prediction earned it. Two runs with several settings changed, so this is suggestive,
+      not clean.</p>
     </div>
     <div class="next-card">
       <div class="next-num">next</div>
