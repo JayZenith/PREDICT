@@ -184,100 +184,70 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     <a href="https://jayzenith.me/">jayzenith.me</a> &middot;
     <a href="https://github.com/JayZenith/PREDICT">GitHub repo</a>
   </p>
-  <p class="tagline"><span style="color:#39ff14">What I'm really after:</span> a coding agent with a working world model, one that
-    doesn't just react to test output but predicts what the environment will do and stakes a
-    decision on that prediction, the way we judge whether our own decisions are worth keeping
-    before acting on them. <a href="https://arxiv.org/abs/2605.24517">ECHO</a> showed prediction
-    as a pure training signal helps; PREDICT takes the next step and makes the prediction
-    <i>causally gate behavior</i>: Arm B must commit to KEEP or REVISE before it ever sees the
-    real result.</p>
-  <p class="tagline">Two questions carry the design. Does a prediction need its own direct
-    supervision, a cross-entropy loss straight off the verified outcome? And is a gate only as wise
-    as its predictor, so calibration has to come before metacognition pays? (A side curiosity rides
-    along: does predicting first sharpen the model's internal state even with no visible tokens to
-    reason in?)</p>
-  <p class="tagline">Arm A, the matched comparator, is the standard loop: patch,
-    test, react, trained with plain SFT then RLVR. <i>This is early-stage and deliberately scoped:
-    the core pipeline was built in about a week on rented single-GPU instances under a fixed,
-    self-funded compute budget, which shaped every design choice that follows
-    (<a href="#setup">why</a>). The mechanism is built and
-    replicated across seeds. The first question above now has a real answer &mdash; yes, prediction
-    needs its own direct supervision, because RLVR's policy gradient literally cannot reach a token
-    the model doesn't sample (<a href="#next">below</a>). The second question, whether the gate is
-    only as wise as its predictor, is still open: the predictor isn't calibrated enough yet to test
-    it.</i></p>
+  <p class="tagline"><span style="color:#39ff14">What I'm after:</span> a coding agent with a
+    working world model. The environment is a Python sandbox; the feedback is what happens when the
+    agent's patch actually runs. Arm B emits a <code>&lt;PREDICTION&gt;</code> of that result and
+    commits to KEEP or REVISE before it's allowed to see it. The patch runs either way, and a
+    cross-entropy loss on the verified outcome trains the prediction directly.
+    <a href="https://arxiv.org/abs/2605.24517">ECHO</a> showed prediction helps as a pure training
+    signal; here it also gates behavior. Side question: does predicting first sharpen the model's
+    internal state, with no visible tokens to reason in?</p>
+  <p class="tagline">Arm A is the matched comparator: patch, test, react. Same SFT-then-RLVR
+    recipe. <i>Status: the mechanism runs and replicates across seeds, and RLVR beats SFT in both
+    arms. The predictor is not calibrated, and no checkpoint shows a confirmed Arm A vs. Arm B
+    difference. The result here is the failure diagnosis, not a performance win.</i></p>
 </header>
-
-<div class="callout info" style="margin-top:18px">
-  <div class="callout-label">What this is / isn't</div>
-  <b style="color:var(--green)">&#10003;</b> Mechanism built: the predict &rarr; KEEP/REVISE gate
-  runs end-to-end, replicated across two seeds.
-  <b style="color:var(--green)">&#10003;</b> RLVR signal confirmed: both arms beat their own SFT
-  baseline, McNemar-confirmed in both seeds.
-  <b style="color:var(--green)">&#10003;</b> Mechanism diagnosed: pure on-policy RLVR can't lift a
-  token it never samples; a CE auxiliary loss on the verified label recovers some of what unmasked
-  RLVR loses (<a href="#next">below</a>).
-  <b style="color:var(--red)">&#10007;</b> Predictor still not calibrated: ASSERTION_FAILURE recall
-  is still ~0%, and the CE+RLVR follow-up work is training-diagnostic snapshots so far, not a
-  finished run evaluated at n=500 like the table below. At 212 SFT traces per arm, a calibrated
-  6-way world model was never the deliverable; a mechanism that trains end-to-end and a diagnosis
-  of exactly where it breaks was, and that's what's here.
-  <div style="margin-top:9px">Read this as a resource-efficient mechanism study and
-  training-dynamics investigation, not a benchmark comparison
-  (<a href="#setup">why that distinction is load-bearing</a>).</div>
-</div>
 
 <section class="section" id="setup">
   <p class="section-kicker">Design constraints</p>
-  <h2 class="section-title">Why this experimental setup</h2>
-  <p class="section-lede">The core pipeline was built in about a week, on rented single-GPU
-    instances, under a self-funded compute budget that eventually ran out mid-follow-up. That
-    budget is the reason for most of the choices below. Stating them up front because they bound
-    what the results can mean.</p>
+  <h2 class="section-title">Why this setup</h2>
+  <p class="section-lede">Built in about a week on rented single-GPU instances, on a self-funded
+    budget that ran out mid-follow-up. That budget drove the choices below.</p>
 
   <div class="grid-2">
     <div class="next-card">
-      <div class="next-title">Borrow a substrate with a known signal</div>
-      <p>MBPP was chosen because prior work had already shown small-model RLVR produces measurable
-      gains on it (<a href="https://arxiv.org/abs/2605.30478">Skopin &amp; Kotelnikov</a>). That
-      meant the base RL setup didn't need validating first, so the budget could go entirely to the
-      part that was actually new: the predict &rarr; KEEP/REVISE mechanism. Choosing a substrate
-      where the signal was already established was the strategy, not a shortcut.</p>
+      <div class="next-title">MBPP, because the signal was already known</div>
+      <p>Prior work showed small-model RLVR produces measurable gains on MBPP
+      (<a href="https://arxiv.org/abs/2605.30478">Skopin &amp; Kotelnikov</a>), so the base RL setup
+      didn't need validating first and the budget could go to the new part: the predict &rarr;
+      KEEP/REVISE mechanism. MBPP is ~1,000 short Python problems with gold test assertions
+      (<a href="https://arxiv.org/abs/2108.07732">Austin et al.</a>, 2021).</p>
     </div>
     <div class="next-card">
-      <div class="next-title">The pipeline still had to be built from scratch</div>
-      <p>What transferred was the finding itself &mdash; that MBPP carries a real RLVR signal at
-      small scale &mdash; which is exactly what made it a usable substrate. The implementation
-      didn't: that prior result is single-turn code generation with LoRA on 0.6B&ndash;1B models,
-      while PREDICT is a multi-turn tool-using agent on Qwen3-4B-Base. The SFT
-      behavior structure is hand-designed here: direct-solution traces, two-step recovery traces,
-      prediction labels, and the KEEP/REVISE decision paths &mdash; plus the environment, the
-      auxiliary-loss wiring, and a complete SFT&rarr;RL pipeline around them.</p>
+      <div class="next-title">The pipeline was built from scratch</div>
+      <p>The finding transferred; the implementation didn't. That prior result is single-turn
+      generation with LoRA on 0.6B&ndash;1B models. PREDICT is a multi-turn tool-using agent on
+      Qwen3-4B-Base. The SFT behavior structure is hand-designed here &mdash; direct-solution
+      traces, two-step recovery traces, prediction labels, KEEP/REVISE decision paths &mdash; plus
+      the environment, the auxiliary-loss wiring, and the full SFT&rarr;RL pipeline.</p>
     </div>
     <div class="next-card">
       <div class="next-title">424 problems, split deliberately</div>
-      <p>The usable train pool is 424 problems, split 212 SFT / 212 RL, with a separate 40-problem
-      validation set for checkpoint selection and a 500-problem test set scored exactly once. The
-      split costs statistical power on every number on this page. It buys an RL stage that never
-      trains on what SFT already saw, and a test set still worth trusting at the end &mdash; the
-      trade was made knowingly.</p>
+      <p>Split 212 SFT / 212 RL, plus 40 validation for checkpoint selection and 500 test scored
+      exactly once. This costs statistical power on every number here. It buys an RL stage that
+      never trains on what SFT already saw, and a test set still worth trusting at the end.</p>
     </div>
     <div class="next-card">
-      <div class="next-title">What 212 examples per arm can buy</div>
-      <p>212 SFT traces per arm is enough to install a protocol: emit the tags, honor the gate,
-      keep the loop coherent. It is not enough to calibrate a world model over a 6-way outcome
-      space, and it was not expected to be. So the question this run was built to answer was never
-      &ldquo;does prediction win&rdquo; &mdash; it was whether the mechanism could be implemented,
-      trained end-to-end, and diagnosed at all at this scale.</p>
+      <div class="next-title">What 212 examples per arm buys</div>
+      <p>Enough to install a protocol: emit the tags, honor the gate, keep the loop coherent. Not
+      enough to calibrate a world model over 6 outcome classes. So the question was never whether
+      prediction wins &mdash; it was whether the mechanism trains end-to-end and can be diagnosed
+      at this scale.</p>
     </div>
+  </div>
+
+  <div class="stat-grid mt-md">
+    <div class="stat-tile"><div class="stat-value">424</div><div class="stat-label">train pool &rarr; 212 SFT + 212 RL</div></div>
+    <div class="stat-tile"><div class="stat-value">40</div><div class="stat-label">validation, checkpoint selection</div></div>
+    <div class="stat-tile"><div class="stat-value">500</div><div class="stat-label">final test, touched once</div></div>
+    <div class="stat-tile"><div class="stat-value">212</div><div class="stat-label">SFT traces / arm: 142 direct + 70 recovery</div></div>
   </div>
 
   <div class="callout info mt-md">
     <div class="callout-label">What follows from that</div>
-    The uncalibrated predictor, the unconfirmed between-arm comparison, the training-diagnostic
-    follow-ups: the budget constrained how decisively these limitations could be resolved; the
-    findings that remain well-supported are the implemented mechanism, the replicated within-arm
-    RLVR gains, and the failure diagnosis.
+    The budget constrained how decisively these limitations could be resolved. Well supported: a
+    working post-training pipeline, replicated within-arm RLVR gains, and the failure diagnosis.
+    Not supported: a calibrated predictor, or any confirmed difference between the arms.
   </div>
 </section>
 
@@ -285,14 +255,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="section-kicker">Architecture</p>
   <h2 class="section-title">One harness, two agents</h2>
   <p class="section-lede">Both arms share one harness. Arm A reacts to <code>python_test</code>
-    output; Arm B must predict the outcome and commit to <b style="color:#39ff14">KEEP</b> or
-    <b style="color:#ef4444">REVISE</b> before it's allowed to see the real result. The
-    verified-label auxiliary CE design was inspired by Shrivastava, Kauffmann, Awadallah &amp;
-    Papailiopoulos, <a href="https://arxiv.org/abs/2605.24517">&ldquo;ECHO: Terminal Agents Learn
-    World Models for Free&rdquo;</a> (2026). Built on
-    <a href="https://github.com/PrimeIntellect-ai/prime-rl">PRIME-RL</a> and
-    <a href="https://github.com/PrimeIntellect-ai/verifiers">Verifiers</a>, using their newest V1
-    environment setup.</p>
+    output. Arm B predicts the outcome and commits to <b style="color:#39ff14">KEEP</b> or
+    <b style="color:#ef4444">REVISE</b> before it sees the real result. The verified-label
+    auxiliary CE follows <a href="https://arxiv.org/abs/2605.24517">ECHO</a> (Shrivastava et al.,
+    2026). Built on <a href="https://github.com/PrimeIntellect-ai/prime-rl">PRIME-RL</a> and
+    <a href="https://github.com/PrimeIntellect-ai/verifiers">Verifiers</a>, V1 environments.</p>
   <div class="card"><svg viewBox="0 0 900 600" class="diagram-svg" role="img" aria-label="Arm A versus Arm B execution flow">
 <defs><marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#93a897"/></marker>
@@ -337,13 +304,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <path d="M540,435 C 482,435 482,155 538,155" stroke="#ef4444" stroke-width="1.6" marker-end="url(#arrowR)" fill="none" stroke-dasharray="5 4" opacity="0.9"/>
 <text x="464" y="295" text-anchor="middle" class="diagram-edge" fill="#ef4444" transform="rotate(90 464 295)">visible recovery: the prediction was wrong</text>
 </svg></div>
-  <p class="chart-caption">Both arms recover from a failed test; they differ in <i>when</i> the
-    decision to recover gets made. Arm A has one recovery path: run the real test, see it fail,
-    patch again. Arm B has two &mdash; the <b>visible</b> one (predicted PASS, kept, and the real
-    test caught it) and the <b>shadow</b> one (predicted a failure, revised before the real test
-    ever ran). Only the shadow path uses the predictor. The SFT curriculum teaches both deliberately,
-    in equal share. On the held-out set both arms do recover, on 12&ndash;17% of the rollouts whose
-    first test failed &mdash; and a hundred steps of RLVR moved that number in neither arm
+  <p class="chart-caption">Arm A has one recovery path: run the test, see it fail, patch again.
+    Arm B has two &mdash; <b>visible</b> (predicted PASS, kept, the real test caught it) and
+    <b>shadow</b> (predicted a failure, revised before the real test ran). Only the shadow path
+    uses the predictor. The SFT curriculum teaches both in equal share. On the test set both arms
+    recover on 12&ndash;17% of rollouts whose first test failed, and RLVR moved that in neither arm
     (<a href="#diagnosis">diagnosis</a>).</p>
 
   <div class="callout info mt-lg">
@@ -357,42 +322,15 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   </div>
 </section>
 
-<section class="section" id="data">
-  <p class="section-kicker">Data</p>
-  <h2 class="section-title">MBPP, split once, touched once</h2>
-  <p class="section-lede">MBPP (Mostly Basic Python Problems): ~1,000 short, crowd-sourced Python
-    problems with gold-standard test assertions, from Austin et al.,
-    <a href="https://arxiv.org/abs/2108.07732">&ldquo;Program Synthesis with Large Language
-    Models&rdquo;</a> (2021). The RLVR-on-MBPP-with-small-Qwen setup was directly inspired by
-    Skopin &amp; Kotelnikov, <a href="https://arxiv.org/abs/2605.30478">&ldquo;Improving Small
-    Language Models for Code Generation with Reinforcement Learning from Verification
-    Feedback&rdquo;</a> (2026).</p>
-
-  <div class="stat-grid">
-    <div class="stat-tile"><div class="stat-value">424</div><div class="stat-label">train pool &rarr; 212 SFT + 212 RL</div></div>
-    <div class="stat-tile"><div class="stat-value">40</div><div class="stat-label">validation, checkpoint selection</div></div>
-    <div class="stat-tile"><div class="stat-value">500</div><div class="stat-label">final test, touched once</div></div>
-    <div class="stat-tile"><div class="stat-value">212</div><div class="stat-label">SFT traces / arm: 142 direct + 70 recovery</div></div>
-  </div>
-  <p class="chart-caption">The SFT and RL halves are disjoint by construction, and the 500-problem
-    test set was scored once, after every design decision was frozen. Both choices cost power at
-    this sample size and both were priced in from the start (<a href="#setup">above</a>). The
-    recovery traces are hand-designed to teach two distinct paths &mdash; the visible one and the
-    shadow one &mdash; a split that turns out to matter later
-    (<a href="#diagnosis">diagnosis</a>).</p>
-</section>
 
 <section class="section" id="results">
   <p class="section-kicker">Results</p>
   <h2 class="section-title">RLVR improves both arms over SFT; the between-arm comparison is preliminary</h2>
   <p class="section-lede">Both arms were trained twice, independently, from the same SFT
-    checkpoints with different seeds (n=500, greedy pass@1). The replicated, load-bearing result
-    is within-arm: custom SFT agent traces plus RLVR reliably improve each arm over its own
-    baseline. Step 100 is an interim checkpoint, not a destination: two of the four runs are
-    still climbing there (+2.8 and +2.4 points over step 75), so longer runs are the first next
-    step. The
-    Arm A vs. Arm B comparison is context; the decisive experiments compare Arm B to itself, one
-    factor at a time (<a href="#next">below</a>).</p>
+    checkpoints with different seeds (n=500, greedy pass@1). The load-bearing result is within-arm:
+    SFT agent traces plus RLVR improve each arm over its own baseline, in all four runs. Step 100
+    is interim, not a destination &mdash; two of the four runs are still climbing there (+2.8 and
+    +2.4 points over step 75).</p>
 
   <div class="callout good">
     <div class="callout-label">&#10003; Replicated across two seeds</div>
@@ -473,48 +411,6 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     arms vs. their own SFT baseline): <a href="https://github.com/JayZenith/PREDICT/blob/main/docs/REPRODUCTION.md#6-statistics">REPRODUCTION.md &sect; 6</a>.</p>
 </section>
 
-<section class="section" id="efficiency">
-  <p class="section-kicker">Efficiency</p>
-  <h2 class="section-title">Step-100 seed-42 traces: not a clean win either way</h2>
-  <p class="section-lede"><span class="block-label">Current tradeoff</span>Currently, Arm B doesn't use fewer tool calls or turns. Its visible test
-    count is lower only because REVISE runs a hidden shadow test instead of the real one, so that
-    cycle never shows up in the visible trace, not because it tests less overall. It also spends
-    noticeably more generation length per task on
-    <code style="color:#39ff14">&lt;PREDICTION&gt;</code>/<code style="color:#39ff14">&lt;DECISION&gt;</code> tags.</p>
-  <div class="grid-3">
-    <div class="chart-wrap"><div class="chart-caption" style="padding-top:0">visible tool calls</div><svg viewBox="0 0 300 190" class="chart-svg" role="img" aria-label="paired bar">
-<line x1="16" y1="160.0" x2="284" y2="160.0" stroke="#7a7a7a" stroke-width="1"/>
-<rect x="49.5" y="49.0" width="67.0" height="111.0" rx="3" fill="#00d17a"/>
-<text x="83.0" y="42.0" text-anchor="middle" class="bar-value" fill="#00d17a">5.32</text>
-<text x="83.0" y="182" text-anchor="middle" class="axis-label">Arm A</text>
-<rect x="183.5" y="46.1" width="67.0" height="113.9" rx="3" fill="#39ff14"/>
-<text x="217.0" y="39.1" text-anchor="middle" class="bar-value" fill="#39ff14">5.46</text>
-<text x="217.0" y="182" text-anchor="middle" class="axis-label">Arm B</text>
-</svg></div>
-    <div class="chart-wrap"><div class="chart-caption" style="padding-top:0">visible test executions</div><svg viewBox="0 0 300 190" class="chart-svg" role="img" aria-label="paired bar">
-<line x1="16" y1="160.0" x2="284" y2="160.0" stroke="#7a7a7a" stroke-width="1"/>
-<rect x="49.5" y="65.6" width="67.0" height="94.4" rx="3" fill="#00d17a"/>
-<text x="83.0" y="58.6" text-anchor="middle" class="bar-value" fill="#00d17a">1.94</text>
-<text x="83.0" y="182" text-anchor="middle" class="axis-label">Arm A</text>
-<rect x="183.5" y="71.9" width="67.0" height="88.1" rx="3" fill="#39ff14"/>
-<text x="217.0" y="64.9" text-anchor="middle" class="bar-value" fill="#39ff14">1.81</text>
-<text x="217.0" y="182" text-anchor="middle" class="axis-label">Arm B</text>
-</svg></div>
-    <div class="chart-wrap"><div class="chart-caption" style="padding-top:0">assistant chars / task</div><svg viewBox="0 0 300 190" class="chart-svg" role="img" aria-label="paired bar">
-<line x1="16" y1="160.0" x2="284" y2="160.0" stroke="#7a7a7a" stroke-width="1"/>
-<rect x="49.5" y="66.2" width="67.0" height="93.8" rx="3" fill="#00d17a"/>
-<text x="83.0" y="59.2" text-anchor="middle" class="bar-value" fill="#00d17a">835</text>
-<text x="83.0" y="182" text-anchor="middle" class="axis-label">Arm A</text>
-<rect x="183.5" y="44.1" width="67.0" height="115.9" rx="3" fill="#39ff14"/>
-<text x="217.0" y="37.1" text-anchor="middle" class="bar-value" fill="#39ff14">1032</text>
-<text x="217.0" y="182" text-anchor="middle" class="axis-label">Arm B</text>
-</svg></div>
-  </div>
-  <div class="legend">
-    <span class="legend-item"><span class="swatch" style="background:#00d17a"></span>Arm A</span>
-    <span class="legend-item"><span class="swatch" style="background:#39ff14"></span>Arm B</span>
-  </div>
-</section>
 
 <section class="section" id="diagnosis">
   <p class="section-kicker">Diagnosis</p>
@@ -523,11 +419,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     the time, KEEP follows a PASS prediction 96.4% of the time (seed 42) / 99.4% of the time (seed 43).
     That's not the problem. The problem is <b>discrimination</b>: telling, from the candidate code alone,
     before it ever runs, whether it will pass, crash (<code style="color:#f5e400">RUNTIME_ERROR</code>),
-    or run fine but fail the assertion (<code style="color:#ef4444">ASSERTION_FAILURE</code>), a
-    harder case in principle, since it requires simulating the candidate's logic against the test,
-    not just spotting a surface-level crash pattern. That's a plausible reason the model might
-    struggle here; it isn't the reason the struggle never improved &mdash; the sections below trace
-    that to training dynamics, not task difficulty. Measured by outcome class, RL step 100, seed 42:</p>
+    or run fine but fail the assertion (<code style="color:#ef4444">ASSERTION_FAILURE</code>). That
+    is harder in principle: it requires simulating the candidate's logic against the test, not just
+    spotting a surface-level crash pattern. That explains why the model might struggle, but not why
+    the struggle never improved &mdash; the sections below trace that to training dynamics.
+    Measured by outcome class, RL step 100, seed 42:</p>
 
   <span class="block-label">Prediction recall by outcome class</span>
   <div class="chart-wrap"><svg viewBox="0 0 620 220" class="chart-svg" role="img" aria-label="bar chart">
@@ -565,17 +461,14 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   </div>
 
   <p class="section-lede mt-md"><span class="block-label">A contributing factor: reward never split the curriculum's two paths</span>The recovery
-    curriculum was deliberately symmetric: half of Arm B's recovery traces teach the visible path
-    (predict PASS on a buggy candidate, an honest mistake the real test catches, then fix), half
-    teach the shadow path (correctly predict the failure, REVISE, then fix), built that way so RL
-    would sample both recovery modes and improve both. RL did sample both: ASSERTION_FAILURE is a
-    third to half of every step's real outcomes. But reward pays the two paths identically, so the
-    policy collapsed onto the easier one, always guess PASS, and the shadow skill decayed. Not
-    reward hacking; indifference. That's still only a contributing factor, not the deepest one: the
-    <a href="#next">follow-ups below</a> found the actual mechanism underneath it &mdash; on-policy
+    curriculum is symmetric on purpose: half of Arm B's recovery traces teach the visible path,
+    half teach the shadow path, so RL would sample and improve both. RL did sample both &mdash;
+    ASSERTION_FAILURE is a third to half of every step's real outcomes. But reward pays the two
+    paths identically, so the policy collapsed onto the easier one (always guess PASS) and the
+    shadow skill decayed. Not reward hacking; indifference. This is still only a contributing
+    factor. The <a href="#next">follow-ups below</a> found the mechanism underneath it: on-policy
     RLVR can't lift a token it never samples, so no reward shape fixes this until CE gives it a
-    path that doesn't depend on sampling first. Task difficulty (above) explains why the miss was
-    plausible; this is why it never corrected itself.</p>
+    path that doesn't depend on sampling first.</p>
 
   <p class="section-lede mt-lg"><span class="block-label">Verified on the test set: both arms recover, and RLVR didn't improve it</span>Both arms do
     exhibit real error recovery, and it is already there at SFT. Across the 500 held-out tasks,
@@ -671,11 +564,10 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </svg>
     </div>
   </div>
-  <p class="chart-caption">Reward is the mean binary task reward over each 64-rollout training
-    batch, noisy by construction (a handful of distinct tasks per batch), a per-batch success-rate
-    snapshot, not a windowed average itself, distinct from the held-out pass@1 numbers earlier on
-    this page. The two loss charts are shown separately, not overlaid, because they aren't the same
-    quantity: Arm A's is plain GRPO, Arm B's also includes the auxiliary CE term.</p>
+  <p class="chart-caption">Reward is the mean binary task reward per 64-rollout training batch,
+    noisy by construction and distinct from the held-out pass@1 numbers above. The two loss charts
+    aren't overlaid because they aren't the same quantity: Arm A's is plain GRPO, Arm B's includes
+    the auxiliary CE term.</p>
 </section>
 
 <section class="section" id="demo">
@@ -818,11 +710,10 @@ patch applied</code></div>
 <section class="section" id="next">
   <p class="section-kicker">Follow-up experiments</p>
   <h2 class="section-title">Pure RLVR can't lift a token it never samples; CE can</h2>
-  <p class="section-lede">Follow-up runs since the table above converged on one mechanism: GRPO's
-    policy gradient only reaches tokens a rollout actually sampled. An SFT-init policy that
-    predicts a rare failure class ~5% of the time gives on-policy RL almost nothing to correct, no
-    matter how the reward or exploration is tuned. A CE loss straight off the verified label
-    doesn't have that problem, because it doesn't need the token sampled first.</p>
+  <p class="section-lede">Follow-up runs converged on one mechanism: GRPO's policy gradient only
+    reaches tokens a rollout actually sampled. A policy that predicts a rare failure class ~5% of
+    the time gives on-policy RL almost nothing to correct, no matter how reward or exploration is
+    tuned. CE on the verified label doesn't need the token sampled first.</p>
   <div class="next-grid">
     <div class="next-card" style="opacity:0.7">
       <div class="next-num" style="color:#ef4444">ruled out</div>
