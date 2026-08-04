@@ -131,7 +131,7 @@ runs):
 
 Raw traces, eval/serve logs, and training artifacts (configs, W&B, trainer
 logs) for both arms are archived under the gitignored
-[`PREDICT_RL_RESULTS/`](../PREDICT_RL_RESULTS/) directory
+[`RESULTS_PUBLISHED/`](../RESULTS_PUBLISHED/) directory
 (`RL_ARM_{A,B}_{25,50,75,100}/eval/` for seed 42,
 `RL_ARM_{A,B}_V1_{25,50,75,100}/eval/` for seed 43, `RL_ARM_A_sft/eval/` for
 the freshly re-evaluated Arm A SFT baseline, and the four `*_shared/` dirs).

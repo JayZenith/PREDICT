@@ -76,7 +76,7 @@ efficiency win — a trade.
 Checkpoints: `JayZenith/RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0` (seed 42),
 `RLVR_ARM_{A,B}_STEP{25,50,75,100}_V1` (seed 43). Raw traces, eval/serve logs, and
 training artifacts archived under the gitignored
-[`PREDICT_RL_RESULTS/`](../PREDICT_RL_RESULTS/) directory. Full reproduction
+[`RESULTS_PUBLISHED/`](../RESULTS_PUBLISHED/) directory. Full reproduction
 steps and the complete comparison tables: [`docs/REPRODUCTION.md`](REPRODUCTION.md).
 
 # SFT complete: moving to RLVR
@@ -156,8 +156,8 @@ the gold code, giving a genuine three-cycle example; the remaining 50 keep
 the one-step shadow/visible split (25/25).
 
 Local configs, logs, W&B runs, and raw sampling traces for the SFT stage are
-archived under the gitignored `PREDICT_SFT_RESULTS/` directory (RLVR
-artifacts are in `PREDICT_RL_RESULTS/`, see the results section above).
+archived under the gitignored `RESULTS_SFT/` directory (RLVR
+artifacts are in `RESULTS_PUBLISHED/`, see the results section above).
 
 ## What was actually hindering Arm B
 
