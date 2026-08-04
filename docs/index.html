@@ -192,7 +192,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="tagline"><b style="color:#39ff14">What happened:</b> RLVR beat SFT for both agents. The
     predictor was already dead before RL started &mdash; the SFT checkpoint called PASS on
     <b>100%</b> of eval candidates, when PASS was the true outcome 20% of the time. That start is
-    the curriculum's, not a surprise: the SFT traces label PASS about 85% of the time. CE partially
+    the curriculum's, not a surprise: 257 of the 302 prediction labels in the SFT traces are PASS.
+    CE partially
     revived it: RUNTIME_ERROR went from never predicted to 16% of predictions at 63% recall in seed
     42, 11% at 50% in seed 43, and prediction accuracy rose 44.7% &rarr; 53.2% in both. ASSERTION_FAILURE, the true outcome
     57&ndash;61% of the time, was never once predicted correctly at any checkpoint.</p>
@@ -449,6 +450,14 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     it had real recall on. Counted from
     <code>run_default/rollouts/step_*/train/all/traces.jsonl</code>.</p>
 
+  <p class="section-lede mt-md"><span class="block-label">And not a lack of demonstrations</span>The
+    SFT curriculum is more lopsided still &mdash; of its 302 prediction labels, 257 are PASS, 37
+    ASSERTION_FAILURE, 8 RUNTIME_ERROR, and zero SYNTAX_ERROR or TIMEOUT. Which settles it the wrong
+    way round for the scarcity story: <b>ASSERTION_FAILURE was demonstrated 4.6&times; more often
+    than RUNTIME_ERROR, and RUNTIME_ERROR is the one that came back.</b> Eight examples were enough
+    to teach a class the model can spot in the code; thirty-seven were not enough to teach one it
+    can't. Counted from <code>data/sft/arm_b/train.jsonl</code>, assistant turns only.</p>
+
   <div class="callout crit">
     <div class="callout-label">It isn't a routing problem</div>
     The obvious suspect is loss routing &mdash; RLVR drowning CE on a shared span. That was
@@ -641,6 +650,12 @@ patch applied</code></div>
       <code>STREAM_FILL</code>) and <code>stamp_loss_routing</code> returns early for
       <code>action_loss_type = "rl"</code> without clobbering a stream the algorithm already wrote
       &mdash; which is why the explicit zeros survive and why this can only be settled from source.</li>
+
+      <li><span class="learned-tag">SFT curriculum</span><code>data/sft/arm_b/train.jsonl</code>,
+      212 traces. Count <code>&lt;PREDICTION&gt;</code> labels in <b>assistant</b> turns only &mdash;
+      each trace's system prompt contains a literal <code>&lt;PREDICTION&gt;OUTCOME&lt;/PREDICTION&gt;</code>
+      placeholder that inflates a naive regex by exactly 212. Assistant labels: 257 PASS, 37
+      ASSERTION_FAILURE, 8 RUNTIME_ERROR, 0 SYNTAX_ERROR, 0 TIMEOUT.</li>
 
       <li><span class="learned-tag">Prior write-up</span><code>docs/blog.md</code> (24 Jul, three
       days after the runs) is the contemporaneous record and states the masking, the SFT label
