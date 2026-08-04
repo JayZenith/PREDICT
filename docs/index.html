@@ -193,8 +193,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     predictor was already dead before RL started &mdash; the SFT checkpoint called PASS on
     <b>100%</b> of eval candidates, when PASS was the true outcome 20% of the time. That start is
     the curriculum's, not a surprise: the SFT traces label PASS about 85% of the time. CE partially
-    revived it: RUNTIME_ERROR went from never predicted to 16% of predictions at 63% recall, and
-    prediction accuracy rose 44.7% &rarr; 53.2% in both seeds. ASSERTION_FAILURE, the true outcome
+    revived it: RUNTIME_ERROR went from never predicted to 16% of predictions at 63% recall in seed
+    42, 11% at 50% in seed 43, and prediction accuracy rose 44.7% &rarr; 53.2% in both. ASSERTION_FAILURE, the true outcome
     57&ndash;61% of the time, was never once predicted correctly at any checkpoint.</p>
   <p class="tagline"><b style="color:#39ff14">Why:</b> not a plumbing problem. The policy-gradient
     weight on the prediction tokens is zeroed by construction, so CE on the verified label is the
@@ -291,8 +291,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </svg></div>
   <p class="chart-caption">Arm A has one recovery path: run the test, see it fail, patch again.
     Arm B has two &mdash; <b>visible</b> (predicted PASS, kept, the real test caught it) and
-    <b>shadow</b> (predicted a failure, revised before the real test ran). Only the shadow path
-    uses the predictor. The SFT curriculum teaches both in equal share. On the test set both arms
+    <b>shadow</b> (predicted a failure, revised before the real test ran). In the visible path the
+    test catches the bug; in the shadow path the prediction does. The SFT curriculum teaches both
+    in equal share. On the test set both arms
     recover on 12&ndash;17% of rollouts whose first test failed, and RLVR moved that in neither arm
     (<a href="#diagnosis">diagnosis</a>).</p>
 </section>
@@ -399,10 +400,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     them &mdash; the recovery half of the SFT curriculum does that work, and a hundred RLVR steps
     produced no detectable change. McNemar, paired on identical tasks, n=500.</p>
 
-  <p class="section-lede mt-lg"><span class="block-label">The prediction shows the same thing, harder</span>Decision-following is
-    solid: REVISE follows a non-PASS prediction 100% of the time, KEEP follows a PASS prediction
-    96&ndash;99%. The failure is <b>discrimination</b> &mdash; telling, from the candidate code
-    alone, whether it will pass, crash, or run fine and fail the assertion. At RL step 100, seed 42:</p>
+  <p class="section-lede mt-lg"><span class="block-label">The prediction fails for a different reason</span>The gate
+    itself works. REVISE follows a non-PASS prediction 100% of the time, KEEP follows a PASS
+    prediction 96&ndash;99%. What the agent can't do is <b>discriminate</b> &mdash; tell, from the
+    candidate code alone, whether it will pass, crash, or run fine and fail the assertion. At RL
+    step 100, seed 42:</p>
 
   <div class="chart-wrap"><svg viewBox="0 0 620 220" class="chart-svg" role="img" aria-label="bar chart">
 <line x1="16" y1="186.0" x2="604" y2="186.0" stroke="#7a7a7a" stroke-width="1"/>
