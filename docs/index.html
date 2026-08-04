@@ -197,13 +197,13 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     revived it: RUNTIME_ERROR went from never predicted to 16% of predictions at 63% recall in seed
     42, 11% at 50% in seed 43, and prediction accuracy rose 44.7% &rarr; 53.2% in both. ASSERTION_FAILURE, the true outcome
     57&ndash;61% of the time, was never once predicted correctly at any checkpoint.</p>
-  <p class="tagline"><b style="color:#39ff14">Why:</b> not a plumbing problem. The policy-gradient
-    weight on the prediction tokens is zeroed by construction, so CE on the verified label is the
-    only thing directly teaching them. CE had that channel to itself and still moved only one class.
-    The split is what each class requires: a crash is legible in the code, so RUNTIME_ERROR came
-    back from nothing. Calling ASSERTION_FAILURE means knowing your own patch is semantically
-    wrong, which is the task itself &mdash; and that never came back. <i>Neither agent is confirmed
-    better than the other.</i></p>
+  <p class="tagline"><b style="color:#39ff14">Why:</b> nothing is broken in the wiring. RLVR is
+    masked off the prediction on purpose, so CE on the verified outcome is the only thing teaching
+    it &mdash; and it still only taught one class. The two classes need different things. Spotting a
+    crash is reading the code for an undefined name or a bad index, and the model picked that up
+    from 8 examples. Spotting a wrong answer means knowing the code is wrong, which is the job it
+    was already failing at. 37 examples didn't teach it. <i>Neither agent is confirmed better than
+    the other.</i></p>
 </header>
 
 <section class="section" id="setup">
