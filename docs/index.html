@@ -193,12 +193,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     predictor collapsed anyway. It called PASS on 79% of candidates while only 30% of them actually
     passed, and never once correctly called ASSERTION_FAILURE &mdash; the single most common
     outcome, at 50%. Not for lack of exposure: its own patches failed roughly 70% of the time.</p>
-  <p class="tagline"><b style="color:#39ff14">Why:</b> reward doesn't ignore the prediction, it
-    fights it. GRPO reinforces tokens from rollouts that succeeded, and those are mostly ones where
-    PASS was right &mdash; so PASS gets upweighted whether the prediction earned it or not. With
-    five times the CE weight it still sat at 95.5%; masked from RL, 73%. CE is the only thing that
-    moves it. <i>In progress: partial fix, and neither agent is confirmed better than the
-    other.</i></p>
+  <p class="tagline"><b style="color:#39ff14">Why:</b> the reward never scores the prediction. It
+    grades one thing &mdash; whether the final test passes. So the prediction span gets a gradient
+    from GRPO but no signal about whether the call was right, and the only thing training it is the
+    CE loss on the verified label, at weight 0.1, against outcomes that are 50% ASSERTION_FAILURE
+    and 30% PASS. That wasn't enough. <i>Neither agent is confirmed better than the other.</i></p>
 </header>
 
 <section class="section" id="setup">
@@ -546,26 +545,22 @@ patch applied</code></div>
 <section class="section" id="next">
   <p class="section-kicker">Follow-up experiments</p>
   <h2 class="section-title">Where this goes next</h2>
-  <p class="section-lede">Runs since the table above, testing the fix the diagnosis implies.</p>
+  <p class="section-lede">Both follow from the diagnosis: the prediction has no reward term, and
+    CE alone at 0.1 didn't carry it.</p>
   <div class="next-grid">
     <div class="next-card">
-      <div class="next-num" style="color:#39ff14">confirmed, partial</div>
-      <div class="next-title">CE + RLVR hybrid</div>
-      <p>Adding a verified-label CE sample without masking the span from RL, so both losses land
-      on the same tokens. RUNTIME_ERROR recall was 63% under the original masked-CE design,
-      collapsed to 0% once RLVR alone touched the span, and came back to a consistent 2&ndash;4%
-      with the hybrid &mdash; real, and well short of 63%. Variants of RLVR alone (asymmetric
-      penalty, 4&times; group size) never moved it off 0%.</p>
-      <p style="margin-top:12px">It also stayed worse than the original masked design, which is
-      the PASS-reinforcement effect described up top. Isolating it is the next run.</p>
+      <div class="next-num">next</div>
+      <div class="next-title">Score the prediction</div>
+      <p>Add a reward term on prediction accuracy, weighted per class so ASSERTION_FAILURE is worth
+      more than PASS, and penalize calling PASS on a patch that fails. Right now the prediction is
+      the one behavior the agent is asked for that nothing grades.</p>
     </div>
     <div class="next-card">
       <div class="next-num">next</div>
-      <div class="next-title" style="color:#00d17a">A real checkpoint, a real eval</div>
-      <p>Everything above comes from rollout-diagnostic snapshots during training, not a finished
-      run evaluated at n=500. The next concrete step is running the hybrid to a real checkpoint and
-      scoring it properly, plus an ablation isolating CE's contribution from RL's (CE-only vs. the
-      hybrid) to confirm which one is actually breaking the collapse.</p>
+      <div class="next-title" style="color:#00d17a">Turn CE up and sweep it</div>
+      <p>CE weight was fixed at 0.1 for both seeds and never varied, so its ceiling is unknown.
+      A sweep says whether the collapse is a weight problem or a signal problem &mdash; and it is
+      cheap, since it reuses the same SFT checkpoint.</p>
     </div>
   </div>
 
@@ -573,7 +568,7 @@ patch applied</code></div>
     <div class="callout-label">What this run establishes, and what it doesn't</div>
     <b>Established:</b> the mechanism trains end-to-end and replicates across seeds; RLVR improves
     both arms over their own SFT baselines in all four runs; and the predictor's blind spot has a
-    diagnosed cause that a CE loss partially, measurably reverses.
+    diagnosed cause &mdash; no reward term scores the prediction.
     <div style="margin-top:9px"><b>Not established:</b> that prediction improves performance. No
     checkpoint shows a confirmed Arm A vs. Arm B difference, the predictor is not calibrated, and
     Arm B changes several things at once &mdash; the protocol, the action space, the CE loss, and
