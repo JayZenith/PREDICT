@@ -191,13 +191,14 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     recipe for both.</p>
   <p class="tagline"><b style="color:#39ff14">What happened:</b> RLVR beat SFT for both agents. The
     predictor was already dead before RL started &mdash; the SFT checkpoint called PASS on
-    <b>100%</b> of eval candidates, when PASS was the true outcome 20% of the time. CE partially
+    <b>100%</b> of eval candidates, when PASS was the true outcome 20% of the time. That start is
+    the curriculum's, not a surprise: the SFT traces label PASS about 85% of the time. CE partially
     revived it: RUNTIME_ERROR went from never predicted to 16% of predictions at 63% recall, and
     prediction accuracy rose 44.7% &rarr; 53.2% in both seeds. ASSERTION_FAILURE, the true outcome
     57&ndash;61% of the time, was never once predicted correctly at any checkpoint.</p>
-  <p class="tagline"><b style="color:#39ff14">Why:</b> not a plumbing problem. The prediction span
-    is trained by CE alone, by construction &mdash; the policy-gradient weight on those tokens is
-    zeroed, so RLVR never competes for them. CE had a clean channel and still only moved one class.
+  <p class="tagline"><b style="color:#39ff14">Why:</b> not a plumbing problem. The policy-gradient
+    weight on the prediction tokens is zeroed by construction, so CE on the verified label is the
+    only thing directly teaching them. CE had that channel to itself and still moved only one class.
     The split is what each class requires: a crash is legible in the code, so RUNTIME_ERROR came
     back from nothing. Calling ASSERTION_FAILURE means knowing your own patch is semantically
     wrong, which is the task itself &mdash; and that never came back. <i>Neither agent is confirmed
@@ -450,9 +451,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     <div class="callout-label">It isn't a routing problem</div>
     The obvious suspect is loss routing &mdash; RLVR drowning CE on a shared span. That was
     designed out. <code>PredictAlgorithm._mask_sampled_labels</code> zeroes the policy-gradient
-    weight on exactly the sampled outcome-label tokens, so the prediction is trained by CE on the
-    verified label and nothing else, while GRPO trains the rest of the rollout normally. The two
-    losses never touch the same tokens.
+    weight on exactly the sampled outcome-label tokens, so CE on the verified label is the only
+    <i>direct</i> teacher there, while GRPO trains the rest of the rollout normally. Not a hermetic
+    seal &mdash; both losses update the same weights, so gradient at the surrounding
+    <code>&lt;DECISION&gt;</code> and action tokens can still reshape the masked positions
+    indirectly. But no reward term reaches those tokens on purpose.
     <div style="margin-top:9px">So CE had an uncontested channel, and the result splits by class
     anyway. RUNTIME_ERROR was resurrected from near-zero: a crash leaves marks in the code an
     inspector can find. ASSERTION_FAILURE never came back at any checkpoint, in either seed,
@@ -620,17 +623,13 @@ patch applied</code></div>
       <li><span class="learned-tag">The prediction is CE-only &mdash; read the right commit</span>
       <b>Do not read <code>src/glyph/prime_rl.py</code> at HEAD to understand these runs.</b> At
       HEAD the prediction span is trained by RLVR and CE together; in these runs it was CE only.
-      The version in force was <code>9f452aa</code> (19 Jul), whose
+      The version that ran is pinned in the README: SFT at <code>6884983</code>, RLVR at
+      <code>9eefac7</code> (21 Jul 00:15, ~70 min before the first run started). Its
       <code>PredictAlgorithm._mask_sampled_labels</code> sets <code>rl_weights = 0.0</code> on the
       sampled outcome-label tokens, so the policy gradient never reaches them. That method was
-      <i>deleted</i> on 1 Aug by <code>c5b261b</code> ("RLVR the prediction span directly"); HEAD is
-      four commits past it.
-      <div style="margin-top:9px"><b>No git sha was recorded with these runs</b> &mdash; not in
-      <code>orch.toml</code>, the wandb files, or the eval logs; the only sha-shaped string there is
-      a vLLM compile-cache hash. The version above is inferred from two independent facts: all four
-      runs started 21 Jul 2026, ten days before the deletion, and their <code>alpha = 0.1</code>
-      carries no per-class multiplier, which arrived in <code>c7c9991</code> on 2 Aug. Recording the
-      sha is the first thing to fix in the next run.</div></li>
+      <i>deleted</i> on 1 Aug by <code>c5b261b</code> ("RLVR the prediction span directly"), which
+      lives only on the <code>rl/*</code> branches &mdash; <code>main</code> still carries the
+      masked version, byte-identical to <code>9eefac7</code>.</li>
 
       <li><span class="learned-tag">Why the traces can't tell you this</span>The <code>mask</code>
       field on a trace node is the <i>tokenization</i> loss mask, not the RL weight. It is true on
@@ -640,6 +639,11 @@ patch applied</code></div>
       <code>STREAM_FILL</code>) and <code>stamp_loss_routing</code> returns early for
       <code>action_loss_type = "rl"</code> without clobbering a stream the algorithm already wrote
       &mdash; which is why the explicit zeros survive and why this can only be settled from source.</li>
+
+      <li><span class="learned-tag">Prior write-up</span><code>docs/blog.md</code> (24 Jul, three
+      days after the runs) is the contemporaneous record and states the masking, the SFT label
+      imbalance, and the RUNTIME_ERROR-is-surface-detectable argument. Read it before re-deriving
+      any of this.</li>
     </ol>
   </div>
 </section>
