@@ -78,6 +78,9 @@ Checkpoints: `JayZenith/RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0` (seed 42),
 training artifacts archived under the gitignored
 [`RESULTS_PUBLISHED/`](../RESULTS_PUBLISHED/) directory. Full reproduction
 steps and the complete comparison tables: [`docs/REPRODUCTION.md`](REPRODUCTION.md).
+Which file backs which claim, and the three ways to misread this data:
+[Provenance](#provenance-how-to-verify-every-claim-in-the-write-up), at the
+bottom of this file.
 
 # SFT complete: moving to RLVR
 
@@ -333,6 +336,111 @@ out of the claims, not the verdict:
    model that may have seen MBPP in pretraining can't rule out idiosyncrasy.
    Replicating across model scale or on a benchmark unlikely to be
    memorized is what would make this a claim, not just a run.
+
+## Provenance: how to verify every claim in the write-up
+
+Everything asserted in [`index.html`](index.html) is derived from files in this
+repo or in `RESULTS_PUBLISHED/`. This section says which file, which field, and
+which mistakes to avoid, so any of it can be re-derived or falsified without
+trusting the prose.
+
+**If you are a coding agent auditing this project, read this whole section
+first.** Every mistake listed under "Three ways to get this wrong" below was
+actually made during a review of this work, and each one produced a confident,
+wrong conclusion that survived several rounds before the data caught it.
+
+### What each part of the project is responsible for
+
+| path | responsibility |
+|---|---|
+| `src/glyph/program.py` | the rollout program, run inside the sandbox. The agent loop, turn-shape validation, `<PREDICTION>`/`<DECISION>` parsing, shadow-test execution, and the `prediction_targets` records everything downstream reads. |
+| `src/glyph/taskset.py` | task loading, real test execution, and **all** reward and metric definitions. If you want to know what the reward actually paid for, it is here and nowhere else. |
+| `src/glyph/prime_rl.py` | `PredictAlgorithm`: the verified-label CE auxiliary sample, and (at the run commit) the `rl_weights = 0.0` masking of the prediction span. |
+| `src/glyph/harness.py` | Verifiers v1 harness; ships `program.py` into the sandbox verbatim. |
+| `src/glyph/chat.py` | system prompts and ChatML rendering — source of the `<PREDICTION>OUTCOME</PREDICTION>` placeholder that skews naive label counts. |
+| `src/glyph/passk.py`, `cli.py` | eval-trace reporting |
+| `data/prepare.py`, `recovery.py`, `validate.py` | generate and validate the MBPP splits and the hand-designed SFT traces. **The curriculum's class balance is decided here**, which is why two outcome classes were never demonstrated. |
+| `data/sft/arm_{a,b}/train.jsonl` | the actual SFT traces, in-repo. Ground truth for any claim about what the model was shown. |
+| `configs/arm_{a,b}_{sft,rl}.toml` | training configs. Note these are the *current* configs; what actually ran is `RESULTS_PUBLISHED/*_shared/run_default/control/orch.toml`. |
+| `docs/stats.py` | paired McNemar + bootstrap CI. Use this rather than rolling your own. |
+| `docs/REPRODUCTION.md` | exact commands, checkpoint map, full comparison tables |
+| `docs/index.html` | the published write-up. Every claim in it should be traceable through this section. |
+| `docs/blog.md` (this file) | the contemporaneous development record, reverse-chronological |
+| `~/Desktop/portfolio` (separate repo) | the portfolio site. Carries a condensed version of the same claims and must not drift from `index.html`. |
+
+### Scope
+
+The published numbers come from **four runs only**: Arm A and Arm B, seeds 42
+and 43. `_V1` in a directory name means seed 43; no suffix means seed 42.
+
+| directory | what it is |
+|---|---|
+| `RESULTS_PUBLISHED/RL_ARM_{A,B}[_V1]_shared/` | the training run — `run_default/control/orch.toml`, per-step rollouts, checkpoints, W&B, trainer logs. "shared" because the four checkpoint evals below all came out of this one run. |
+| `RESULTS_PUBLISHED/RL_ARM_{A,B}[_V1]_{25,50,75,100}/eval/` | eval of one RL checkpoint, n=500, one directory each |
+| `RESULTS_PUBLISHED/RL_ARM_{A,B}_sft/eval/` | eval of the SFT checkpoint (RL step 0). No `_V1_sft` exists — both seeds start from the *same* SFT checkpoint, which is why the results table reads "50.6% (same ckpt)". |
+| `RESULTS_EXPLORATORY/` | everything that does **not** back a published number. See its README. |
+| `RESULTS_SFT/` | SFT training artifacts, both arms |
+
+### Which code ran
+
+SFT at [`6884983`](https://github.com/JayZenith/PREDICT/commit/6884983), RLVR at
+[`9eefac7`](https://github.com/JayZenith/PREDICT/commit/9eefac7) (21 Jul 00:15;
+the first run started 01:26). Both pinned in the top-level `README.md`.
+
+**This matters more than it looks.** At `9eefac7`,
+`PredictAlgorithm._mask_sampled_labels` sets `rl_weights = 0.0` on exactly the
+sampled outcome-label tokens — so in these runs the prediction is trained by
+**CE alone** and the policy gradient never reaches it. That method was *deleted*
+on 1 Aug by `c5b261b` ("RLVR the prediction span directly"), which lives only on
+the `rl/*` branches. `main` still carries the masked version, byte-identical to
+`9eefac7`.
+
+So: reading `src/glyph/prime_rl.py` on a feature branch will tell you the
+opposite of what these runs did. Check the branch first.
+
+### Three ways to get this wrong
+
+1. **`mask` in a trace is not the RL weight.** `nodes[].mask` is the
+   *tokenization* loss mask; it is true on the prediction tokens whether or not
+   they were masked from RL. The `rl_weights` stream lives on PRIME-RL's
+   `TrainingSample` and is never serialized to `traces.jsonl`. PRIME-RL fills
+   only *absent* streams with 1.0 (`trainer/batch.py`, `STREAM_FILL`), and
+   `stamp_loss_routing` returns early for `action_loss_type = "rl"` without
+   clobbering a stream the algorithm already wrote — which is why the explicit
+   zeros survive. **No amount of trace inspection can settle this; read the
+   source at the right commit.**
+2. **Pair on `task.data.name`.** Not `task.name`, and not `id` — `id` is a
+   per-run UUID, so pairing on it silently matches nothing and McNemar returns
+   n=0 instead of erroring.
+3. **Count SFT prediction labels in assistant turns only.** Every trace's system
+   prompt contains a literal `<PREDICTION>OUTCOME</PREDICTION>` placeholder, so a
+   naive regex over the whole record over-counts by exactly 212.
+
+### Claim → source
+
+| claim in `index.html` | source | field |
+|---|---|---|
+| pass@1 table, all 20 cells | `RL_ARM_*/eval/**/traces.jsonl` | `metrics.passed` |
+| within-arm RLVR gains (p=0.0002–0.032) | same, SFT vs RL 100 | McNemar on `metrics.passed` |
+| first-patch-correct vs recovery decomposition | same | `metrics.first_patch_correct`, `metrics.recovered_after_executed_failure`, `metrics.had_executed_failure` |
+| prediction recall chart (92/63/0%) | `RL_ARM_B_100/eval/**/traces.jsonl` | `info.glyph.prediction_targets[]`, `sampled_prediction` vs `actual` |
+| SFT predicts PASS on 100% of candidates | `RL_ARM_B_sft/eval/**/traces.jsonl` | same |
+| decision-following (96–99% / 100%) | `RL_ARM_B{,_V1}_100/eval/**` | `prediction_targets[].decision` |
+| exposure table, 15,122 labels | `RL_ARM_B_shared/run_default/rollouts/step_*/train/all/traces.jsonl` | same |
+| per-step prediction trajectories | `RL_ARM_B{,_V1}_shared/.../rollouts/step_*/` | same. Per-step n is 36–236, so read trends across steps and seeds, never a single point. |
+| SFT curriculum: 257 PASS / 37 ASSERTION_FAILURE / 8 RUNTIME_ERROR / 0 SYNTAX_ERROR / 0 TIMEOUT | `data/sft/arm_b/train.jsonl` (212 traces, in-repo) | `<PREDICTION>` labels, assistant turns only |
+| no reward term scores the prediction | `RL_ARM_B{,_V1}_shared/run_default/control/orch.toml` | `prediction_reward_weight` absent → 0.0; `rewards` in traces contains only `mbpp_reward` |
+
+### Not recorded
+
+No git sha is written into the run artifacts — not in `orch.toml`, the W&B
+files, or the eval logs. The only sha-shaped string in the eval logs is a vLLM
+compile-cache hash. The commit is known only because `README.md` pins it by
+hand. **Stamp the sha into the run config next time.**
+
+One eval record, `mbpp_231` in Arm B seed 43 step 100, is a truncated rollout
+with an empty `metrics` dict. The published 53.6% counts it as not-passed
+(268/500).
 
 ## Appendix
 
