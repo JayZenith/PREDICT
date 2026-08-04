@@ -501,6 +501,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     leaves the conditional one alone.
   </div>
 
+
   <p class="section-lede mt-lg"><span class="block-label">Training dynamics</span>Real training dynamics, seed 42, both arms overlaid: reward from
     the orchestrator's per-step train-batch logs, entropy and loss from the trainer's per-step logs,
     not eval. Each line is a 5-step centered moving average.</p>
@@ -568,6 +569,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     noisy by construction and distinct from the held-out pass@1 numbers above. The two loss charts
     aren't overlaid because they aren't the same quantity: Arm A's is plain GRPO, Arm B's includes
     the auxiliary CE term.</p>
+
 </section>
 
 <section class="section" id="demo">
@@ -655,57 +657,6 @@ patch applied</code></div>
   </div>
 </section>
 
-<section class="section" id="learned">
-  <p class="section-kicker">What I learned</p>
-  <h2 class="section-title">Seven things this run actually taught</h2>
-  <p class="section-lede">Not the results table: the methodology and architecture lessons
-    that came from digging into why the results looked the way they did.</p>
-
-  <div class="card">
-    <ol class="learned-list">
-      <li><span class="learned-tag">Reward shaping</span><b>The curriculum deliberately taught
-      both recovery paths; reward decided which one survived.</b> Half of Arm B's recovery
-      examples teach the visible path (predict PASS on a buggy candidate, honest mistake, the
-      real test catches it, fix), half the shadow path (correctly predict the failure, REVISE,
-      fix), symmetric on purpose so RL would sample and improve both. But reward pays out the
-      same either way, so the easier path won and the shadow skill decayed. The curriculum sets
-      the menu; reward sets the diet.</li>
-      <li><span class="learned-tag">Exposure isn't learning</span><b>Rare at one stage isn't rare at
-      another.</b> Only 37 of 302 SFT labels are real
-      <code style="color:#ef4444">ASSERTION_FAILURE</code> examples, but RL logs show the model
-      sees this outcome constantly during training. The 0% recall isn't a data-scarcity problem.</li>
-      <li><span class="learned-tag">Noise vs. real wins</span><b>One training run is an
-      anecdote.</b> Seed 1 made Arm A look ahead at steps 25 and 100. Both effects were noise that
-      vanished under a second independent run.</li>
-      <li><span class="learned-tag">Tokens aren't required to think</span><b>Predicting with no
-      visible tokens isn't automatically a dead end.</b> ECHO
-      (<a href="#architecture">this project's inspiration</a>) trains a CE loss with no visible
-      reasoning either, and still doubles pass@1 elsewhere. The likely difference: its target is a
-      dense, multi-token observation; ours is one label from a 6-way enum, which may be why
-      simulation never took hold.</li>
-      <li><span class="learned-tag">Pressure vs. reasoning</span><b>Loss weight moves emission,
-      not understanding.</b> The &lambda; sweep (10&times; weight, 2&times; steps, 0% recall
-      unchanged) suggests RLVR's exploration here was never generating the useful gradient to
-      begin with &mdash; no amount of CE weight rescues a signal that isn't shaped right. That
-      points at a broader split: RLVR's exploratory rollouts are what would have to discover
-      &ldquo;this state pattern precedes an assertion failure,&rdquo; while CE/distillation-style
-      losses mainly reinforce imitation of labels the model already can or can't produce. Turning
-      up &lambda; leans harder on the imitation side; it can't buy the exploratory discovery that
-      was missing.</li>
-      <li><span class="learned-tag">On-policy RL can't lift a token it never samples</span><b>The
-      real mechanism behind the blind spot.</b> An SFT-init policy that samples a class ~5% of the
-      time gives GRPO's policy gradient almost nothing to credit or blame, no matter how reward or
-      exploration is tuned; a CE loss on the verified label doesn't have that problem, since it
-      doesn't need the token sampled first. Full experiment log in
-      <a href="#next">follow-up experiments</a> below.</li>
-      <li><span class="learned-tag">The label isn't a fixed dataset stat</span><b>&ldquo;Rare
-      outcome&rdquo; can mean two different things, and only one is fixable by reward design.</b>
-      <code>actual</code> is whatever happens when the model's own generated code gets executed, not
-      a static class balance in a training file &mdash; so no reward or CE weight can manufacture an
-      occurrence that doesn't happen. Details in <a href="#next">follow-up experiments</a> below.</li>
-    </ol>
-  </div>
-</section>
 
 <section class="section" id="next">
   <p class="section-kicker">Follow-up experiments</p>
@@ -735,14 +686,6 @@ patch applied</code></div>
       the original masked-CE design above, collapsed to 0.0% once RLVR touched the span directly
       (the row above), then recovered to consistently nonzero (~2&ndash;4%) with the hybrid &mdash;
       still well short of 63%. SYNTAX_ERROR and TIMEOUT stayed at zero throughout.</p>
-    </div>
-    <div class="next-card">
-      <div class="next-num" style="color:#f5e400">in progress</div>
-      <div class="next-title">Rarity-weighted reward and CE weight</div>
-      <p>Scaled both the RL reward and the CE weight (&lambda;) by measured class rarity
-      (ASSERTION_FAILURE common, RUNTIME_ERROR rarer, SYNTAX_ERROR/TIMEOUT rarer still) instead of
-      one flat bonus. Early read: doesn't obviously beat the flat version yet within the steps
-      checked so far &mdash; open question below.</p>
     </div>
     <div class="next-card">
       <div class="next-num" style="color:#4d9fff">open question</div>
@@ -779,28 +722,6 @@ patch applied</code></div>
   </div>
 </section>
 
-<section class="section appendix" id="appendix">
-  <p class="section-kicker">Appendix</p>
-  <h2 class="section-title">Beyond Code Verification: Research Judgment</h2>
-  <p>One unexpected lesson came from reviewing the experiment itself. I initially described Arm A
-    as a baseline and Arm B as a single added variable. That framing was too clean: Arm B also
-    changed the trace format, action protocol, auxiliary loss, and decision space. The two arms are
-    better understood as comparative training systems, not a strict causal ablation.</p>
-  <p>The coding agent helped build and document the project, and was also used as an adversarial
-    reviewer of the blog and project framing itself, but it did not catch that experimental claim
-    on its own. It's not that research judgment has no verifier: reconstructing the experiment and
-    checking whether the conclusion follows is checkable. The harder problem is horizon. A real
-    research project runs for days to months, so the parts worth auditing are scattered across a
-    span no context window holds directly, which forces summarization and compression, and RL over
-    that compressed history has much cruder credit assignment than single-rollout code
-    verification: the reward is many steps removed from the framing decision that produced it.</p>
-  <p>Underneath that, my best guess is this wasn't just a momentary lapse. Catching it required
-    holding a design decision made early against everything that happened after, and noticing they
-    no longer cohere, which is a different skill from spotting a bug in the diff in front of you.
-    Models get heavy RL exposure to the latter and very little to the former, so it's plausible the
-    skill just isn't well-formed yet, not that it's structurally impossible. Though I can't rule out
-    plain inattention either.</p>
-</section>
 
 <footer>
   <hr class="rule">
