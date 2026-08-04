@@ -196,7 +196,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     arms. The predictor is not calibrated, and no checkpoint shows a confirmed Arm A vs. Arm B
     difference. The result here is the failure diagnosis, not a performance win. The original side
     question &mdash; whether predicting first sharpens the model's internal state with no visible
-    tokens to reason in &mdash; stayed untested: it needs a calibrated predictor first.</i></p>
+    tokens to reason in &mdash; stayed untested. The model predicts PASS on nearly everything, so
+    the prediction is close to a constant, and a constant can't sharpen anything.</i></p>
 </header>
 
 <section class="section" id="setup">
