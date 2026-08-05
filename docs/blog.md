@@ -78,7 +78,7 @@ Checkpoints: `JayZenith/RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0` (seed 42),
 training artifacts archived under the gitignored
 [`RESULTS_PUBLISHED/`](../RESULTS_PUBLISHED/) directory. Full reproduction
 steps and the complete comparison tables: [`docs/REPRODUCTION.md`](REPRODUCTION.md).
-Which file backs which claim, and the three ways to misread this data:
+Which file backs which claim, and the four ways to misread this data:
 [Provenance](#provenance-how-to-verify-every-claim-in-the-write-up), at the
 bottom of this file.
 
@@ -345,7 +345,7 @@ which mistakes to avoid, so any of it can be re-derived or falsified without
 trusting the prose.
 
 **If you are a coding agent auditing this project, read this whole section
-first.** Every mistake listed under "Three ways to get this wrong" below was
+first.** Every mistake listed under "Four ways to get this wrong" below was
 actually made during a review of this work, and each one produced a confident,
 wrong conclusion that survived several rounds before the data caught it.
 
@@ -387,6 +387,11 @@ SFT at [`6884983`](https://github.com/JayZenith/PREDICT/commit/6884983), RLVR at
 [`9eefac7`](https://github.com/JayZenith/PREDICT/commit/9eefac7) (21 Jul 00:15;
 the first run started 01:26). Both pinned in the top-level `README.md`.
 
+The configs that actually ran are at
+`RESULTS_PUBLISHED/RL_ARM_*_shared/run_default/control/orch.toml` — Arm A is
+`algo.type = "grpo"`, Arm B is `algo.type = "predict"` with `alpha = 0.1`.
+Neither sets `prediction_reward_weight`, so it is 0.0 in both.
+
 **This matters more than it looks.** At `9eefac7`,
 `PredictAlgorithm._mask_sampled_labels` sets `rl_weights = 0.0` on exactly the
 sampled outcome-label tokens — so in these runs the prediction is trained by
@@ -398,7 +403,7 @@ the `rl/*` branches. `main` still carries the masked version, byte-identical to
 So: reading `src/glyph/prime_rl.py` on a feature branch will tell you the
 opposite of what these runs did. Check the branch first.
 
-### Three ways to get this wrong
+### Four ways to get this wrong
 
 1. **`mask` in a trace is not the RL weight.** `nodes[].mask` is the
    *tokenization* loss mask; it is true on the prediction tokens whether or not
@@ -415,6 +420,11 @@ opposite of what these runs did. Check the branch first.
 3. **Count SFT prediction labels in assistant turns only.** Every trace's system
    prompt contains a literal `<PREDICTION>OUTCOME</PREDICTION>` placeholder, so a
    naive regex over the whole record over-counts by exactly 212.
+4. **Don't mix eval predictions with training-rollout predictions.** The recall
+   and precision figures come from `*/eval/`, which is greedy. The exposure
+   table and the per-step trajectories come from `rollouts/step_*/`, which is
+   sampled at temperature. The two distributions differ and are not
+   interchangeable.
 
 ### Claim → source
 
@@ -424,6 +434,7 @@ opposite of what these runs did. Check the branch first.
 | within-arm RLVR gains (p=0.0002–0.032) | same, SFT vs RL 100 | McNemar on `metrics.passed` |
 | first-patch-correct vs recovery decomposition | same | `metrics.first_patch_correct`, `metrics.recovered_after_executed_failure`, `metrics.had_executed_failure` |
 | prediction recall chart (92/63/0%) | `RL_ARM_B_100/eval/**/traces.jsonl` | `info.glyph.prediction_targets[]`, `sampled_prediction` vs `actual` |
+| RUNTIME_ERROR precision 62.5% / 64.1%, 208 predicted vs 207 actual, 16.1% base rate | `RL_ARM_B{,_V1}_100/eval/**/traces.jsonl` | same. Precision = correct RUNTIME_ERROR predictions ÷ all RUNTIME_ERROR predictions |
 | SFT predicts PASS on 100% of candidates | `RL_ARM_B_sft/eval/**/traces.jsonl` | same |
 | decision-following (96–99% / 100%) | `RL_ARM_B{,_V1}_100/eval/**` | `prediction_targets[].decision` |
 | exposure table, 15,122 labels | `RL_ARM_B_shared/run_default/rollouts/step_*/train/all/traces.jsonl` | same |
