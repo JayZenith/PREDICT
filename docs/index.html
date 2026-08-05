@@ -209,9 +209,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     examples. This did not improve pass@1 because the test reveals runtime errors one turn later
     anyway. ASSERTION_FAILURE, 57% of outcomes and the more useful class to catch early, was never
     predicted correctly.</p>
-  <p class="tagline"><b style="color:#39ff14">Work in progress:</b> train on incorrect solutions
-    sampled from the SFT checkpoint and labeled by execution to improve ASSERTION_FAILURE
-    emissions.</p>
+  <p class="tagline"><b style="color:#39ff14">Next:</b> sample the SFT checkpoint's own failures,
+    label them by execution, and re-SFT on that data.</p>
 </header>
 
 <section class="section" id="architecture">
