@@ -203,7 +203,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     either way, and cross-entropy trains the prediction against the verified outcome, while GRPO
     trains the rest of the rollout but is masked from the prediction label. Arm A is the matched
     test-and-recover baseline: patch, test, react.</p>
-  <p class="tagline"><b style="color:#39ff14">Predictor shows limited promise:</b> Starting from an
+  <p class="tagline"><b style="color:#39ff14">Environment prediction shows limited promise:</b> Starting from an
     SFT checkpoint that always predicted PASS, RLVR produced a RUNTIME_ERROR detector with
     <b>62.5% and 64.1% precision</b> across two seeds, versus a 16% base rate, after only 8 SFT
     examples. This did not improve pass@1 because the test reveals runtime errors one turn later
