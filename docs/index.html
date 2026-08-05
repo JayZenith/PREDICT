@@ -205,7 +205,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     (Arm A): patch, test, react.</p>
   <p class="tagline"><b style="color:#39ff14">Work in progress:</b> RLVR beat SFT for both agents,
     and the prediction mechanism shows some learning. The SFT checkpoint called PASS on <b>100%</b>
-    of candidates, which needs to be corrected in the curriculum: 257 of its 302 prediction
+    of candidates, which needs to be corrected in the SFT process: 257 of its 302 prediction
     labels are PASS. But cross-entropy on verified execution outcomes did create a RUNTIME_ERROR
     detector: <b>62.5% and 64.1% precision</b> across the two seeds, against a 16% base rate, off 8
     demonstrations. ASSERTION_FAILURE, 57% of all outcomes, stayed at zero, never
@@ -289,7 +289,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
       <p>Split 212 SFT / 212 RL, plus 40 validation and a 500-problem test set, scored once after
       every design decision was frozen. The RL stage never trains on a problem SFT already saw. 212
       traces per arm is enough to install an agent protocol. Teaching the outcome classes is a
-      separate job the curriculum only half did: the agent may predict 6 classes, but the SFT traces
+      separate job the SFT process only half did: the agent may predict 6 classes, but the SFT traces
       demonstrate 3, and SYNTAX_ERROR and TIMEOUT appear zero times.</p>
     </div>
   </div>
@@ -306,12 +306,10 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="results">
   <p class="section-kicker">Results</p>
   <h2 class="section-title">RLVR improves both arms over SFT; neither arm beats the other</h2>
-  <p class="section-lede">Each arm was trained twice, independently, from <b>its own</b> SFT
-    checkpoint with two different seeds. Arm A's runs start from the Arm A SFT checkpoint,
-    Arm B's from the Arm B one, so every RLVR gain below is measured against that arm's own baseline
-    (n=500, greedy pass@1). RLVR improves each arm over its own baseline in all four runs. Step 100
-    is interim, and two of the four are still climbing there (+2.8 and +2.4 points over step
-    75).</p>
+  <p class="section-lede">Each arm was trained twice with different seeds, each run starting from
+    <b>its own</b> arm's SFT checkpoint, so every gain below is measured against that arm's own
+    baseline (n=500, greedy pass@1). Step 100 is interim: two of the four runs are still climbing
+    there (+2.8 and +2.4 points over step 75).</p>
 
   <div class="callout good">
     <div class="callout-label">&#10003; Replicated across two seeds</div>
@@ -387,13 +385,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="section-kicker">Diagnosis</p>
   <h2 class="section-title">What RLVR actually changed</h2>
 
-  <p class="section-lede"><span class="block-label">Where the gain landed</span>Recovery rescues
-    12&ndash;17% of the rollouts whose first test failed. The measured gain sits entirely on the
-    first patch. <b>Recovery I can't call either way.</b> The first patch fails on about half the
-    tasks, and when it does, the agent fixes it about 40 times out of ~270. Forty is a small number:
-    even if RLVR did make the agent better at fixing its own broken code, 40 events isn't enough
-    data to see it. So I don't know whether recovery improved, only that I couldn't detect
-    it.</p>
+  <p class="section-lede"><span class="block-label">Where the gain landed</span>The measured gain
+    sits entirely on the first patch. <b>Recovery I can't call either way.</b> The first patch fails
+    on about 270 of the 500 tasks, and the agent then goes on to fix about 40 of them. Forty events
+    is too few to detect a change of a few points, so recovery could have improved and I would not
+    see it.</p>
 
   <table class="data-table">
     <thead><tr><th>SFT &rarr; RL 100</th><th>pass@1</th><th>first patch correct</th><th>p</th><th>recovery | failure</th><th>p</th></tr></thead>
@@ -449,7 +445,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   </table>
   <p class="chart-caption">ASSERTION_FAILURE is the single most common thing that happens and the
     model calls it 3% of the time. RUNTIME_ERROR it calls at almost exactly the right rate. The SFT
-    curriculum says the same thing backwards: <b>ASSERTION_FAILURE was demonstrated 4.6&times; more
+    process says the same thing backwards: <b>ASSERTION_FAILURE was demonstrated 4.6&times; more
     often than RUNTIME_ERROR (37 labels to 8), and RUNTIME_ERROR is the one that came back.</b> So
     it isn't scarcity. The bottom two rows aren't results at all, since SYNTAX_ERROR and TIMEOUT
     were never trained on.</p>
@@ -531,20 +527,24 @@ patch applied</code></div>
   <h2 class="section-title">Three things</h2>
   <div class="card">
     <ol class="learned-list">
-      <li><span class="learned-tag">Rare behavior needs a bigger eval</span><b>500 tasks wasn't
-      enough to measure recovery.</b> Every rollout writes a first patch, so 500 tasks measure it
-      fine. Recovery only happens when that patch fails, and works ~40 times per run. At 40 events
-      you can't tell "it didn't improve" from "I couldn't tell." Size the eval for the rarest thing
-      you want to measure.</li>
-      <li><span class="learned-tag">A clean loss can't teach what the model can't see</span><b>The
-      prediction got ideal supervision and still only learned one class.</b> CE on the true outcome,
-      RLVR masked off those tokens, nothing competing with it. RUNTIME_ERROR came back.
-      ASSERTION_FAILURE, which means knowing your own code is wrong, did not.</li>
-      <li><span class="learned-tag">Two ways a class can be rare</span><b>The labels come from
-      running the model's own code, so the model changes its own data.</b> A class gets rare either
-      because the model stopped guessing it, or because it stopped writing code that does it. The
-      first is fixable with loss weights, the second isn't, and a recall table shows them the
-      same way.</li>
+      <li><span class="learned-tag">The eval has to make the rare thing happen</span><b>MBPP is too
+      easy to measure recovery.</b> Every rollout writes a first patch, so 500 tasks measure that
+      fine. Recovery only fires when the patch fails, which happens on ~270 of the 500, and it
+      succeeds ~40 times. The fix isn't only more tasks, it's harder ones: on problems the agent
+      can't one-shot, every task exercises recovery.</li>
+      <li><span class="learned-tag">Post-training can only reinforce what SFT made emittable</span>
+      <b>CE had ideal conditions and still only landed one class.</b> The loss was on the verified
+      outcome with RLVR masked off those tokens, nothing competing with it, and RUNTIME_ERROR came
+      back off 8 demonstrations. ASSERTION_FAILURE never did off 37. So it isn't the loss and it
+      isn't the count: SFT never made the model able to tell "this code runs but the answer is
+      wrong" apart from PASS, and no downstream loss can reinforce a distinction the model can't
+      make.</li>
+      <li><span class="learned-tag">The model writes its own training data</span><b>The labels come
+      from running the model's own patches, so getting better at patching starves the
+      predictor.</b> When a class shows up rarely in the predictions, two very different things
+      look identical: the model stopped guessing it, or the model stopped producing it. The first
+      is fixable with loss weights, the second isn't, and a recall table can't tell you which one
+      you have.</li>
     </ol>
   </div>
 </section>
@@ -552,15 +552,16 @@ patch applied</code></div>
 <section class="section" id="next">
   <p class="section-kicker">Follow-up experiments</p>
   <h2 class="section-title">Where this goes next</h2>
-  <p class="section-lede">Straight from the diagnosis: the curriculum never demonstrated half the
+  <p class="section-lede">Straight from the diagnosis: the SFT process never demonstrated half the
     outcome classes, and barely demonstrated the one that dominates.</p>
   <div>
     <div class="next-card">
       <div class="next-title">Teach all six classes</div>
-      <p>The curriculum demonstrates PASS, ASSERTION_FAILURE and RUNTIME_ERROR, and never shows
+      <p>The SFT traces demonstrate PASS, ASSERTION_FAILURE and RUNTIME_ERROR, and never show
       SYNTAX_ERROR or TIMEOUT once. Before any conclusion about what the predictor can't learn,
-      it should be shown every class it is asked to emit, with ASSERTION_FAILURE far above 12% of
-      labels. This is a data-generation change, not a training change, so it is the cheapest fix here.</p>
+      it should be shown every class it is asked to emit. ASSERTION_FAILURE is 37 of the 302
+      prediction labels in the SFT set (12%) against 57% of real outcomes, so it needs far more.
+      This is a data-generation change, not a training change, so it is the cheapest fix here.</p>
     </div>
   </div>
 
