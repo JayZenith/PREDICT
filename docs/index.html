@@ -391,18 +391,21 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     sits at its SFT value in all four runs.</p>
 
   <table class="data-table">
-    <thead><tr><th>SFT &rarr; RL 100</th><th>first patch correct</th><th>p</th><th>recovery | failure</th><th>p</th></tr></thead>
+    <thead><tr><th>SFT &rarr; RL 100</th><th>pass@1</th><th>first patch correct</th><th>p</th><th>recovery | failure</th><th>p</th></tr></thead>
     <tbody>
-      <tr><td>Arm A seed 42</td><td>42.8% &rarr; 47.8%</td><td>0.0013</td><td>14.1% &rarr; 16.7%</td><td>0.58</td></tr>
-      <tr><td>Arm A seed 43</td><td>42.8% &rarr; 47.0%</td><td>0.011</td><td>14.1% &rarr; 13.8%</td><td>0.71</td></tr>
-      <tr><td>Arm B seed 42</td><td>41.0% &rarr; 45.4%</td><td>0.0046</td><td>12.8% &rarr; 12.4%</td><td>0.73</td></tr>
-      <tr><td>Arm B seed 43</td><td>41.0% &rarr; 45.8%</td><td>0.0004</td><td>12.8% &rarr; 14.9%</td><td>0.74</td></tr>
+      <tr><td>Arm A seed 42</td><td>50.6% &rarr; 56.4%</td><td>42.8% &rarr; 47.8%</td><td>0.0013</td><td>14.1% &rarr; 16.7%</td><td>0.58</td></tr>
+      <tr><td>Arm A seed 43</td><td>50.6% &rarr; 54.2%</td><td>42.8% &rarr; 47.0%</td><td>0.011</td><td>14.1% &rarr; 13.8%</td><td>0.71</td></tr>
+      <tr><td>Arm B seed 42</td><td>48.2% &rarr; 52.0%</td><td>41.0% &rarr; 45.4%</td><td>0.0046</td><td>12.8% &rarr; 12.4%</td><td>0.73</td></tr>
+      <tr><td>Arm B seed 43</td><td>48.2% &rarr; 53.6%</td><td>41.0% &rarr; 45.8%</td><td>0.0004</td><td>12.8% &rarr; 14.9%</td><td>0.74</td></tr>
     </tbody>
   </table>
-  <p class="chart-caption">Recovery is conditional: of the rollouts whose first executed test
-    failed, the share that later pass one. Both arms already recover, from SFT, on 12&ndash;17% of
-    them &mdash; the recovery half of the SFT curriculum does that work, and a hundred RLVR steps
-    produced no detectable change. McNemar, paired on identical tasks, n=500.</p>
+  <p class="chart-caption"><b>pass@1</b> is the rollout ending green. <b>First patch correct</b> is
+    the subset that needed no second patch &mdash; always the smaller number, and the gap between
+    the two columns is what recovery contributes. <b>Recovery | failure</b> is conditional: of the
+    rollouts whose first executed test failed, the share that later pass one. Both arms already
+    recover on 12&ndash;17% of them at SFT, and a hundred RLVR steps produced no detectable change,
+    so the whole pass@1 gain shows up in the middle column. McNemar, paired on identical tasks,
+    n=500.</p>
 
   <p class="section-lede mt-lg"><span class="block-label">The prediction itself</span>The gate works:
     REVISE follows a non-PASS prediction 100% of the time, KEEP follows a PASS prediction
