@@ -203,8 +203,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     patch is executed either way, and a cross-entropy loss on the verified outcome trains the
     prediction directly while GRPO handles the rest. The matched comparator is test-and-recover
     (Arm A): patch, test, react.</p>
-  <p class="tagline"><b style="color:#39ff14">Work in progress:</b> RLVR beat SFT for both agents.
-    <b>The predictor has life, but no payoff yet.</b> Cross-entropy on verified execution outcomes
+  <p class="tagline"><b style="color:#39ff14">The predictor has life, but no payoff yet:</b> RLVR
+    beat SFT for both agents. Cross-entropy on verified execution outcomes
     turned a checkpoint that called PASS on <b>100%</b> of candidates into a real RUNTIME_ERROR
     detector: <b>62.5% and 64.1% precision</b> across the two seeds, against a 16% base rate, off 8
     demonstrations. That doesn't reach pass@1, and it shouldn't: a runtime error is what the test
