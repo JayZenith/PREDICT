@@ -130,15 +130,29 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 16.5px; ma
 .badge { font-family: var(--mono); font-size: 12.5px; border: 1px solid; border-radius: 4px;
   padding: 3px 10px; white-space: nowrap; flex: none; }
 .transcript-body { padding: 4px 4px 12px; }
-.turn { padding: 9px 16px; font-size: 15px; border-bottom: 1px solid rgba(57,255,20,.05); line-height: 1.6; }
+.turn { padding: 9px 16px; font-size: 15px; border-bottom: 1px solid rgba(57,255,20,.05); line-height: 1.6;
+  border-left: 3px solid transparent; }
 .turn code { white-space: pre-wrap; word-break: break-word; color: #e8f4ea;
   background: none; padding: 0; }
 .turn-tag { display: inline-block; min-width: 58px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
   color: var(--mute); margin-right: 10px; vertical-align: top; font-weight: 700; }
-.turn-user { color: #e8f4ea; background: rgba(57,255,20,.03); }
-.turn-tool-fail { background: rgba(239,68,68,.07); }
-.turn-final { background: rgba(57,255,20,.07); font-weight: 600; color: var(--ink); }
+/* one background + left rule per role, so the speakers are separable at a glance */
+.turn-user   { background: rgba(148,163,184,.10); border-left-color: #94a3b8; color: #e8f4ea; }
+.turn-agent  { background: rgba(77,159,255,.08);  border-left-color: var(--blue); }
+.turn-tool   { background: rgba(57,255,20,.05);   border-left-color: var(--green-dim); }
+.turn-predict{ background: rgba(245,228,0,.09);   border-left-color: var(--yellow); }
+.turn-tool-fail { background: rgba(239,68,68,.10); border-left-color: var(--red); }
+.turn-final  { background: rgba(57,255,20,.13); border-left-color: var(--green);
+  font-weight: 600; color: var(--ink); }
+.turn-user .turn-tag   { color: #94a3b8; }
+.turn-agent .turn-tag  { color: var(--blue); }
+.turn-tool .turn-tag   { color: var(--green-dim); }
+.turn-tool-fail .turn-tag { color: var(--red); }
 .turn-predict code { color: var(--green); }
+.turn-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 12px 2px 0;
+  font-size: 14px; color: var(--ink-2); }
+.turn-legend span { display: flex; align-items: center; gap: 7px; }
+.turn-legend i { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
 
 /* ---- appendix ---- */
 .appendix p { color: var(--ink-2); margin: 0 0 14px; line-height: 1.72; }
@@ -190,18 +204,17 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     prediction directly while GRPO handles the rest. The matched comparator is test-and-recover
     (Arm A): patch, test, react.</p>
   <p class="tagline"><b style="color:#39ff14">Work in progress:</b> RLVR beat SFT for both agents,
-    and the prediction mechanism learns. The SFT checkpoint was a constant &mdash; it called PASS on
-    <b>100%</b> of candidates, which is what it was taught to do: 257 of the 302 prediction labels in
-    its training traces are PASS. Cross-entropy on verified execution outcomes turned that constant
-    into a real RUNTIME_ERROR detector: <b>62.5% and 64.1% precision</b> across the two seeds,
-    against a 16% base rate, off 8 demonstrations. ASSERTION_FAILURE &mdash; 57% of all outcomes
-    &mdash; stayed at zero, never predicted once at any checkpoint. And the gate doesn't pay off yet:
-    Arm A vs. Arm B is a coin flip.</p>
-  <p class="tagline"><b style="color:#39ff14">Why one class and not the other:</b> they ask for
-    different things. Predicting a crash means inspecting your own output for an undefined name or a
-    bad index &mdash; a second check, separate from whether the logic is right. Predicting a wrong
-    answer requires a more adversarial position on code you just wrote. What's measured is that 8
-    demonstrations taught the first class and 37 didn't teach the second.</p>
+    and the prediction mechanism shows some learning. The SFT checkpoint called PASS on <b>100%</b>
+    of candidates, which needs to be corrected in the curriculum &mdash; 257 of its 302 prediction
+    labels are PASS. But cross-entropy on verified execution outcomes did create a RUNTIME_ERROR
+    detector: <b>62.5% and 64.1% precision</b> across the two seeds, against a 16% base rate, off 8
+    demonstrations. ASSERTION_FAILURE &mdash; 57% of all outcomes &mdash; stayed at zero, never
+    predicted once at any checkpoint. And the gate doesn't pay off yet: Arm A vs. Arm B is a coin
+    flip.</p>
+  <p class="tagline"><b style="color:#39ff14">Why runtime errors and not assertion failures?</b>
+    The next step is making the SFT curriculum actually teach the agent how to catch an assertion
+    failure. What's measured so far is that 8 demonstrations taught RUNTIME_ERROR and 37 didn't
+    teach ASSERTION_FAILURE.</p>
 </header>
 
 <section class="section" id="architecture">
@@ -209,9 +222,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <h2 class="section-title">One harness, two agents</h2>
   <p class="section-lede">Both arms share one harness. Arm A reacts to <code>python_test</code>
     output. Arm B predicts the outcome and commits to <b style="color:#39ff14">KEEP</b> or
-    <b style="color:#ef4444">REVISE</b> before it sees the real result. The verified-label
-    auxiliary CE follows <a href="https://arxiv.org/abs/2605.24517">ECHO</a> (Shrivastava et al.,
-    2026). Built on <a href="https://github.com/PrimeIntellect-ai/prime-rl">PRIME-RL</a> and
+    <b style="color:#ef4444">REVISE</b>. The verified-label auxiliary CE follows
+    <a href="https://arxiv.org/abs/2605.24517">ECHO</a> (Shrivastava et al., 2026). Built on
+    <a href="https://github.com/PrimeIntellect-ai/prime-rl">PRIME-RL</a> and
     <a href="https://github.com/PrimeIntellect-ai/verifiers">Verifiers</a>, V1 environments.</p>
   <div class="card"><svg viewBox="0 0 900 600" class="diagram-svg" role="img" aria-label="Arm A versus Arm B execution flow">
 <defs><marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -257,13 +270,6 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <path d="M540,435 C 482,435 482,155 538,155" stroke="#ef4444" stroke-width="1.6" marker-end="url(#arrowR)" fill="none" stroke-dasharray="5 4" opacity="0.9"/>
 <text x="464" y="295" text-anchor="middle" class="diagram-edge" fill="#ef4444" transform="rotate(90 464 295)">visible recovery: the prediction was wrong</text>
 </svg></div>
-  <p class="chart-caption">Arm A has one recovery path: run the test, see it fail, patch again.
-    Arm B has two &mdash; <b>visible</b> (predicted PASS, kept, the real test caught it) and
-    <b>shadow</b> (predicted a failure, revised before the real test ran). In the visible path the
-    test catches the bug; in the shadow path the prediction does. The SFT curriculum teaches both
-    in equal share. On the test set both arms recover on 12&ndash;17% of the rollouts whose first
-    test failed, and RLVR left that rate about where SFT put it
-    (<a href="#diagnosis">diagnosis</a>).</p>
 </section>
 
 
@@ -301,10 +307,12 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="results">
   <p class="section-kicker">Results</p>
   <h2 class="section-title">RLVR improves both arms over SFT; neither arm beats the other</h2>
-  <p class="section-lede">Both arms were trained twice, independently, from the same SFT
-    checkpoints with different seeds (n=500, greedy pass@1). SFT agent traces plus RLVR improve each
-    arm over its own baseline, in all four runs. Step 100 is interim &mdash; two of the four runs are
-    still climbing there (+2.8 and +2.4 points over step 75).</p>
+  <p class="section-lede">Each arm was trained twice, independently, from <b>its own</b> SFT
+    checkpoint with two different seeds &mdash; Arm A's runs start from the Arm A SFT checkpoint,
+    Arm B's from the Arm B one, so every RLVR gain below is measured against that arm's own baseline
+    (n=500, greedy pass@1). RLVR improves each arm over its own baseline in all four runs. Step 100
+    is interim &mdash; two of the four are still climbing there (+2.8 and +2.4 points over step
+    75).</p>
 
   <div class="callout good">
     <div class="callout-label">&#10003; Replicated across two seeds</div>
@@ -378,20 +386,15 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
 <section class="section" id="diagnosis">
   <p class="section-kicker">Diagnosis</p>
-  <h2 class="section-title">Why Arm B didn't beat Arm A</h2>
-  <p class="section-lede">Arm B is Arm A plus a prediction and a gate, and it didn't win. Two things
-    explain that. RLVR only improved the first patch &mdash; which both arms write, so the gain
-    landed in the half they share. And the prediction, Arm B's only differentiator, got good at one
-    outcome class and stayed at zero on the class that dominates.</p>
+  <h2 class="section-title">Arm B vs Arm A</h2>
 
-  <p class="section-lede mt-md"><span class="block-label">Where the gain landed</span>pass@1 is one
-    rollout per task, and a rollout is multi-turn &mdash; inside that one attempt the agent can
-    patch, test, and patch again. Both routes to a pass do real work; recovery rescues 12&ndash;17%
-    of the rollouts whose first test failed. The measured gain sits entirely on the first patch.
-    <b>Recovery I can't call either way.</b> The first patch fails on about half the tasks, and
-    when it does, the agent fixes it about 40 times out of ~270. Forty is a small number: even if
-    RLVR did make the agent better at fixing its own broken code, 40 events isn't enough data to see
-    it. So I don't know whether recovery improved &mdash; only that I couldn't detect it.</p>
+  <p class="section-lede"><span class="block-label">Where the gain landed</span>Recovery rescues
+    12&ndash;17% of the rollouts whose first test failed. The measured gain sits entirely on the
+    first patch. <b>Recovery I can't call either way.</b> The first patch fails on about half the
+    tasks, and when it does, the agent fixes it about 40 times out of ~270. Forty is a small number:
+    even if RLVR did make the agent better at fixing its own broken code, 40 events isn't enough
+    data to see it. So I don't know whether recovery improved &mdash; only that I couldn't detect
+    it.</p>
 
   <table class="data-table">
     <thead><tr><th>SFT &rarr; RL 100</th><th>pass@1</th><th>first patch correct</th><th>p</th><th>recovery | failure</th><th>p</th></tr></thead>
@@ -402,14 +405,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
       <tr><td>Arm B seed 43</td><td>48.2% &rarr; 53.6%</td><td>41.0% &rarr; 45.8%</td><td>0.0004</td><td>12.8% &rarr; 14.9%</td><td>0.74</td></tr>
     </tbody>
   </table>
-  <p class="chart-caption"><b>pass@1</b> is the rollout ending green. <b>First patch correct</b> is
-    the subset that needed no second patch &mdash; always the smaller number, and the gap between
-    the two columns is what recovery contributes. <b>Recovery | failure</b> is conditional: of the
-    rollouts whose first executed test failed, the share that later pass one. That last column is
-    built on far less data than the others &mdash; Arm A 39/277 &rarr; 43/257, Arm B 36/282 &rarr;
-    33/266. About 40 successes per run is too few to detect a change of a few points, so its high
-    p-values mean "couldn't tell," not "nothing happened." McNemar, paired on identical tasks,
-    n=500.</p>
+  <p class="chart-caption">McNemar, paired on identical tasks, n=500. Recovery counts are small
+    &mdash; Arm A 39/277 &rarr; 43/257, Arm B 36/282 &rarr; 33/266.</p>
 
   <p class="section-lede mt-lg"><span class="block-label">The prediction itself</span>The gate works:
     REVISE follows a non-PASS prediction 100% of the time, KEEP follows a PASS prediction
@@ -456,17 +453,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     curriculum says the same thing backwards: <b>ASSERTION_FAILURE was demonstrated 4.6&times; more
     often than RUNTIME_ERROR (37 labels to 8), and RUNTIME_ERROR is the one that came back.</b> So
     it isn't scarcity. The bottom two rows aren't results at all &mdash; SYNTAX_ERROR and TIMEOUT
-    were never demonstrated once.</p>
-
-  <div class="callout crit">
-    <div class="callout-label">And not a loss-routing problem</div>
-    The obvious suspect is RLVR drowning CE on a shared span. That was designed out:
-    <code>PredictAlgorithm._mask_sampled_labels</code> zeroes the policy-gradient weight on exactly
-    the outcome-label tokens, so CE on the verified label is the only <i>direct</i> teacher there.
-    Not a hermetic seal &mdash; both losses update the same weights &mdash; but no reward term
-    reaches those tokens on purpose. CE had a clean channel and the result still split by class
-    (<a href="#next">follow-ups</a>).
-  </div>
+    were never trained on.</p>
 </section>
 
 <section class="section" id="demo">
@@ -516,6 +503,13 @@ patch applied</code></div>
   </div>
 </div>
   </div>
+  <div class="turn-legend">
+    <span><i style="background:#94a3b8"></i>task</span>
+    <span><i style="background:#4d9fff"></i>agent</span>
+    <span><i style="background:#00d17a"></i>tool result</span>
+    <span><i style="background:#f5e400"></i>prediction + decision</span>
+    <span><i style="background:#ef4444"></i>test failed</span>
+  </div>
   <div class="callout warn">
     <div class="callout-label">What this shows</div>
     The prediction adds nothing here. Arm B predicts PASS on all three candidates and is wrong on
@@ -538,21 +532,20 @@ patch applied</code></div>
   <h2 class="section-title">Three things</h2>
   <div class="card">
     <ol class="learned-list">
-      <li><span class="learned-tag">Conditional behavior is hard to measure</span><b>The gain showed
-      up where every rollout contributes data.</b> The first patch improved in all four runs.
-      Recovery only happens when that patch fails, and succeeds ~40 times per run &mdash; too few to
-      detect a change of a few points, even at n=500. Size the eval for the rarest behavior you want
-      to measure, or "it didn't work" and "I couldn't tell" come back looking identical.</li>
-      <li><span class="learned-tag">Clean signal isn't enough</span><b>A dedicated loss on a clean
-      channel still can't teach what the model can't perceive.</b> The prediction had CE on
-      verified labels with RLVR masked off the span &mdash; no competing gradient, no reward
-      hacking, direct supervision. One class came back; the class that requires judging your own
-      code's semantics never did.</li>
-      <li><span class="learned-tag">Two kinds of rare</span><b>The label is generated, not looked
-      up.</b> <code>actual</code> is whatever happens when the model's own code runs. A class can be
-      rare because the policy stopped predicting it (fixable) or because the policy rarely writes
-      code that produces it (not fixable by any loss weight). Those need different responses and
-      look identical in a recall table.</li>
+      <li><span class="learned-tag">Rare behavior needs a bigger eval</span><b>500 tasks wasn't
+      enough to measure recovery.</b> Every rollout writes a first patch, so 500 tasks measure it
+      fine. Recovery only happens when that patch fails, and works ~40 times per run. At 40 events
+      you can't tell "it didn't improve" from "I couldn't tell." Size the eval for the rarest thing
+      you want to measure.</li>
+      <li><span class="learned-tag">A clean loss can't teach what the model can't see</span><b>The
+      prediction got ideal supervision and still only learned one class.</b> CE on the true outcome,
+      RLVR masked off those tokens, nothing competing with it. RUNTIME_ERROR came back.
+      ASSERTION_FAILURE &mdash; which means knowing your own code is wrong &mdash; did not.</li>
+      <li><span class="learned-tag">Two ways a class can be rare</span><b>The labels come from
+      running the model's own code, so the model changes its own data.</b> A class gets rare either
+      because the model stopped guessing it, or because it stopped writing code that does it. The
+      first is fixable with loss weights, the second isn't &mdash; and a recall table shows them the
+      same way.</li>
     </ol>
   </div>
 </section>
@@ -560,8 +553,8 @@ patch applied</code></div>
 <section class="section" id="next">
   <p class="section-kicker">Follow-up experiments</p>
   <h2 class="section-title">Where this goes next</h2>
-  <p class="section-lede">All three follow from the diagnosis: half the label space was never
-    demonstrated, nothing grades the prediction, and CE alone at 0.1 didn't carry it.</p>
+  <p class="section-lede">Both follow from the diagnosis: half the label space was never
+    demonstrated, and nothing grades the prediction.</p>
   <div class="next-grid">
     <div class="next-card">
       <div class="next-num" style="color:#f5e400">first</div>
@@ -573,37 +566,14 @@ patch applied</code></div>
     </div>
     <div class="next-card">
       <div class="next-num">next</div>
-      <div class="next-title">Score the prediction</div>
-      <p>Add a reward term on prediction accuracy, weighted per class so ASSERTION_FAILURE is worth
-      more than PASS, and penalize calling PASS on a patch that fails. Right now the prediction is
-      the one behavior the agent is asked for that nothing grades.</p>
-    </div>
-    <div class="next-card">
-      <div class="next-num">next</div>
-      <div class="next-title" style="color:#00d17a">Turn CE up and sweep it</div>
-      <p>CE weight was fixed at 0.1 for both seeds and never varied, so its ceiling is unknown.
-      A sweep says whether the collapse is a weight problem or a signal problem &mdash; and it is
-      cheap, since it reuses the same SFT checkpoint.</p>
+      <div class="next-title">Pay the agent for a correct prediction</div>
+      <p>Right now the reward only cares whether the task passed. Guessing the outcome right is
+      worth nothing, and guessing PASS on a patch that fails costs nothing. Add reward for a correct
+      call and a penalty for a wrong one, worth more on ASSERTION_FAILURE than on PASS, so the agent
+      has a reason to get it right.</p>
     </div>
   </div>
 
-  <div class="callout info mt-lg">
-    <div class="callout-label">What this run establishes, and what it doesn't</div>
-    <b>Established:</b> the mechanism trains end-to-end and replicates across seeds; RLVR improves
-    both arms over their own SFT baselines in all four runs; and cross-entropy on verified execution
-    outcomes teaches a working failure detector from a checkpoint that emitted a constant &mdash;
-    RUNTIME_ERROR at 62.5% / 64.1% precision, ~4&times; base rate, in both seeds.
-    <div style="margin-top:9px"><b>Not established:</b> that prediction improves performance. No
-    checkpoint shows a confirmed Arm A vs. Arm B difference, ASSERTION_FAILURE is never predicted at
-    all, and
-    Arm B changes several things at once &mdash; the protocol, the action space, the CE loss, and
-    the SFT trace format &mdash; so this compares two systems, not one variable
-    (<a href="https://github.com/JayZenith/PREDICT/blob/main/docs/research_specs.md#limits-to-report">full caveat</a>).</div>
-    <div style="margin-top:9px"><b>Not a verdict on Arm B.</b> The predictor was trained once, at
-    one CE weight, on a curriculum that demonstrates 3 of its 6 outcome classes and never shows two
-    of them at all. What failed is this configuration, not the idea. The experiments that would
-    make it a verdict are below and haven't been run.</div>
-  </div>
 </section>
 
 
