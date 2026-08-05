@@ -378,13 +378,14 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
 <section class="section" id="diagnosis">
   <p class="section-kicker">Diagnosis</p>
-  <h2 class="section-title">RLVR gains concentrated in first-attempt correctness</h2>
-  <p class="section-lede">The pass@1 gain came from writing a correct patch on the first try, not
-    from fixing a broken one. Writing a first patch is something the agent does on every task, so
-    every reward touches it. Fixing a broken patch only happens when the first one fails, and the
-    reward pays the same either way &mdash; a task solved on the retry is worth exactly what a task
-    solved immediately is worth. So nothing pushes recovery up, and it sits where SFT left it in all
-    four runs.</p>
+  <h2 class="section-title">The RLVR gain is in the first patch, not the repair</h2>
+  <p class="section-lede">pass@1 is one rollout per task &mdash; but a rollout is multi-turn, so
+    inside that single attempt the agent can patch, test, and patch again. Splitting the gain by
+    where it happened: it came from the <b>first patch</b> being correct, not from repairing a
+    broken one. The agent writes a first patch on every task, so every reward touches it. It only
+    gets to repair one when the first patch fails, and the reward pays the same either way &mdash; a
+    task solved on the third patch scores exactly what a task solved on the first does. So nothing
+    pushes repair up, and it sits where SFT left it in all four runs.</p>
 
   <table class="data-table">
     <thead><tr><th>SFT &rarr; RL 100</th><th>first patch correct</th><th>p</th><th>recovery | failure</th><th>p</th></tr></thead>
@@ -528,8 +529,8 @@ patch applied</code></div>
   <div class="card">
     <ol class="learned-list">
       <li><span class="learned-tag">Aligned signal</span><b>RL improves what the policy does on
-      every rollout.</b> First-attempt correctness improved in all four runs; recovery, which fires
-      only conditionally, moved in none. A behavior that happens on a subset of rollouts needs a
+      every rollout.</b> The first patch got better in all four runs; recovery, which only happens
+      when that patch fails, moved in none. A behavior that fires on a subset of rollouts needs a
       term that grades it, not a task reward that averages over it.</li>
       <li><span class="learned-tag">Clean signal isn't enough</span><b>A dedicated loss on a clean
       channel still can't teach what the model can't perceive.</b> The prediction had CE on
