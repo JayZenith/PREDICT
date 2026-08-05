@@ -387,11 +387,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="section-lede mt-md"><span class="block-label">Where the gain landed</span>pass@1 is one
     rollout per task, and a rollout is multi-turn &mdash; inside that one attempt the agent can
     patch, test, and patch again. Both routes to a pass do real work; recovery rescues 12&ndash;17%
-    of the rollouts whose first test failed. The measured gain sits entirely on the first patch: the
-    recovery rate after RLVR is roughly what it was at SFT in all four runs. But that is a weak
-    finding, not a strong one. Recovery only happens on the ~55% of rollouts whose first patch
-    failed, and it works about 40 times per run &mdash; too few events to tell a real few-point
-    change from noise, in either direction.</p>
+    of the rollouts whose first test failed. The measured gain sits entirely on the first patch.
+    <b>Recovery I can't call either way.</b> The first patch fails on about half the tasks, and
+    when it does, the agent fixes it about 40 times out of ~270. Forty is a small number: even if
+    RLVR did make the agent better at fixing its own broken code, 40 events isn't enough data to see
+    it. So I don't know whether recovery improved &mdash; only that I couldn't detect it.</p>
 
   <table class="data-table">
     <thead><tr><th>SFT &rarr; RL 100</th><th>pass@1</th><th>first patch correct</th><th>p</th><th>recovery | failure</th><th>p</th></tr></thead>
@@ -405,10 +405,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="chart-caption"><b>pass@1</b> is the rollout ending green. <b>First patch correct</b> is
     the subset that needed no second patch &mdash; always the smaller number, and the gap between
     the two columns is what recovery contributes. <b>Recovery | failure</b> is conditional: of the
-    rollouts whose first executed test failed, the share that later pass one. That last column rests
-    on far less data than the others &mdash; Arm A goes 39/277 &rarr; 43/257 recoveries, Arm B
-    36/282 &rarr; 33/266. Forty-odd events cannot resolve a few points, so its high p-values are
-    weak evidence of no change, not evidence of none. McNemar, paired on identical tasks, n=500.</p>
+    rollouts whose first executed test failed, the share that later pass one. That last column is
+    built on far less data than the others &mdash; Arm A 39/277 &rarr; 43/257, Arm B 36/282 &rarr;
+    33/266. About 40 successes per run is too few to detect a change of a few points, so its high
+    p-values mean "couldn't tell," not "nothing happened." McNemar, paired on identical tasks,
+    n=500.</p>
 
   <p class="section-lede mt-lg"><span class="block-label">The prediction itself</span>The gate works:
     REVISE follows a non-PASS prediction 100% of the time, KEEP follows a PASS prediction
@@ -539,10 +540,9 @@ patch applied</code></div>
     <ol class="learned-list">
       <li><span class="learned-tag">Conditional behavior is hard to measure</span><b>The gain showed
       up where every rollout contributes data.</b> The first patch improved in all four runs.
-      Recovery fires only when that patch fails and succeeds ~40 times per run, so a change of a few
-      points is invisible at n=500. A behavior that happens on a subset of rollouts needs either a
-      term that grades it directly or an eval sized for it &mdash; otherwise "no effect" and "no
-      power" are indistinguishable.</li>
+      Recovery only happens when that patch fails, and succeeds ~40 times per run &mdash; too few to
+      detect a change of a few points, even at n=500. Size the eval for the rarest behavior you want
+      to measure, or "it didn't work" and "I couldn't tell" come back looking identical.</li>
       <li><span class="learned-tag">Clean signal isn't enough</span><b>A dedicated loss on a clean
       channel still can't teach what the model can't perceive.</b> The prediction had CE on
       verified labels with RLVR masked off the span &mdash; no competing gradient, no reward
