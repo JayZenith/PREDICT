@@ -215,9 +215,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="architecture">
   <p class="section-kicker">Architecture</p>
   <h2 class="section-title">One harness, two agents</h2>
-  <p class="section-lede">Both arms share one harness. Arm A reacts to <code>python_test</code>
-    output. Arm B predicts the outcome and commits to <b style="color:#39ff14">KEEP</b> or
-    <b style="color:#ef4444">REVISE</b>. The verified-label auxiliary CE follows
+  <p class="section-lede">Both arms share one harness, one toolset and one reward. The diagram is
+    the whole difference. The verified-label auxiliary CE follows
     <a href="https://arxiv.org/abs/2605.24517">ECHO</a> (Shrivastava et al., 2026). Built on
     <a href="https://github.com/PrimeIntellect-ai/prime-rl">PRIME-RL</a> and
     <a href="https://github.com/PrimeIntellect-ai/verifiers">Verifiers</a>, V1 environments.</p>
@@ -423,10 +422,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <text x="506.0" y="214" text-anchor="middle" class="axis-sub">57% of verified outcomes</text>
 </svg></div>
   <p class="chart-caption">Recall = how often the model's own prediction matched what actually
-    happened. <b>RUNTIME_ERROR went from never predicted at SFT to 63% recall</b>, and it isn't
-    recall bought by over-predicting: <b>62.5% precision</b> (64.1% on seed 43) on a class that
-    occurs 16% of the time, calling it 208 times against 207 real. ASSERTION_FAILURE, the most
-    common outcome, was never predicted correctly once, not at SFT and not at any RL checkpoint.
+    happened. RUNTIME_ERROR was never predicted at SFT, and the recall it gained isn't bought by
+    over-predicting: <b>62.5% precision</b> (64.1% on seed 43), calling the class 208 times against
+    207 real. ASSERTION_FAILURE was never predicted correctly once, at SFT or at any RL checkpoint.
     Both movements replicate across seeds.</p>
 
   <p class="section-lede mt-md"><span class="block-label">It saw plenty of failures</span>Across Arm
@@ -443,9 +441,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
       <tr><td>TIMEOUT <span style="opacity:.6">(never taught)</span></td><td>0.3%</td><td>0.0%</td></tr>
     </tbody>
   </table>
-  <p class="chart-caption">ASSERTION_FAILURE is the single most common thing that happens and the
-    model calls it 3% of the time. RUNTIME_ERROR it calls at almost exactly the right rate. The SFT
-    process says the same thing backwards: <b>ASSERTION_FAILURE was demonstrated 4.6&times; more
+  <p class="chart-caption">The SFT process says the same thing backwards:
+    <b>ASSERTION_FAILURE was demonstrated 4.6&times; more
     often than RUNTIME_ERROR (37 labels to 8), and RUNTIME_ERROR is the one that came back.</b> So
     it isn't scarcity. The bottom two rows aren't results at all, since SYNTAX_ERROR and TIMEOUT
     were never trained on.</p>
@@ -453,11 +450,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
 <section class="section" id="demo">
   <p class="section-kicker">Rollout demo</p>
-  <h2 class="section-title">One rollout: three wrong predictions, and a verifier gap</h2>
+  <h2 class="section-title">One rollout: the prediction adds nothing, and a verifier gap</h2>
   <p class="section-lede">One real Arm B rollout, step 100, seed 42, on <code>mbpp_127</code>
     (&ldquo;multiply two integers without <code>*</code>&rdquo;). Verbatim from
-    <code>RESULTS_PUBLISHED/RL_ARM_B_100/eval/</code>. It predicts PASS three times, is wrong
-    twice, and still scores reward 1.0.</p>
+    <code>RESULTS_PUBLISHED/RL_ARM_B_100/eval/</code>. It predicts PASS on all three candidates, is
+    wrong on the first two, and still scores reward 1.0.</p>
 
   <div>
     <div class="transcript-card" style="--accent:#39ff14">
@@ -507,9 +504,9 @@ patch applied</code></div>
   </div>
   <div class="callout warn">
     <div class="callout-label">What this shows</div>
-    The prediction adds nothing here. Arm B predicts PASS on all three candidates and is wrong on
-    the first two, so it reacts to each failure exactly as a test-and-recover agent would. This is
-    the 0% ASSERTION_FAILURE recall above, in a single trace.
+    Both wrong predictions were assertion failures, so Arm B learns nothing from predicting and
+    reacts to each one exactly as a test-and-recover agent would. This is the 0% ASSERTION_FAILURE
+    recall above, in a single trace.
   </div>
   <div class="callout crit">
     <div class="callout-label">Verifier gap</div>
@@ -529,9 +526,9 @@ patch applied</code></div>
     <ol class="learned-list">
       <li><span class="learned-tag">The eval has to make the rare thing happen</span><b>MBPP is too
       easy to measure recovery.</b> Every rollout writes a first patch, so 500 tasks measure that
-      fine. Recovery only fires when the patch fails, which happens on ~270 of the 500, and it
-      succeeds ~40 times. The fix isn't only more tasks, it's harder ones: on problems the agent
-      can't one-shot, every task exercises recovery.</li>
+      fine. Recovery only fires when the patch fails, so the same 500 tasks buy far fewer events.
+      The fix isn't only more tasks, it's harder ones: on problems the agent can't one-shot, every
+      task exercises recovery.</li>
       <li><span class="learned-tag">Post-training can only reinforce what SFT made emittable</span>
       <b>CE had ideal conditions and still only landed one class.</b> The loss was on the verified
       outcome with RLVR masked off those tokens, nothing competing with it, and RUNTIME_ERROR came
@@ -540,10 +537,10 @@ patch applied</code></div>
       wrong" apart from PASS, and no downstream loss can reinforce a distinction the model can't
       make.</li>
       <li><span class="learned-tag">One seed is not a result</span><b>The second seed is what
-      separates the real effects here from the noise.</b> On seed 42 Arm A beat Arm B at step 100,
-      56.4% vs 52.0%. On seed 43 the two arms land at 54.2% and 53.6%, p=0.86, so that gap was
-      noise. The within-arm SFT-to-RLVR gains replicated across both seeds in both arms, so those
-      are real.</li>
+      separates the real effects here from the noise.</b> On seed 42 Arm A finished 4.4 points
+      ahead of Arm B, which looks like the prediction gate costing the agent something. On seed 43
+      the arms land 0.6 points apart, p=0.86. The SFT-to-RLVR gain within each arm replicated on
+      both seeds; the gap between arms did not.</li>
     </ol>
   </div>
 </section>
