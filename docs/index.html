@@ -198,28 +198,33 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     <a href="https://jayzenith.me/">jayzenith.me</a> &middot;
     <a href="https://github.com/JayZenith/PREDICT">GitHub repo</a>
   </p>
-  <p class="tagline"><b style="color:#39ff14">The setup:</b> a predict-and-decide agent (Arm B) makes
-    a PREDICTION on what its own patch will do, then chooses to either KEEP or REVISE the patch. The
-    patch is executed either way, and a cross-entropy loss on the verified outcome trains the
-    prediction directly while GRPO handles the rest. The matched comparator is test-and-recover
-    (Arm A): patch, test, react.</p>
-  <p class="tagline"><b style="color:#39ff14">The predictor has life, but no payoff yet:</b> RLVR
-    beat SFT for both agents. Cross-entropy on verified execution outcomes
-    turned a checkpoint that called PASS on <b>100%</b> of candidates into a real RUNTIME_ERROR
-    detector: <b>62.5% and 64.1% precision</b> across the two seeds, against a 16% base rate, off 8
-    demonstrations. That doesn't reach pass@1, and it shouldn't: a runtime error is what the test
-    reports a turn later anyway. ASSERTION_FAILURE, 57% of outcomes and the class actually worth
-    catching early, stayed at zero, never predicted once at any checkpoint.</p>
+  <p class="tagline"><b style="color:#39ff14">CE and GRPO working together:</b> Arm B predicts
+    whether its patch will pass or fail, then chooses to KEEP or REVISE it. The patch is executed
+    either way, and cross-entropy trains the prediction against the verified outcome, while GRPO
+    trains the rest of the rollout but is masked from the prediction label. Arm A is the matched
+    test-and-recover baseline: patch, test, react.</p>
+  <p class="tagline"><b style="color:#39ff14">Predictor shows limited promise:</b> Starting from an
+    SFT checkpoint that always predicted PASS, RLVR produced a RUNTIME_ERROR detector with
+    <b>62.5% and 64.1% precision</b> across two seeds, versus a 16% base rate, after only 8 SFT
+    examples. This did not improve pass@1 because the test reveals runtime errors one turn later
+    anyway. ASSERTION_FAILURE, 57% of outcomes and the more useful class to catch early, was never
+    predicted correctly.</p>
+  <p class="tagline"><b style="color:#39ff14">Work in progress:</b> train on incorrect solutions
+    sampled from the SFT checkpoint and labeled by execution to improve ASSERTION_FAILURE
+    emissions.</p>
 </header>
 
 <section class="section" id="architecture">
   <p class="section-kicker">Architecture</p>
   <h2 class="section-title">One harness, two agents</h2>
-  <p class="section-lede">Both arms share one harness, one toolset and one reward. The diagram is
-    the whole difference. The verified-label auxiliary CE follows
+  <p class="section-lede">Both arms share one harness, one toolset, and one reward; only the agent
+    design differs. Arm A is test-and-recover: patch, test, then fix and retest on failure. Arm B is
+    predict-and-decide: patch, predict the outcome, choose KEEP or REVISE, then test. Shadow
+    recovery catches the problem before the real test; visible recovery means the prediction was
+    wrong and the test exposed it. The verified-label auxiliary CE follows
     <a href="https://arxiv.org/abs/2605.24517">ECHO</a> (Shrivastava et al., 2026). Built on
     <a href="https://github.com/PrimeIntellect-ai/prime-rl">PRIME-RL</a> and
-    <a href="https://github.com/PrimeIntellect-ai/verifiers">Verifiers</a>, V1 environments.</p>
+    <a href="https://github.com/PrimeIntellect-ai/verifiers">Verifiers</a> V1 environments.</p>
   <div class="card"><svg viewBox="0 0 1000 600" class="diagram-svg" role="img" aria-label="Arm A versus Arm B execution flow">
 <defs><marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#93a897"/></marker>
@@ -276,20 +281,18 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <h2 class="section-title">What the agent was built and trained on</h2>
   <div class="grid-2">
     <div class="next-card">
-      <div class="next-title">The pipeline was built from scratch</div>
-      <p>MBPP is ~1,000 short Python problems with gold test assertions
+      <p>MBPP contains about 1,000 short Python problems with gold test assertions
       (<a href="https://arxiv.org/abs/2108.07732">Austin et al.</a>, 2021). PREDICT is a multi-turn
-      tool-using agent on Qwen3-4B-Base: hand-designed SFT traces (direct-solution, two-step
-      recovery, prediction labels, KEEP/REVISE paths), the environment, the auxiliary-loss wiring,
-      and the full SFT&rarr;RL pipeline.</p>
+      tool-using agent built on Qwen3-4B-Base, with hand-designed SFT traces for direct solutions,
+      recovery, prediction labels, and KEEP/REVISE decisions, plus a custom environment, auxiliary
+      loss, and full SFT&rarr;RL pipeline.</p>
     </div>
     <div class="next-card">
-      <div class="next-title">The splits, and what they leave out</div>
-      <p>The RL stage never trains on a problem SFT already saw, and the test set was scored once,
-      after every design decision was frozen. That many traces is enough to install an agent
-      protocol. Teaching the outcome classes is a separate job the SFT process only half did: the
-      agent may predict 6 classes, the SFT traces demonstrate 3, and SYNTAX_ERROR and TIMEOUT
-      appear zero times.</p>
+      <div class="next-title">The splits and their limits</div>
+      <p>RL never trains on problems seen during SFT, and the test set was evaluated once after all
+      design decisions were frozen. The traces were enough to teach the agent protocol, but not
+      every outcome class: the agent can predict six classes, while SFT demonstrates only three,
+      with no SYNTAX_ERROR or TIMEOUT examples.</p>
     </div>
   </div>
 
@@ -305,15 +308,14 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="results">
   <p class="section-kicker">Results</p>
   <h2 class="section-title">RLVR improves both arms over SFT; neither arm beats the other</h2>
-  <p class="section-lede">Each arm was trained twice with different seeds, each run starting from
-    <b>its own</b> arm's SFT checkpoint, so every gain below is measured against that arm's own
-    baseline (n=500, greedy pass@1). Step 100 is interim: two of the four runs are still climbing
-    there (+2.8 and +2.4 points over step 75).</p>
+  <p class="section-lede">Each arm was trained twice from <b>its own</b> SFT checkpoint, so gains
+    are measured against that arm's baseline on 500 tasks using greedy pass@1. Step 100 is still
+    interim: two runs improved another 2.8 and 2.4 points from step 75.</p>
 
   <div class="callout good">
     <div class="callout-label">&#10003; Replicated across two seeds</div>
-    RLVR improves <b>both</b> arms over their own SFT baseline by step 100, replicated across both
-    seeds for each arm: Arm A p=0.0003 and p=0.028; Arm B p=0.033 and p=0.0017.
+    By step 100, RLVR improved both arms over SFT in both seeds: Arm A, p=0.0003 and p=0.028;
+    Arm B, p=0.033 and p=0.0017.
   </div>
 
   <div class="chart-wrap"><svg viewBox="0 0 720 300" class="chart-svg" role="img" aria-label="line chart">
@@ -363,32 +365,29 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <text x="654.0" y="110.2" class="line-end-label" fill="#39ff14">53.6%</text>
 </svg></div>
   <div class="legend">
-    <span class="legend-item"><span class="swatch" style="background:#00d17a"></span>Arm A: seed 42 (solid) / seed 43 (dashed)</span>
-    <span class="legend-item"><span class="swatch" style="background:#39ff14"></span>Arm B: seed 42 (solid) / seed 43 (dashed)</span>
+    <span class="legend-item"><span class="swatch" style="background:#00d17a"></span>Arm A: seed 42, 56.4%; seed 43, 54.2%</span>
+    <span class="legend-item"><span class="swatch" style="background:#39ff14"></span>Arm B: seed 42, 52.0%; seed 43, 53.6%</span>
   </div>
 
   <div class="callout crit">
-    <div class="callout-label">&#9888; Between-arm: preliminary, not confirmed</div>
-    No checkpoint step shows a statistically confirmed difference between Arm A and Arm B across
-    all four seed combinations (McNemar, p=0.026&ndash;0.86). The step-100 gap that first looked like
-    an Arm A lead (56.4% vs 52.0%) shrinks to a coin flip once both arms have a second independent
-    run (54.2% vs 53.6%, p=0.86).
+    <div class="callout-label">&#9888; No confirmed difference between arms</div>
+    No checkpoint shows a reliable difference between Arm A and Arm B across all seed pairings
+    (McNemar, p=0.026&ndash;0.86). The apparent step-100 Arm A lead in seed 42, 56.4% versus 52.0%,
+    disappears in seed 43, where the arms score 54.2% and 53.6% (p=0.86).
   </div>
 
-  <p class="chart-caption">Full McNemar + paired bootstrap tables (all 4 seed combinations, both
-    arms vs. their own SFT baseline): <a href="https://github.com/JayZenith/PREDICT/blob/main/docs/REPRODUCTION.md#6-statistics">REPRODUCTION.md &sect; 6</a>.</p>
+  <p class="chart-caption">Full McNemar and paired-bootstrap results:
+    <a href="https://github.com/JayZenith/PREDICT/blob/main/docs/REPRODUCTION.md#6-statistics">REPRODUCTION.md &sect; 6</a>.</p>
 </section>
 
 
 <section class="section" id="diagnosis">
   <p class="section-kicker">Diagnosis</p>
-  <h2 class="section-title">What RLVR actually changed</h2>
+  <h2 class="section-title">What RLVR changed</h2>
 
-  <p class="section-lede"><span class="block-label">Where the gain landed</span>The measured gain
-    sits entirely on the first patch. <b>Recovery I can't call either way.</b> The first patch fails
-    on about 270 of the 500 tasks, and the agent then goes on to fix about 40 of them. Forty events
-    is too few to detect a change of a few points, so recovery could have improved and I would not
-    see it.</p>
+  <p class="section-lede">The measured gain came from better first patches. <b>Recovery is
+    inconclusive:</b> about 270 of 500 first patches fail, but only around 40 are later fixed. That
+    is too few recoveries to reliably detect a small improvement.</p>
 
   <table class="data-table">
     <thead><tr><th>SFT &rarr; RL 100</th><th>pass@1</th><th>first patch correct</th><th>p</th><th>recovery | failure</th><th>p</th></tr></thead>
@@ -399,12 +398,13 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
       <tr><td>Arm B seed 43</td><td>48.2% &rarr; 53.6%</td><td>41.0% &rarr; 45.8%</td><td>0.0004</td><td>12.8% &rarr; 14.9%</td><td>0.74</td></tr>
     </tbody>
   </table>
-  <p class="chart-caption">McNemar, paired on identical tasks, n=500. Recovery counts are small:
-    Arm A 39/277 &rarr; 43/257, Arm B 36/282 &rarr; 33/266.</p>
+  <p class="chart-caption">McNemar compares both versions on the same 500 tasks. Recovery counts
+    remain small: Arm A fixed 39 of 277 failures before RLVR and 43 of 257 after; Arm B fixed 36 of
+    282 before and 33 of 266 after.</p>
 
-  <p class="section-lede mt-lg"><span class="block-label">The prediction itself</span>The gate works:
-    REVISE follows a non-PASS prediction 100% of the time, KEEP follows a PASS prediction
-    96&ndash;99%. The open question is whether the prediction is any good. At RL step 100, seed 42:</p>
+  <p class="section-lede mt-lg"><span class="block-label">The prediction itself</span>The gate
+    works: non-PASS predictions lead to REVISE 100% of the time, while PASS leads to KEEP
+    96&ndash;99% of the time. The real question is whether the predictions are accurate.</p>
 
   <div class="chart-wrap"><svg viewBox="0 0 620 220" class="chart-svg" role="img" aria-label="bar chart">
 <line x1="16" y1="186.0" x2="604" y2="186.0" stroke="#7a7a7a" stroke-width="1"/>
@@ -421,15 +421,17 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <text x="506.0" y="202" text-anchor="middle" class="axis-label">ASSERTION_FAILURE</text>
 <text x="506.0" y="214" text-anchor="middle" class="axis-sub">57% of verified outcomes</text>
 </svg></div>
-  <p class="chart-caption">Recall = how often the model's own prediction matched what actually
-    happened. RUNTIME_ERROR was never predicted at SFT, and the recall it gained isn't bought by
-    over-predicting: <b>62.5% precision</b> (64.1% on seed 43), calling the class 208 times against
-    207 real. ASSERTION_FAILURE was never predicted correctly once, at SFT or at any RL checkpoint.
-    Both movements replicate across seeds.</p>
+  <p class="chart-caption">At step 100, seed 42, the model recalled 92% of PASS outcomes, 63% of
+    RUNTIME_ERROR outcomes, and 0% of ASSERTION_FAILURE outcomes. Those classes made up 22%, 16%,
+    and 57% of evaluation outcomes. RUNTIME_ERROR was never predicted at SFT, but after RLVR it
+    reached <b>62.5% precision</b>, and 64.1% on seed 43, so it was not merely overpredicting the
+    class. ASSERTION_FAILURE was never predicted correctly at any checkpoint. Both results
+    replicated across seeds.</p>
 
-  <p class="section-lede mt-md"><span class="block-label">It saw plenty of failures</span>Across Arm
-    B's RL training rollouts (15,122 verified labels), its own patches failed about 70% of the time.
-    It still predicted the failure classes at nowhere near their real rate:</p>
+  <p class="section-lede mt-md"><span class="block-label">It saw plenty of failures</span>Across
+    15,122 verified Arm B training outcomes, about 70% of patches failed. The issue was not lack of
+    failures; the model still predicted failure classes far less often than they actually
+    occurred:</p>
 
   <table class="data-table">
     <thead><tr><th>outcome class</th><th>share of real outcomes</th><th>share of predictions</th></tr></thead>
@@ -441,11 +443,10 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
       <tr><td>TIMEOUT <span style="opacity:.6">(never taught)</span></td><td>0.3%</td><td>0.0%</td></tr>
     </tbody>
   </table>
-  <p class="chart-caption">The SFT process says the same thing backwards:
-    <b>ASSERTION_FAILURE was demonstrated 4.6&times; more
-    often than RUNTIME_ERROR (37 labels to 8), and RUNTIME_ERROR is the one that came back.</b> So
-    it isn't scarcity. The bottom two rows aren't results at all, since SYNTAX_ERROR and TIMEOUT
-    were never trained on.</p>
+  <p class="chart-caption"><b>SFT showed ASSERTION_FAILURE 37 times but RUNTIME_ERROR only 8 times,
+    yet only RUNTIME_ERROR was learned.</b> So raw ASSERTION_FAILURE example count was not the main
+    problem; the examples were likely contradictory or unlike the model's real failures.
+    SYNTAX_ERROR and TIMEOUT cannot be judged because SFT never showed them at all.</p>
   <div class="callout warn">
     <div class="callout-label">Known labeling limitation</div>
     Pass/fail is real execution, but the outcome <i>class</i> is a heuristic on stderr
@@ -514,17 +515,16 @@ patch applied</code></div>
   </div>
   <div class="callout warn">
     <div class="callout-label">What this shows</div>
-    Both wrong predictions were assertion failures, so Arm B learns nothing from predicting and
-    reacts to each one exactly as a test-and-recover agent would. This is the 0% ASSERTION_FAILURE
-    recall above, in a single trace.
+    Arm B predicted PASS twice when both patches actually caused assertion failures, so the
+    predictions added nothing; it simply waited for the test and recovered like Arm A. This is the
+    0% ASSERTION_FAILURE recall in one trace.
   </div>
   <div class="callout crit">
     <div class="callout-label">Verifier gap</div>
-    The third candidate, <code>z = x * y</code>, uses the exact operator the task banned. The test
-    checks numeric output only, so it scores reward 1.0 anyway. Arm A's solution for the same task
-    (repeated addition with sign correction) actually obeys the instruction. One isolated case,
-    not a systemic pattern, but a reminder that the reward grades less than the task
-    asks for.
+    The final solution used <code>*</code>, even though the task banned it, but still received
+    reward 1.0 because the tests checked only the output. Arm A followed the instruction correctly.
+    This is one case, but it shows that the verifier can reward solutions that pass tests while
+    violating the task.
   </div>
 </section>
 
@@ -534,23 +534,18 @@ patch applied</code></div>
   <h2 class="section-title">Three things</h2>
   <div class="card">
     <ol class="learned-list">
-      <li><span class="learned-tag">The eval has to make the rare thing happen</span><b>MBPP is too
-      easy to measure recovery.</b> Every rollout writes a first patch, so 500 tasks measure that
-      fine. Recovery only fires when the patch fails, so the same 500 tasks buy far fewer events.
-      The fix isn't only more tasks, it's harder ones: on problems the agent can't one-shot, every
-      task exercises recovery.</li>
-      <li><span class="learned-tag">Post-training can only reinforce what SFT made emittable</span>
-      <b>CE had ideal conditions and still only landed one class.</b> The loss was on the verified
-      outcome with RLVR masked off those tokens, nothing competing with it, and RUNTIME_ERROR came
-      back off 8 demonstrations. ASSERTION_FAILURE never did off 37. So it isn't the loss and it
-      isn't the count: SFT never made the model able to tell "this code runs but the answer is
-      wrong" apart from PASS, and no downstream loss can reinforce a distinction the model can't
-      make.</li>
-      <li><span class="learned-tag">One seed is not a result</span><b>The second seed is what
-      separates the real effects here from the noise.</b> On seed 42 Arm A finished 4.4 points
-      ahead of Arm B, which looks like the prediction gate costing the agent something. On seed 43
-      the arms land 0.6 points apart, p=0.86. The SFT-to-RLVR gain within each arm replicated on
-      both seeds; the gap between arms did not.</li>
+      <li><span class="learned-tag">Recovery needs harder evaluations</span><b>MBPP is too easy to
+      measure recovery well.</b> All 500 tasks test the first patch, but recovery only happens
+      after a failure, leaving too few recovery events. Harder tasks would exercise recovery more
+      often.</li>
+      <li><span class="learned-tag">Post-training only reinforces distinctions SFT
+      established</span><b>CE trained on verified execution outcomes, with RLVR masked from the
+      prediction labels.</b> RUNTIME_ERROR emerged from 8 SFT examples, while ASSERTION_FAILURE did
+      not emerge from 37. The issue was not simply the loss or example count; SFT failed to
+      establish a usable distinction between wrong-but-runnable code and PASS.</li>
+      <li><span class="learned-tag">One seed is not a result</span><b>Seed 42 suggested Arm A led
+      Arm B by 4.4 points.</b> Seed 43 reduced the gap to 0.6 points with p=0.86. The SFT-to-RLVR
+      gains replicated across both seeds; the difference between arms did not.</li>
     </ol>
   </div>
 </section>
@@ -558,16 +553,15 @@ patch applied</code></div>
 <section class="section" id="next">
   <p class="section-kicker">Follow-up experiments</p>
   <h2 class="section-title">Where this goes next</h2>
-  <p class="section-lede">Straight from the diagnosis: the SFT process never demonstrated half the
-    outcome classes, and barely demonstrated the one that dominates.</p>
   <div>
     <div class="next-card">
-      <div class="next-title">Teach all six classes</div>
-      <p>The SFT traces demonstrate PASS, ASSERTION_FAILURE and RUNTIME_ERROR, and never show
-      SYNTAX_ERROR or TIMEOUT once. Before any conclusion about what the predictor can't learn,
-      it should be shown every class it is asked to emit. ASSERTION_FAILURE is 37 of the 302
-      prediction labels in the SFT set (12%) against 57% of real outcomes, so it needs far more.
-      This is a data-generation change, not a training change, so it is the cheapest fix here.</p>
+      <div class="next-title">Teach every outcome class</div>
+      <p>SFT demonstrates PASS, ASSERTION_FAILURE, and RUNTIME_ERROR, but never SYNTAX_ERROR or
+      TIMEOUT. The predictor should see every class it is expected to emit before judging what it
+      cannot learn.</p>
+      <p>ASSERTION_FAILURE also needs better data, not just more of the same: it appears in only 37
+      of 302 SFT labels despite making up 57% of real outcomes. The cheapest next step is to
+      generate more representative, correctly labeled examples.</p>
     </div>
   </div>
 
