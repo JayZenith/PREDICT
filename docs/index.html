@@ -539,12 +539,11 @@ patch applied</code></div>
       isn't the count: SFT never made the model able to tell "this code runs but the answer is
       wrong" apart from PASS, and no downstream loss can reinforce a distinction the model can't
       make.</li>
-      <li><span class="learned-tag">The model writes its own training data</span><b>The labels come
-      from running the model's own patches, so getting better at patching starves the
-      predictor.</b> When a class shows up rarely in the predictions, two very different things
-      look identical: the model stopped guessing it, or the model stopped producing it. The first
-      is fixable with loss weights, the second isn't, and a recall table can't tell you which one
-      you have.</li>
+      <li><span class="learned-tag">One seed is not a result</span><b>The headline finding of this
+      run died when I ran it again.</b> On seed 42 Arm A beat Arm B at step 100, 56.4% vs 52.0%,
+      and it looked like the prediction gate was costing the agent something. The second seed put
+      the two arms at 54.2% and 53.6%, p=0.86. The within-arm SFT-to-RLVR gains held up across
+      seeds; the between-arm one was noise I almost wrote up as a finding.</li>
     </ol>
   </div>
 </section>
