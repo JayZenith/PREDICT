@@ -205,10 +205,10 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     (Arm A): patch, test, react.</p>
   <p class="tagline"><b style="color:#39ff14">Work in progress:</b> RLVR beat SFT for both agents,
     and the prediction mechanism shows some learning. The SFT checkpoint called PASS on <b>100%</b>
-    of candidates, which needs to be corrected in the curriculum &mdash; 257 of its 302 prediction
+    of candidates, which needs to be corrected in the curriculum: 257 of its 302 prediction
     labels are PASS. But cross-entropy on verified execution outcomes did create a RUNTIME_ERROR
     detector: <b>62.5% and 64.1% precision</b> across the two seeds, against a 16% base rate, off 8
-    demonstrations. ASSERTION_FAILURE &mdash; 57% of all outcomes &mdash; stayed at zero, never
+    demonstrations. ASSERTION_FAILURE, 57% of all outcomes, stayed at zero, never
     predicted once at any checkpoint. And the gate doesn't pay off yet: Arm A vs. Arm B is a coin
     flip.</p>
 </header>
@@ -304,10 +304,10 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="section-kicker">Results</p>
   <h2 class="section-title">RLVR improves both arms over SFT; neither arm beats the other</h2>
   <p class="section-lede">Each arm was trained twice, independently, from <b>its own</b> SFT
-    checkpoint with two different seeds &mdash; Arm A's runs start from the Arm A SFT checkpoint,
+    checkpoint with two different seeds. Arm A's runs start from the Arm A SFT checkpoint,
     Arm B's from the Arm B one, so every RLVR gain below is measured against that arm's own baseline
     (n=500, greedy pass@1). RLVR improves each arm over its own baseline in all four runs. Step 100
-    is interim &mdash; two of the four are still climbing there (+2.8 and +2.4 points over step
+    is interim, and two of the four are still climbing there (+2.8 and +2.4 points over step
     75).</p>
 
   <div class="callout good">
@@ -389,7 +389,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     first patch. <b>Recovery I can't call either way.</b> The first patch fails on about half the
     tasks, and when it does, the agent fixes it about 40 times out of ~270. Forty is a small number:
     even if RLVR did make the agent better at fixing its own broken code, 40 events isn't enough
-    data to see it. So I don't know whether recovery improved &mdash; only that I couldn't detect
+    data to see it. So I don't know whether recovery improved, only that I couldn't detect
     it.</p>
 
   <table class="data-table">
@@ -401,8 +401,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
       <tr><td>Arm B seed 43</td><td>48.2% &rarr; 53.6%</td><td>41.0% &rarr; 45.8%</td><td>0.0004</td><td>12.8% &rarr; 14.9%</td><td>0.74</td></tr>
     </tbody>
   </table>
-  <p class="chart-caption">McNemar, paired on identical tasks, n=500. Recovery counts are small
-    &mdash; Arm A 39/277 &rarr; 43/257, Arm B 36/282 &rarr; 33/266.</p>
+  <p class="chart-caption">McNemar, paired on identical tasks, n=500. Recovery counts are small:
+    Arm A 39/277 &rarr; 43/257, Arm B 36/282 &rarr; 33/266.</p>
 
   <p class="section-lede mt-lg"><span class="block-label">The prediction itself</span>The gate works:
     REVISE follows a non-PASS prediction 100% of the time, KEEP follows a PASS prediction
@@ -427,7 +427,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     happened. <b>RUNTIME_ERROR went from never predicted at SFT to 63% recall</b>, and it isn't
     recall bought by over-predicting: <b>62.5% precision</b> (64.1% on seed 43) on a class that
     occurs 16% of the time, calling it 208 times against 207 real. ASSERTION_FAILURE, the most
-    common outcome, was never predicted correctly once &mdash; not at SFT, not at any RL checkpoint.
+    common outcome, was never predicted correctly once, not at SFT and not at any RL checkpoint.
     Both movements replicate across seeds.</p>
 
   <p class="section-lede mt-md"><span class="block-label">It saw plenty of failures</span>Across Arm
@@ -440,15 +440,15 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
       <tr><td>ASSERTION_FAILURE</td><td>49.5%</td><td>3.2%</td></tr>
       <tr><td>PASS</td><td>29.8%</td><td>78.7%</td></tr>
       <tr><td>RUNTIME_ERROR</td><td>18.2%</td><td>18.0%</td></tr>
-      <tr><td>SYNTAX_ERROR <span style="opacity:.6">&mdash; never taught</span></td><td>2.2%</td><td>0.1%</td></tr>
-      <tr><td>TIMEOUT <span style="opacity:.6">&mdash; never taught</span></td><td>0.3%</td><td>0.0%</td></tr>
+      <tr><td>SYNTAX_ERROR <span style="opacity:.6">(never taught)</span></td><td>2.2%</td><td>0.1%</td></tr>
+      <tr><td>TIMEOUT <span style="opacity:.6">(never taught)</span></td><td>0.3%</td><td>0.0%</td></tr>
     </tbody>
   </table>
   <p class="chart-caption">ASSERTION_FAILURE is the single most common thing that happens and the
     model calls it 3% of the time. RUNTIME_ERROR it calls at almost exactly the right rate. The SFT
     curriculum says the same thing backwards: <b>ASSERTION_FAILURE was demonstrated 4.6&times; more
     often than RUNTIME_ERROR (37 labels to 8), and RUNTIME_ERROR is the one that came back.</b> So
-    it isn't scarcity. The bottom two rows aren't results at all &mdash; SYNTAX_ERROR and TIMEOUT
+    it isn't scarcity. The bottom two rows aren't results at all, since SYNTAX_ERROR and TIMEOUT
     were never trained on.</p>
 </section>
 
@@ -517,7 +517,7 @@ patch applied</code></div>
     The third candidate, <code>z = x * y</code>, uses the exact operator the task banned. The test
     checks numeric output only, so it scores reward 1.0 anyway. Arm A's solution for the same task
     (repeated addition with sign correction) actually obeys the instruction. One isolated case,
-    not a systemic pattern &mdash; but it is a reminder that the reward grades less than the task
+    not a systemic pattern, but a reminder that the reward grades less than the task
     asks for.
   </div>
 </section>
@@ -536,11 +536,11 @@ patch applied</code></div>
       <li><span class="learned-tag">A clean loss can't teach what the model can't see</span><b>The
       prediction got ideal supervision and still only learned one class.</b> CE on the true outcome,
       RLVR masked off those tokens, nothing competing with it. RUNTIME_ERROR came back.
-      ASSERTION_FAILURE &mdash; which means knowing your own code is wrong &mdash; did not.</li>
+      ASSERTION_FAILURE, which means knowing your own code is wrong, did not.</li>
       <li><span class="learned-tag">Two ways a class can be rare</span><b>The labels come from
       running the model's own code, so the model changes its own data.</b> A class gets rare either
       because the model stopped guessing it, or because it stopped writing code that does it. The
-      first is fixable with loss weights, the second isn't &mdash; and a recall table shows them the
+      first is fixable with loss weights, the second isn't, and a recall table shows them the
       same way.</li>
     </ol>
   </div>
@@ -557,7 +557,7 @@ patch applied</code></div>
       <p>The curriculum demonstrates PASS, ASSERTION_FAILURE and RUNTIME_ERROR, and never shows
       SYNTAX_ERROR or TIMEOUT once. Before any conclusion about what the predictor can't learn,
       it should be shown every class it is asked to emit, with ASSERTION_FAILURE far above 12% of
-      labels. This is a data-generation change, not a training change &mdash; the cheapest fix here.</p>
+      labels. This is a data-generation change, not a training change, so it is the cheapest fix here.</p>
     </div>
   </div>
 
@@ -567,7 +567,7 @@ patch applied</code></div>
 <footer>
   <hr class="rule">
   <p class="footer-cite"><b>Provenance.</b> Every number on this page comes from the four headline
-  runs &mdash; Arm A and Arm B, seeds 42 and 43 &mdash; in <code>RESULTS_PUBLISHED/</code>.
+  runs (Arm A and Arm B, seeds 42 and 43) in <code>RESULTS_PUBLISHED/</code>.
   <a href="https://github.com/JayZenith/PREDICT/blob/main/docs/blog.md#provenance-how-to-verify-every-claim-in-the-write-up"><code>docs/blog.md</code>
   &sect; Provenance</a> gives the full audit trail: which file and field backs each figure, which
   commit actually ran, what every module is responsible for, and the specific ways this data has
