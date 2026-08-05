@@ -433,6 +433,7 @@ opposite of what these runs did. Check the branch first.
 | pass@1 table, all 20 cells | `RL_ARM_*/eval/**/traces.jsonl` | `metrics.passed` |
 | within-arm RLVR gains (p=0.0002–0.032) | same, SFT vs RL 100 | McNemar on `metrics.passed` |
 | first-patch-correct vs recovery decomposition | same | `metrics.first_patch_correct`, `metrics.recovered_after_executed_failure`, `metrics.had_executed_failure` |
+| recovery is underpowered, not flat | same | raw counts: Arm A 39/277 → 43/257, Arm B 36/282 → 33/266. ~40 successes per run, so the p=0.58–0.74 is weak evidence of no change, not evidence of none. Do not report it as "RLVR does not train recovery" |
 | prediction recall chart (92/63/0%) | `RL_ARM_B_100/eval/**/traces.jsonl` | `info.glyph.prediction_targets[]`, `sampled_prediction` vs `actual` |
 | RUNTIME_ERROR precision 62.5% / 64.1%, 208 predicted vs 207 actual, 16.1% base rate | `RL_ARM_B{,_V1}_100/eval/**/traces.jsonl` | same. Precision = correct RUNTIME_ERROR predictions ÷ all RUNTIME_ERROR predictions |
 | SFT predicts PASS on 100% of candidates | `RL_ARM_B_sft/eval/**/traces.jsonl` | same |
