@@ -553,24 +553,15 @@ patch applied</code></div>
 <section class="section" id="next">
   <p class="section-kicker">Follow-up experiments</p>
   <h2 class="section-title">Where this goes next</h2>
-  <p class="section-lede">Both follow from the diagnosis: half the label space was never
-    demonstrated, and CE is the only thing that can currently reach the prediction.</p>
-  <div class="next-grid">
+  <p class="section-lede">Straight from the diagnosis: the curriculum never demonstrated half the
+    outcome classes, and barely demonstrated the one that dominates.</p>
+  <div>
     <div class="next-card">
-      <div class="next-num" style="color:#f5e400">first</div>
       <div class="next-title">Teach all six classes</div>
       <p>The curriculum demonstrates PASS, ASSERTION_FAILURE and RUNTIME_ERROR, and never shows
       SYNTAX_ERROR or TIMEOUT once. Before any conclusion about what the predictor can't learn,
       it should be shown every class it is asked to emit, with ASSERTION_FAILURE far above 12% of
       labels. This is a data-generation change, not a training change &mdash; the cheapest fix here.</p>
-    </div>
-    <div class="next-card">
-      <div class="next-num">next</div>
-      <div class="next-title">Let RLVR train the prediction too</div>
-      <p>The prediction tokens are zeroed out of the RL loss, so CE is the only thing that reaches
-      them &mdash; a reward for guessing right would land on the surrounding decision and action
-      tokens, not on the guess. Unmasking the span is the prerequisite for grading the prediction
-      at all. That changes what CE was doing here, so it is a real experiment, not a knob.</p>
     </div>
   </div>
 
