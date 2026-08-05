@@ -446,6 +446,16 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     often than RUNTIME_ERROR (37 labels to 8), and RUNTIME_ERROR is the one that came back.</b> So
     it isn't scarcity. The bottom two rows aren't results at all, since SYNTAX_ERROR and TIMEOUT
     were never trained on.</p>
+  <div class="callout warn">
+    <div class="callout-label">Known labeling limitation</div>
+    Pass/fail is real execution, but the outcome <i>class</i> is a heuristic on stderr
+    (<code>program.py:167</code>): SyntaxError &rarr; SYNTAX_ERROR, AssertionError &rarr;
+    ASSERTION_FAILURE, Traceback &rarr; RUNTIME_ERROR. A solution that raises
+    <code>AssertionError</code> itself is therefore labeled ASSERTION_FAILURE when it is really a
+    runtime error. Rare on MBPP, but it means the class split carries some label noise. The
+    RUNTIME_ERROR result is unaffected in direction: that misrule can only move counts <i>out</i>
+    of RUNTIME_ERROR.
+  </div>
 </section>
 
 <section class="section" id="demo">
