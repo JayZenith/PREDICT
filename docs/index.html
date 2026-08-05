@@ -261,8 +261,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     Arm B has two &mdash; <b>visible</b> (predicted PASS, kept, the real test caught it) and
     <b>shadow</b> (predicted a failure, revised before the real test ran). In the visible path the
     test catches the bug; in the shadow path the prediction does. The SFT curriculum teaches both
-    in equal share. On the test set both arms
-    recover on 12&ndash;17% of rollouts whose first test failed, and RLVR moved that in neither arm
+    in equal share. On the test set both arms recover on 12&ndash;17% of the rollouts whose first
+    test failed, and RLVR left that rate about where SFT put it
     (<a href="#diagnosis">diagnosis</a>).</p>
 </section>
 
@@ -387,11 +387,11 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="section-lede mt-md"><span class="block-label">Where the gain landed</span>pass@1 is one
     rollout per task, and a rollout is multi-turn &mdash; inside that one attempt the agent can
     patch, test, and patch again. Both routes to a pass do real work; recovery rescues 12&ndash;17%
-    of the rollouts whose first test failed. The measured gain sits entirely on the first patch.
-    Recovery moved in no run &mdash; but read that as <i>not detected</i>, not as <i>didn't
-    happen</i>: it only fires on the ~55% of rollouts whose first patch failed, and it succeeds
-    about 40 times per run, so the test has little power to see a change of a few points either
-    way.</p>
+    of the rollouts whose first test failed. The measured gain sits entirely on the first patch: the
+    recovery rate after RLVR is roughly what it was at SFT in all four runs. But that is a weak
+    finding, not a strong one. Recovery only happens on the ~55% of rollouts whose first patch
+    failed, and it works about 40 times per run &mdash; too few events to tell a real few-point
+    change from noise, in either direction.</p>
 
   <table class="data-table">
     <thead><tr><th>SFT &rarr; RL 100</th><th>pass@1</th><th>first patch correct</th><th>p</th><th>recovery | failure</th><th>p</th></tr></thead>
