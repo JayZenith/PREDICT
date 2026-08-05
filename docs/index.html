@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PREDICT: Giving a Coding Agent a World Model It Must Act On</title>
+<title>PREDICT: Making a Coding Agent Predict Its Environment and Update Its World Model</title>
 <meta name="description" content="RLVR on MBPP: a test-and-recover coding agent vs. a predict-and-decide coding agent trained with SFT, RLVR, and verified-label cross-entropy. Results, training dynamics, and real rollouts.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='black'/%3E%3Cpath d='M13 2 L4 14 H11 L10 22 L20 9 H13 Z' fill='%2339ff14'/%3E%3C/svg%3E">
 <style>
@@ -178,65 +178,31 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <div class="page">
 
 <header class="hero">
-  <h1 class="h1">PREDICT: Giving a Coding Agent a World Model It Must Act On</h1>
+  <h1 class="h1">Making a Coding Agent Predict the Outcome of Its Environment and Update Its World Model</h1>
   <p class="tagline" style="margin-top:-4px">
     <a href="https://x.com/jayz3nith">X</a> &middot;
     <a href="https://jayzenith.me/">jayzenith.me</a> &middot;
     <a href="https://github.com/JayZenith/PREDICT">GitHub repo</a>
   </p>
-  <p class="tagline"><b style="color:#39ff14">The setup:</b> a predict-and-decide agent (Arm B) calls what its own
-    patch will do, then commits to KEEP or REVISE on that call &mdash; all before it sees any
-    result. The patch is executed either way, and a cross-entropy loss on the verified outcome
-    trains the prediction directly. The matched comparator is test-and-recover (Arm A): patch, test, react. Same SFT-then-RLVR
-    recipe for both.</p>
-  <p class="tagline"><b style="color:#39ff14">What happened:</b> RLVR beat SFT for both agents, and
-    the prediction mechanism learns. The SFT checkpoint was a constant &mdash; it called PASS on
-    <b>100%</b> of candidates, which is the curriculum's doing, since 257 of its 302 prediction
-    labels are PASS. Cross-entropy on verified execution outcomes turned that into a real
-    RUNTIME_ERROR detector: <b>62.5% and 64.1% precision</b> across the two seeds, against a 16%
-    base rate, off 8 demonstrations. ASSERTION_FAILURE &mdash; 57% of all outcomes &mdash; stayed at
-    zero, never predicted once at any checkpoint. And the gate doesn't pay off yet: Arm A vs. Arm B
-    is a coin flip.</p>
+  <p class="tagline"><b style="color:#39ff14">The setup:</b> a predict-and-decide agent (Arm B) makes
+    a PREDICTION on what its own patch will do, then chooses to either KEEP or REVISE the patch. The
+    patch is executed either way, and a cross-entropy loss on the verified outcome trains the
+    prediction directly while GRPO handles the rest. The matched comparator is test-and-recover
+    (Arm A): patch, test, react.</p>
+  <p class="tagline"><b style="color:#39ff14">Work in progress:</b> RLVR beat SFT for both agents,
+    and the prediction mechanism learns. The SFT checkpoint was a constant &mdash; it called PASS on
+    <b>100%</b> of candidates, which is what it was taught to do: 257 of the 302 prediction labels in
+    its training traces are PASS. Cross-entropy on verified execution outcomes turned that constant
+    into a real RUNTIME_ERROR detector: <b>62.5% and 64.1% precision</b> across the two seeds,
+    against a 16% base rate, off 8 demonstrations. ASSERTION_FAILURE &mdash; 57% of all outcomes
+    &mdash; stayed at zero, never predicted once at any checkpoint. And the gate doesn't pay off yet:
+    Arm A vs. Arm B is a coin flip.</p>
   <p class="tagline"><b style="color:#39ff14">Why one class and not the other:</b> they ask for
     different things. Predicting a crash means inspecting your own output for an undefined name or a
     bad index &mdash; a second check, separate from whether the logic is right. Predicting a wrong
-    answer means contradicting the patch you just wrote, using the same weights that wrote it: if
-    the model could tell the answer was wrong, it would have written a different answer. That last
-    part is interpretation. What's measured is that 8 demonstrations taught the first class and 37
-    didn't teach the second.</p>
+    answer requires a more adversarial position on code you just wrote. What's measured is that 8
+    demonstrations taught the first class and 37 didn't teach the second.</p>
 </header>
-
-<section class="section" id="setup">
-  <p class="section-kicker">Design constraints</p>
-  <h2 class="section-title">Why this setup</h2>
-  <div class="grid-2">
-    <div class="next-card">
-      <div class="next-title">The pipeline was built from scratch</div>
-      <p>MBPP is ~1,000 short Python problems with gold test assertions
-      (<a href="https://arxiv.org/abs/2108.07732">Austin et al.</a>, 2021). PREDICT is a multi-turn
-      tool-using agent on Qwen3-4B-Base: hand-designed SFT traces (direct-solution, two-step
-      recovery, prediction labels, KEEP/REVISE paths), the environment, the auxiliary-loss wiring,
-      and the full SFT&rarr;RL pipeline.</p>
-    </div>
-    <div class="next-card">
-      <div class="next-title">424 problems, split deliberately</div>
-      <p>Split 212 SFT / 212 RL, plus 40 validation and 500 test scored exactly once, after every
-      design decision was frozen. The RL stage never trains on a problem SFT already saw. 212
-      traces per arm is enough to install a protocol &mdash; emit the tags, honor the gate, keep
-      the loop coherent. Teaching the outcome classes is a separate job the curriculum only half
-      did: the agent may predict 6 classes, but the SFT traces demonstrate 3, and SYNTAX_ERROR and
-      TIMEOUT appear zero times. Small n, so every number here has wide error bars.</p>
-    </div>
-  </div>
-
-  <div class="stat-grid mt-md">
-    <div class="stat-tile"><div class="stat-value">424</div><div class="stat-label">train pool &rarr; 212 SFT + 212 RL</div></div>
-    <div class="stat-tile"><div class="stat-value">40</div><div class="stat-label">validation, checkpoint selection</div></div>
-    <div class="stat-tile"><div class="stat-value">500</div><div class="stat-label">final test, touched once</div></div>
-    <div class="stat-tile"><div class="stat-value">212</div><div class="stat-label">SFT traces / arm: 142 direct + 70 recovery</div></div>
-  </div>
-
-</section>
 
 <section class="section" id="architecture">
   <p class="section-kicker">Architecture</p>
@@ -301,14 +267,44 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </section>
 
 
+<section class="section" id="setup">
+  <p class="section-kicker">Design constraints</p>
+  <h2 class="section-title">Why this setup</h2>
+  <div class="grid-2">
+    <div class="next-card">
+      <div class="next-title">The pipeline was built from scratch</div>
+      <p>MBPP is ~1,000 short Python problems with gold test assertions
+      (<a href="https://arxiv.org/abs/2108.07732">Austin et al.</a>, 2021). PREDICT is a multi-turn
+      tool-using agent on Qwen3-4B-Base: hand-designed SFT traces (direct-solution, two-step
+      recovery, prediction labels, KEEP/REVISE paths), the environment, the auxiliary-loss wiring,
+      and the full SFT&rarr;RL pipeline.</p>
+    </div>
+    <div class="next-card">
+      <div class="next-title">Training set, validation set, eval set</div>
+      <p>Split 212 SFT / 212 RL, plus 40 validation and a 500-problem test set, scored once after
+      every design decision was frozen. The RL stage never trains on a problem SFT already saw. 212
+      traces per arm is enough to install an agent protocol. Teaching the outcome classes is a
+      separate job the curriculum only half did: the agent may predict 6 classes, but the SFT traces
+      demonstrate 3, and SYNTAX_ERROR and TIMEOUT appear zero times.</p>
+    </div>
+  </div>
+
+  <div class="stat-grid mt-md">
+    <div class="stat-tile"><div class="stat-value">424</div><div class="stat-label">train pool &rarr; 212 SFT + 212 RL</div></div>
+    <div class="stat-tile"><div class="stat-value">40</div><div class="stat-label">validation, checkpoint selection</div></div>
+    <div class="stat-tile"><div class="stat-value">500</div><div class="stat-label">final test, touched once</div></div>
+    <div class="stat-tile"><div class="stat-value">212</div><div class="stat-label">SFT traces / arm: 142 direct + 70 recovery</div></div>
+  </div>
+
+</section>
+
 <section class="section" id="results">
   <p class="section-kicker">Results</p>
   <h2 class="section-title">RLVR improves both arms over SFT; neither arm beats the other</h2>
   <p class="section-lede">Both arms were trained twice, independently, from the same SFT
-    checkpoints with different seeds (n=500, greedy pass@1). The load-bearing result is within-arm:
-    SFT agent traces plus RLVR improve each arm over its own baseline, in all four runs. Step 100
-    is interim, not a destination &mdash; two of the four runs are still climbing there (+2.8 and
-    +2.4 points over step 75).</p>
+    checkpoints with different seeds (n=500, greedy pass@1). SFT agent traces plus RLVR improve each
+    arm over its own baseline, in all four runs. Step 100 is interim &mdash; two of the four runs are
+    still climbing there (+2.8 and +2.4 points over step 75).</p>
 
   <div class="callout good">
     <div class="callout-label">&#10003; Replicated across two seeds</div>
@@ -383,10 +379,12 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="diagnosis">
   <p class="section-kicker">Diagnosis</p>
   <h2 class="section-title">RLVR gains concentrated in first-attempt correctness</h2>
-  <p class="section-lede">Decomposing the pass@1 gain: it came from first-attempt correctness, not
-    from recovery. First-attempt correctness is the one thing the agent does on every rollout.
-    Recovery is <i>conditional</i>, and reward pays a recovered task exactly what it pays a
-    first-try task, so nothing trains it &mdash; it sits where SFT left it in all four runs.</p>
+  <p class="section-lede">The pass@1 gain came from writing a correct patch on the first try, not
+    from fixing a broken one. Writing a first patch is something the agent does on every task, so
+    every reward touches it. Fixing a broken patch only happens when the first one fails, and the
+    reward pays the same either way &mdash; a task solved on the retry is worth exactly what a task
+    solved immediately is worth. So nothing pushes recovery up, and it sits where SFT left it in all
+    four runs.</p>
 
   <table class="data-table">
     <thead><tr><th>SFT &rarr; RL 100</th><th>first patch correct</th><th>p</th><th>recovery | failure</th><th>p</th></tr></thead>
@@ -402,11 +400,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     them &mdash; the recovery half of the SFT curriculum does that work, and a hundred RLVR steps
     produced no detectable change. McNemar, paired on identical tasks, n=500.</p>
 
-  <p class="section-lede mt-lg"><span class="block-label">The prediction fails for a different reason</span>The gate
-    itself works. REVISE follows a non-PASS prediction 100% of the time, KEEP follows a PASS
-    prediction 96&ndash;99%. What the agent can't do is <b>discriminate</b> &mdash; tell, from the
-    candidate code alone, whether it will pass, crash, or run fine and fail the assertion. At RL
-    step 100, seed 42:</p>
+  <p class="section-lede mt-lg"><span class="block-label">The prediction itself</span>The gate works:
+    REVISE follows a non-PASS prediction 100% of the time, KEEP follows a PASS prediction
+    96&ndash;99%. The open question is whether the prediction is any good. At RL step 100, seed 42:</p>
 
   <div class="chart-wrap"><svg viewBox="0 0 620 220" class="chart-svg" role="img" aria-label="bar chart">
 <line x1="16" y1="186.0" x2="604" y2="186.0" stroke="#7a7a7a" stroke-width="1"/>
@@ -423,20 +419,16 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <text x="506.0" y="202" text-anchor="middle" class="axis-label">ASSERTION_FAILURE</text>
 <text x="506.0" y="214" text-anchor="middle" class="axis-sub">57% of verified outcomes</text>
 </svg></div>
-  <p class="chart-caption">Recall = how often the model's own sampled prediction matched the
-    verified outcome. Two opposite movements, both replicated across seeds. RUNTIME_ERROR was
-    <i>created</i> &mdash; the SFT checkpoint never predicted it once. And it isn't recall bought by
-    over-predicting: precision is <b>62.5%</b> (seed 42) and <b>64.1%</b> (seed 43) on a class that
-    occurs 16.1% of the time, so roughly 4&times; base rate, with the predicted count landing within
-    a percent of the true count (208 predicted / 207 actual, seed 42). ASSERTION_FAILURE is the most
-    common outcome at 57% and was never predicted correctly once &mdash; not at SFT, not at any RL
-    checkpoint. In training rollouts it starts at 6&ndash;7% of predictions and decays to
-    0&ndash;1.5% by step 100.</p>
+  <p class="chart-caption">Recall = how often the model's own prediction matched what actually
+    happened. <b>RUNTIME_ERROR went from never predicted at SFT to 63% recall</b>, and it isn't
+    recall bought by over-predicting: <b>62.5% precision</b> (64.1% on seed 43) on a class that
+    occurs 16% of the time, calling it 208 times against 207 real. ASSERTION_FAILURE, the most
+    common outcome, was never predicted correctly once &mdash; not at SFT, not at any RL checkpoint.
+    Both movements replicate across seeds.</p>
 
-  <p class="section-lede mt-md"><span class="block-label">Not a lack of exposure</span>Across Arm
-    B's RL training rollouts (steps 1&ndash;101, 15,122 verified labels), the model's own patches
-    failed about 70% of the time. It saw the failure classes constantly and still predicted them at
-    nowhere near their real rate:</p>
+  <p class="section-lede mt-md"><span class="block-label">It saw plenty of failures</span>Across Arm
+    B's RL training rollouts (15,122 verified labels), its own patches failed about 70% of the time.
+    It still predicted the failure classes at nowhere near their real rate:</p>
 
   <table class="data-table">
     <thead><tr><th>outcome class</th><th>share of real outcomes</th><th>share of predictions</th></tr></thead>
@@ -448,35 +440,21 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
       <tr><td>TIMEOUT <span style="opacity:.6">&mdash; never taught</span></td><td>0.3%</td><td>0.0%</td></tr>
     </tbody>
   </table>
-  <p class="chart-caption">The training set is small, but scarcity isn't what broke the predictor.
-    ASSERTION_FAILURE is the single most common thing that happens and the model calls it 3% of the
-    time. RUNTIME_ERROR is the one class it predicts at close to the right rate, and the one class
-    it had real recall on. The bottom two rows aren't results: SYNTAX_ERROR and TIMEOUT appear zero
-    times in the SFT curriculum, so nothing was ever asked of them. Counted from
-    <code>run_default/rollouts/step_*/train/all/traces.jsonl</code>.</p>
-
-  <p class="section-lede mt-md"><span class="block-label">And not a lack of demonstrations</span>The
-    SFT curriculum is more lopsided still &mdash; of its 302 prediction labels, 257 are PASS, 37
-    ASSERTION_FAILURE, 8 RUNTIME_ERROR, and zero SYNTAX_ERROR or TIMEOUT. Which settles it the wrong
-    way round for the scarcity story: <b>ASSERTION_FAILURE was demonstrated 4.6&times; more often
-    than RUNTIME_ERROR, and RUNTIME_ERROR is the one that came back.</b> Eight examples were enough
-    to teach a class the model can spot in the code; thirty-seven were not enough to teach one it
-    can't. Counted from <code>data/sft/arm_b/train.jsonl</code>, assistant turns only.</p>
+  <p class="chart-caption">ASSERTION_FAILURE is the single most common thing that happens and the
+    model calls it 3% of the time. RUNTIME_ERROR it calls at almost exactly the right rate. The SFT
+    curriculum says the same thing backwards: <b>ASSERTION_FAILURE was demonstrated 4.6&times; more
+    often than RUNTIME_ERROR (37 labels to 8), and RUNTIME_ERROR is the one that came back.</b> So
+    it isn't scarcity. The bottom two rows aren't results at all &mdash; SYNTAX_ERROR and TIMEOUT
+    were never demonstrated once.</p>
 
   <div class="callout crit">
-    <div class="callout-label">It isn't a routing problem</div>
-    The obvious suspect is loss routing &mdash; RLVR drowning CE on a shared span. That was
-    designed out. <code>PredictAlgorithm._mask_sampled_labels</code> zeroes the policy-gradient
-    weight on exactly the sampled outcome-label tokens, so CE on the verified label is the only
-    <i>direct</i> teacher there, while GRPO trains the rest of the rollout normally. Not a hermetic
-    seal &mdash; both losses update the same weights, so gradient at the surrounding
-    <code>&lt;DECISION&gt;</code> and action tokens can still reshape the masked positions
-    indirectly. But no reward term reaches those tokens on purpose.
-    <div style="margin-top:9px">So CE had an uncontested channel, and the result splits by class
-    anyway. RUNTIME_ERROR was resurrected from near-zero: a crash leaves marks in the code an
-    inspector can find. ASSERTION_FAILURE never came back at any checkpoint, in either seed,
-    because calling it means judging whether your own patch is semantically correct &mdash; the
-    same problem as writing correct code. No loss weight buys that (<a href="#next">follow-ups</a>).</div>
+    <div class="callout-label">And not a loss-routing problem</div>
+    The obvious suspect is RLVR drowning CE on a shared span. That was designed out:
+    <code>PredictAlgorithm._mask_sampled_labels</code> zeroes the policy-gradient weight on exactly
+    the outcome-label tokens, so CE on the verified label is the only <i>direct</i> teacher there.
+    Not a hermetic seal &mdash; both losses update the same weights &mdash; but no reward term
+    reaches those tokens on purpose. CE had a clean channel and the result still split by class
+    (<a href="#next">follow-ups</a>).
   </div>
 </section>
 
@@ -617,78 +595,14 @@ patch applied</code></div>
 </section>
 
 
-<section class="section" id="provenance">
-  <p class="section-kicker">Provenance</p>
-  <h2 class="section-title">Where every number on this page comes from</h2>
-  <p class="section-lede">Scope is the four headline runs only: Arm A and Arm B, seeds 42 and 43.
-    They live in <code>RESULTS_PUBLISHED/</code>, and nothing on this page comes from anywhere else
-    &mdash; exploratory runs are quarantined in <code>RESULTS_EXPLORATORY/</code>, which has its own
-    README explaining why they aren't comparable.</p>
-  <div class="card">
-    <ol class="learned-list">
-      <li><span class="learned-tag">Runs</span>Seed 42 is <code>RL_ARM_{A,B}_{sft,25,50,75,100}</code>;
-      seed 43 is <code>RL_ARM_{A,B}_V1_*</code>. Configs at
-      <code>RL_ARM_*_shared/run_default/control/orch.toml</code> &mdash; Arm A is
-      <code>algo.type = "grpo"</code>, Arm B is <code>"predict"</code> with
-      <code>alpha = 0.1</code>. Neither sets <code>prediction_reward_weight</code>, so it is 0.</li>
-
-      <li><span class="learned-tag">pass@1, recovery, McNemar</span>Per-task metrics from
-      <code>RL_ARM_*/eval/**/traces.jsonl</code>, n=500. Pair on
-      <code>task.data.name</code> (e.g. <code>mbpp_73</code>) &mdash; <b>not</b>
-      <code>task.name</code> and not <code>id</code>, which is a per-run UUID that will silently
-      match nothing. Metrics used: <code>passed</code>, <code>first_patch_correct</code>,
-      <code>had_executed_failure</code>, <code>recovered_after_executed_failure</code>,
-      <code>prediction_accuracy</code>.</li>
-
-      <li><span class="learned-tag">Prediction recall</span>Per-candidate predictions from
-      <code>info.glyph.prediction_targets[]</code> in the same eval traces:
-      <code>sampled_prediction</code> vs. <code>actual</code>. Eval, not training rollouts &mdash;
-      the two differ, because training samples at temperature. The SFT 100%-PASS figure is
-      <code>RL_ARM_B_sft</code>.</li>
-
-      <li><span class="learned-tag">Per-step trajectories</span>Training rollouts at
-      <code>RL_ARM_B{,_V1}_shared/run_default/rollouts/step_*/train/all/traces.jsonl</code>,
-      steps 1&ndash;101. Same <code>prediction_targets</code> shape. Per-step n is small
-      (36&ndash;236 candidates), so read the trend across steps and seeds, not any single point.</li>
-
-      <li><span class="learned-tag">The prediction is CE-only &mdash; read the right commit</span>
-      <b>Do not read <code>src/glyph/prime_rl.py</code> at HEAD to understand these runs.</b> At
-      HEAD the prediction span is trained by RLVR and CE together; in these runs it was CE only.
-      The version that ran is pinned in the README: SFT at <code>6884983</code>, RLVR at
-      <code>9eefac7</code> (21 Jul 00:15, ~70 min before the first run started). Its
-      <code>PredictAlgorithm._mask_sampled_labels</code> sets <code>rl_weights = 0.0</code> on the
-      sampled outcome-label tokens, so the policy gradient never reaches them. That method was
-      <i>deleted</i> on 1 Aug by <code>c5b261b</code> ("RLVR the prediction span directly"), which
-      lives only on the <code>rl/*</code> branches &mdash; <code>main</code> still carries the
-      masked version, byte-identical to <code>9eefac7</code>.</li>
-
-      <li><span class="learned-tag">Why the traces can't tell you this</span>The <code>mask</code>
-      field on a trace node is the <i>tokenization</i> loss mask, not the RL weight. It is true on
-      the prediction tokens in every run, masked or not. The <code>rl_weights</code> stream lives on
-      PRIME-RL's <code>TrainingSample</code> and is never written to <code>traces.jsonl</code>.
-      PRIME-RL fills only <i>absent</i> streams with 1.0 (<code>trainer/batch.py</code>,
-      <code>STREAM_FILL</code>) and <code>stamp_loss_routing</code> returns early for
-      <code>action_loss_type = "rl"</code> without clobbering a stream the algorithm already wrote
-      &mdash; which is why the explicit zeros survive and why this can only be settled from source.</li>
-
-      <li><span class="learned-tag">SFT curriculum</span><code>data/sft/arm_b/train.jsonl</code>,
-      212 traces. Count <code>&lt;PREDICTION&gt;</code> labels in <b>assistant</b> turns only &mdash;
-      each trace's system prompt contains a literal <code>&lt;PREDICTION&gt;OUTCOME&lt;/PREDICTION&gt;</code>
-      placeholder that inflates a naive regex by exactly 212. Assistant labels: 257 PASS, 37
-      ASSERTION_FAILURE, 8 RUNTIME_ERROR, 0 SYNTAX_ERROR, 0 TIMEOUT.</li>
-
-      <li><span class="learned-tag">Full provenance</span>This section is the summary.
-      <a href="https://github.com/JayZenith/PREDICT/blob/main/docs/blog.md#provenance-how-to-verify-every-claim-in-the-write-up"><code>docs/blog.md</code>
-      &sect; Provenance</a> has the complete version: what every module and directory is responsible
-      for, a claim&rarr;file&rarr;field table for each figure above, and the three specific ways this
-      data has already been misread. Start there before re-deriving anything. The rest of
-      <code>blog.md</code> (24 Jul, three days after the runs) is the contemporaneous record.</li>
-    </ol>
-  </div>
-</section>
-
 <footer>
   <hr class="rule">
+  <p class="footer-cite"><b>Provenance.</b> Every number on this page comes from the four headline
+  runs &mdash; Arm A and Arm B, seeds 42 and 43 &mdash; in <code>RESULTS_PUBLISHED/</code>.
+  <a href="https://github.com/JayZenith/PREDICT/blob/main/docs/blog.md#provenance-how-to-verify-every-claim-in-the-write-up"><code>docs/blog.md</code>
+  &sect; Provenance</a> gives the full audit trail: which file and field backs each figure, which
+  commit actually ran, what every module is responsible for, and the specific ways this data has
+  already been misread.</p>
   <p class="footer-cite">MBPP: Austin et al., <i>Program Synthesis with Large Language Models</i>, 2021
   (arXiv:2108.07732).</p>
 </footer>
