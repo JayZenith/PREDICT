@@ -378,17 +378,19 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
 <section class="section" id="diagnosis">
   <p class="section-kicker">Diagnosis</p>
-  <h2 class="section-title">RLVR improved the first patch and never touched recovery</h2>
-  <p class="section-lede">pass@1 is one rollout per task &mdash; but a rollout is multi-turn, so
-    inside that single attempt the agent can patch, test, and patch again. Both routes to a pass are
-    doing real work: recovery rescues 12&ndash;17% of the rollouts whose first test failed, and those
-    are points on the board. The question is which route RLVR <i>improved</i>, and the answer is only
-    the first patch.</p>
-  <p class="section-lede">The reason is what the reward can see. The agent writes a first patch on
-    every task, so every reward touches it. Recovery only gets to happen when the first patch fails,
-    and the reward is the same either way &mdash; a task solved on the third patch scores exactly
-    what a task solved on the first does. So the gradient has nothing to push against, and recovery
-    sits at its SFT value in all four runs.</p>
+  <h2 class="section-title">Why Arm B didn't beat Arm A</h2>
+  <p class="section-lede">Arm B is Arm A plus a prediction and a gate, and it didn't win. Two things
+    explain that. RLVR only improved the first patch &mdash; which both arms write, so the gain
+    landed in the half they share. And the prediction, Arm B's only differentiator, got good at one
+    outcome class and stayed at zero on the class that dominates.</p>
+
+  <p class="section-lede mt-md"><span class="block-label">Where the gain landed</span>pass@1 is one
+    rollout per task, and a rollout is multi-turn &mdash; inside that one attempt the agent can
+    patch, test, and patch again. Both routes to a pass do real work; recovery rescues 12&ndash;17%
+    of the rollouts whose first test failed. But only the first patch improved, because only it is
+    something the agent does on every task. Recovery fires just when the first patch fails, and
+    reward pays a task solved on the third patch exactly what it pays one solved on the first
+    &mdash; nothing for the gradient to push against.</p>
 
   <table class="data-table">
     <thead><tr><th>SFT &rarr; RL 100</th><th>pass@1</th><th>first patch correct</th><th>p</th><th>recovery | failure</th><th>p</th></tr></thead>
