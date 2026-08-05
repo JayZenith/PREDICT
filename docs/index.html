@@ -554,7 +554,7 @@ patch applied</code></div>
   <p class="section-kicker">Follow-up experiments</p>
   <h2 class="section-title">Where this goes next</h2>
   <p class="section-lede">Both follow from the diagnosis: half the label space was never
-    demonstrated, and nothing grades the prediction.</p>
+    demonstrated, and CE is the only thing that can currently reach the prediction.</p>
   <div class="next-grid">
     <div class="next-card">
       <div class="next-num" style="color:#f5e400">first</div>
@@ -566,11 +566,11 @@ patch applied</code></div>
     </div>
     <div class="next-card">
       <div class="next-num">next</div>
-      <div class="next-title">Pay the agent for a correct prediction</div>
-      <p>Right now the reward only cares whether the task passed. Guessing the outcome right is
-      worth nothing, and guessing PASS on a patch that fails costs nothing. Add reward for a correct
-      call and a penalty for a wrong one, worth more on ASSERTION_FAILURE than on PASS, so the agent
-      has a reason to get it right.</p>
+      <div class="next-title">Let RLVR train the prediction too</div>
+      <p>The prediction tokens are zeroed out of the RL loss, so CE is the only thing that reaches
+      them &mdash; a reward for guessing right would land on the surrounding decision and action
+      tokens, not on the guess. Unmasking the span is the prerequisite for grading the prediction
+      at all. That changes what CE was doing here, so it is a real experiment, not a knob.</p>
     </div>
   </div>
 
