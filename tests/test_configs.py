@@ -55,7 +55,15 @@ def test_matched_rl_configs_differ_only_in_arm_and_algorithm() -> None:
         "type": "predict",
         "alpha": 0.1,
         "max_aux_tokens": 4096,
+        "renderer": {"name": "default"},
     }
+    # PredictAlgorithm builds its own renderer in setup(); if it disagreed with
+    # the orchestrator's, the auxiliary prefix would tokenize differently from
+    # the rollout whose label it corrects.
+    assert (
+        arm_b_raw["orchestrator"]["algo"]["renderer"]
+        == arm_b_raw["orchestrator"]["renderer"]
+    )
     assert arm_a.seq_len == 4096
     assert arm_a.orchestrator.train.sampling.max_completion_tokens == 512
     assert arm_a.orchestrator.train.sampling.extra_body == {
@@ -90,6 +98,25 @@ def test_matched_rl_configs_differ_only_in_arm_and_algorithm() -> None:
         }
         assert train["harness"]["runtime"] == {"type": "subprocess"}
         assert validation["harness"]["runtime"] == {"type": "subprocess"}
+
+
+def test_predict_patch_only_registers_the_algorithm() -> None:
+    """PREDICT extends PRIME-RL through its documented hook -- a new algorithm
+    class plus its config, registered. Everything else (building the renderer,
+    the tokenizer) belongs in our tree and happens in ``Algorithm.setup()``.
+    Touching the orchestrator, envs, or the Algorithm base to thread the
+    policy's own renderer through would make the integration unforkable.
+    """
+    patch = (ROOT / "patches/prime-rl-predict.patch").read_text()
+    touched = {
+        line.split(" b/")[-1].strip()
+        for line in patch.splitlines()
+        if line.startswith("diff --git ")
+    }
+    assert touched == {
+        "packages/prime-rl-configs/src/prime_rl/configs/algorithm.py",
+        "src/prime_rl/orchestrator/algo/__init__.py",
+    }
 
 
 def test_patched_prime_rl_schema_accepts_predict_algorithm() -> None:

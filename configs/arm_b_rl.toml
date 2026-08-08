@@ -27,6 +27,12 @@ type = "predict"
 alpha = 0.1
 max_aux_tokens = 4096
 
+# Must match [orchestrator.renderer]: the auxiliary sample's context prefix is
+# rendered by the algorithm's own renderer, and it has to tokenize the way the
+# rollout it corrects did. "auto" would resolve to qwen3 and silently diverge.
+[orchestrator.algo.renderer]
+name = "default"
+
 [orchestrator.renderer]
 name = "default"
 

@@ -46,8 +46,9 @@ def test_predict_algorithm_uses_verified_label_ce_and_masks_sampled_label(
 
         def __init__(self, config, policy_pool):
             self.policy_pool = policy_pool
-            self.policy_renderer = None
-            self.policy_tokenizer = None
+
+        async def setup(self) -> None:
+            return None
 
     grpo = types.ModuleType("prime_rl.orchestrator.algo.grpo")
     grpo.GRPOAlgorithm = GRPOAlgorithm
@@ -108,11 +109,11 @@ def test_predict_algorithm_uses_verified_label_ce_and_masks_sampled_label(
         env_name="arm-b",
     )
     algorithm = module.PredictAlgorithm(
-        SimpleNamespace(alpha=0.25, max_aux_tokens=256),
-        None,
+        SimpleNamespace(alpha=0.25, max_aux_tokens=256, renderer=None),
+        SimpleNamespace(model_name="stub"),
     )
-    algorithm.policy_tokenizer = _Tokenizer()
-    algorithm.policy_renderer = _Renderer()
+    algorithm.tokenizer = _Tokenizer()
+    algorithm.renderer = _Renderer()
     asyncio.run(algorithm.score_rollout(rollout))
 
     assert len(rollout.samples) == 2

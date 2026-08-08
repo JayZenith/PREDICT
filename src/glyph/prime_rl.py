@@ -87,11 +87,34 @@ class PredictAlgorithm(GRPOAlgorithm):
         super().__init__(config, policy_pool)
         self.alpha = float(config.alpha)
         self.max_aux_tokens = int(config.max_aux_tokens)
+        self.renderer_config = config.renderer
+        self.renderer = None
+        self.tokenizer = None
+
+    async def setup(self) -> None:
+        """Build PREDICT's own renderer and tokenizer from the policy model,
+        the way opsd builds its hint renderer -- PRIME-RL does not hand
+        algorithms the policy's, and asking it to would mean patching the
+        orchestrator. ``load_tokenizer`` reads the policy checkpoint, so the
+        chat template and EOS baked into it at SFT are what the auxiliary
+        sample renders through, matching the rollout it corrects.
+
+        ``use_fastokens=False`` is required, not a preference: the fast
+        backend raises on ``return_offsets_mapping``, and offsets are how the
+        verified label is located inside its own encoding.
+        """
+        await super().setup()
+        from renderers.base import create_renderer, load_tokenizer
+
+        self.tokenizer = load_tokenizer(
+            self.policy_pool.model_name, use_fastokens=False
+        )
+        self.renderer = create_renderer(self.tokenizer, self.renderer_config)
 
     def _mask_sampled_labels(self, rollout) -> None:
-        tokenizer = self.policy_tokenizer
+        tokenizer = self.tokenizer
         if tokenizer is None:
-            raise RuntimeError("PREDICT requires PRIME-RL's policy tokenizer")
+            raise RuntimeError("PredictAlgorithm.setup() must run first")
         branches = [branch for branch, _ in iter_trainable_branches(rollout)]
         original_samples = rollout.samples[: len(branches)]
         for sample, branch in zip(original_samples, branches, strict=True):
@@ -118,12 +141,10 @@ class PredictAlgorithm(GRPOAlgorithm):
                 sample.rl_weights = rl_weights
 
     def _auxiliary_sample(self, rollout, target: dict) -> TrainingSample:
-        renderer = self.policy_renderer
-        tokenizer = self.policy_tokenizer
+        renderer = self.renderer
+        tokenizer = self.tokenizer
         if renderer is None or tokenizer is None:
-            raise RuntimeError(
-                "PREDICT requires PRIME-RL's policy renderer and tokenizer"
-            )
+            raise RuntimeError("PredictAlgorithm.setup() must run first")
         context = target.get("context_messages")
         actual = target.get("actual")
         if not isinstance(context, list) or actual not in OUTCOME_CLASSES:
