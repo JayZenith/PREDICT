@@ -21,6 +21,7 @@ logs/
 RESULTS_SFT/
 RESULTS_PUBLISHED/
 RESULTS_EXPLORATORY/
+RESULTS_CROSSFIT/
 
 # Editors and operating systems
 .idea/
