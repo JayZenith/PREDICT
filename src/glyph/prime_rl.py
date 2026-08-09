@@ -17,15 +17,6 @@ PREDICTION_LABEL_RE = re.compile(
 )
 
 
-def _find_subsequence(values: list[int], target: list[int]) -> int | None:
-    if not target:
-        return None
-    end = len(values) - len(target) + 1
-    for start in range(max(0, end)):
-        if values[start : start + len(target)] == target:
-            return start
-    return None
-
 
 def _encoding(tokenizer: Any, text: str) -> tuple[list[int], list[tuple[int, int]]]:
     encoded = tokenizer(
@@ -41,41 +32,53 @@ def _encoding(tokenizer: Any, text: str) -> tuple[list[int], list[tuple[int, int
 def _mask_label_tokens(
     tokenizer: Any,
     node_ids: list[int],
-    content: str,
-    match: re.Match[str],
     branch_offset: int,
     rl_weights: list[float],
 ) -> int:
-    label_start, label_end = match.span(1)
-    candidates = [
-        (content, label_start, label_end),
-        (
-            match.group(0),
-            label_start - match.start(0),
-            label_end - match.start(0),
-        ),
-        (match.group(1), 0, len(match.group(1))),
-    ]
+    """Zero the RL weight on every token that carries a sampled label.
 
-    for text, candidate_label_start, candidate_label_end in candidates:
-        candidate_ids, offsets = _encoding(tokenizer, text)
-        content_start = _find_subsequence(node_ids, candidate_ids)
-        if content_start is None:
-            continue
+    The label has to be found in the node's *own* ids, and re-encoding the
+    label text does not find it: byte-level BPE merges straight through the
+    label's edges, so ``<PREDICTION>PASS`` ends on the single token ``">P"``
+    and ``PASS`` on its own is one token that appears nowhere in what was
+    sampled. Decoding the node and encoding that exact string does round-trip,
+    which lines the offset mapping up with ``node_ids`` one for one.
 
-        masked = 0
+    A token that straddles the boundary takes the whole token's weight with it.
+    That is the side to err on -- the structural ``>`` it also covers is fully
+    determined by the format, while leaving a label token trained is the one
+    thing this algorithm exists to prevent.
+    """
+    text = tokenizer.decode(
+        node_ids, skip_special_tokens=False, clean_up_tokenization_spaces=False
+    )
+    ids, offsets = _encoding(tokenizer, text)
+    if ids != node_ids:
+        raise RuntimeError(
+            "sampled node does not survive a decode/encode round trip, so its "
+            "PREDICTION label cannot be located in its own token ids"
+        )
+
+    masked = 0
+    for match in PREDICTION_LABEL_RE.finditer(text):
+        label_start, label_end = match.span(1)
+        hits = 0
         for token_idx, (start, end) in enumerate(offsets):
-            if end > candidate_label_start and start < candidate_label_end:
-                index = branch_offset + content_start + token_idx
+            if end > label_start and start < label_end:
+                index = branch_offset + token_idx
                 if index >= len(rl_weights):
                     raise RuntimeError(
                         "PREDICTION label token exceeds its training sample"
                     )
                 rl_weights[index] = 0.0
-                masked += 1
-        if masked:
-            return masked
-    return 0
+                hits += 1
+        if not hits:
+            raise RuntimeError(
+                "could not locate the sampled PREDICTION label "
+                f"{match.group(1)!r} in its own token ids"
+            )
+        masked += hits
+    return masked
 
 
 class PredictAlgorithm(GRPOAlgorithm):
@@ -129,29 +132,24 @@ class PredictAlgorithm(GRPOAlgorithm):
             branch_offset = 0
             for node in branch.nodes:
                 content = str(getattr(node.message, "content", "") or "")
-                if node.sampled and node.message.role == "assistant":
-                    matches = list(PREDICTION_LABEL_RE.finditer(content))
-                    if matches:
-                        node_ids = list(node.token_ids)
-                        for match in matches:
-                            found = _mask_label_tokens(
-                                tokenizer,
-                                node_ids,
-                                content,
-                                match,
-                                branch_offset,
-                                rl_weights,
-                            )
-                            # Silently leaving the label unmasked would train
-                            # the policy to keep saying whatever it guessed,
-                            # which is the one thing this algorithm exists to
-                            # prevent. Fail the run instead.
-                            if not found:
-                                raise RuntimeError(
-                                    "could not locate the sampled PREDICTION label "
-                                    f"{match.group(1)!r} in its own token ids"
-                                )
-                            masked += found
+                if (
+                    node.sampled
+                    and node.message.role == "assistant"
+                    and PREDICTION_LABEL_RE.search(content)
+                ):
+                    found = _mask_label_tokens(
+                        tokenizer, list(node.token_ids), branch_offset, rl_weights
+                    )
+                    # The node's message carries a label, so its own ids have to
+                    # as well. Leaving one unmasked would train the policy to
+                    # keep saying whatever it guessed, which is the one thing
+                    # this algorithm exists to prevent, so fail the run instead.
+                    if not found:
+                        raise RuntimeError(
+                            "a sampled PREDICTION label is missing from the "
+                            "token ids of the node that produced it"
+                        )
+                    masked += found
                 branch_offset += len(node.token_ids)
             if masked:
                 sample.rl_weights = rl_weights
