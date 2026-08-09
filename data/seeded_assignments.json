@@ -1,0 +1,1062 @@
+[
+  {
+    "case_id": "mbpp_786",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_855",
+    "seed_code_sha256": "b06abceba49a7431399bb1f9adec4e7bf4c6d5e88c74d268213c622d5385656c",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_746",
+    "seed_code_sha256": "4289b393a0d2df2502a3facb18b09651f0c8eb002fef298ccee8bf23915c4d00",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_858",
+    "seed_code_sha256": "5caca7fd987bf34d4846687c2529ec4cb0c6ed69e97b0f3ea432b98794502d9e",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_973",
+    "seed_code_sha256": "afa809f1a50a54b46bf127da16be9277ddfaf085876a3f01b9d9af13f4bf9171",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_775",
+    "seed_code_sha256": "c9e719ff1058bbb1bd5174e2cd80582ae5d6303f5dbbe09f9232c26da8183354",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_688",
+    "seed_code_sha256": "520075cb42947cdb5699e220bc989a1ead6bad18754e7d0d00a55243d60edac6",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_546",
+    "seed_code_sha256": "2d09d210f5e5722ad837bfa219fb8acad9133c51059a12cc33bea8186435f83f",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_609",
+    "seed_code_sha256": "9bef3baa10c34d02c76765f1fbfe43b03d99692bde5885ca64300b689376a19f",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_784",
+    "seed_code_sha256": "5dc9122f5a04c5d0297fbace25f64caa55f21485aceb4382849b4ecdb2d7e580",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_639",
+    "seed_code_sha256": "c7187795365a04783677952b1469bd3cf14506d058c975fda536cf491980782a",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_953",
+    "seed_code_sha256": "361b52fe43b2c620234680d7de90d49ad49a33c8b1901833d2d827ca5b02fadd",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_777",
+    "seed_code_sha256": "e177e84066c5c3749ee16f8cae9f7e1df7d2f7598ace7658a88386c5363e6b3b",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_894",
+    "seed_code_sha256": "b518e3890fb35dd1944257a85374db67ec1cbf811cb31077c781daf9bcb466f5",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_856",
+    "seed_code_sha256": "b2cc76ac693637c94ed8ccfcbb148f0d498860d29dcae5fff6a0ccaaf579cd77",
+    "seed_outcome": "TIMEOUT"
+  },
+  {
+    "case_id": "mbpp_687",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_910",
+    "seed_code_sha256": "9cca7ae1de0cf292daf9258a6fae6fddc7f8f4fad4a56a90ab15de8bf98197ad",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_890",
+    "seed_code_sha256": "95f4b0d74ab333193393140d4b34130dedcbe8968d5492c1a3ca03dc06d70840",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_823",
+    "seed_code_sha256": "31b5da0fb955e1313e6ae8e9742df3e29c29000a200a334691797e0a4aefdd0e",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_873",
+    "seed_code_sha256": "047aeadcc88e200b89a2342d4cfbf10af5bfa5342a216cd3fc5ef51b34ec2e3e",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_690",
+    "seed_code_sha256": "808fe83b6c5def49c0a5686ebe1169a1a308fbc7e4ca20214432216808c3fcd8",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_723",
+    "seed_code_sha256": "aab8ab99a52cec4ca40563611e31ffd18ebca4ae74aaca7bf0a1951500cc6f4d",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_677",
+    "seed_code_sha256": "be5e71a33f35522f0c01b1705e33b11e32746b5060ea1375f7c555ac499f0821",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_666",
+    "seed_code_sha256": "04309a348c9247c899160f3d5f9d914484ae6ee2f9ef2e5c5adb4db8b5458387",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_912",
+    "seed_code_sha256": "b41e26fec4ff4ecc92d29ecae77f078aa377d71d41b75ab334483c944c9aedea",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_531",
+    "seed_code_sha256": "aa520c65972211f759d85a2e3235dcfd661b3462390b0b2ae822d0886f28eefe",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_657",
+    "seed_code_sha256": "0e676328f0073787313a92feb281baf0e0473fa571048711112364287a6b61d9",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_676",
+    "seed_code_sha256": "a643d99d322d0def1da0617924bea69c60a4a3bbdcdb438edcfff408e3185c35",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_750",
+    "seed_code_sha256": "5abb1171d398a7ead6aee8ac36f5514e4974c2cf54a751468c5fdf2cdd0a8ac2",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_927",
+    "seed_code_sha256": "d11957f00dc21ce313059b4474742fd4d1c232c6807e707e00eae1d50a6cc43c",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_535",
+    "seed_code_sha256": "567e2b5a4c26916c881fa66d8f48466db28aacbfd764c3aa844e0b547c591e7d",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_569",
+    "seed_code_sha256": "28e1d67dcbc0ff22752f3ddb889c7b5cb18a387d2d8a2b52f7ce72f25d473318",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_885",
+    "seed_code_sha256": "1c4da7a91d78aa0de5e2b9806742f75c20fc58905cd42bb92aaee5f0161c8f9d",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_849",
+    "seed_code_sha256": "ae5c3cc29da32c1402159934f2209de29d3273aa45691e83335811ca18a6c4aa",
+    "seed_outcome": "TIMEOUT"
+  },
+  {
+    "case_id": "mbpp_544",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_841",
+    "seed_code_sha256": "a5e356d6e15ec7aff746bc04a582f0cd932002835aca93ccbf27b167e4da1c8b",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_924",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_972",
+    "seed_code_sha256": "02a2097862bdf640cdf82f2aa44ce4f794e5ad4351f66ade766bb64d99d2c20d",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_810",
+    "seed_code_sha256": "aed000902404d3ca815ba6c58385dd4cca1644261acc1007765fac5c8a04e9b0",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_646",
+    "seed_code_sha256": "0deede815e000af13003ced7f03636a7b2146ae75df15ba27fa6fcd5c60d422f",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_744",
+    "seed_code_sha256": "fc245f97961cc0e3ec8c4b6c8a11986183925194d66f2d5b4090bc4f92a903e1",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_811",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_789",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_630",
+    "seed_code_sha256": "aacc1e11b73414a69ea8d623cf61b5ede7a3a8034e70dc1b25d5842562d10f7e",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_783",
+    "seed_code_sha256": "0660a249cc9491fd7f26f49ad1acde1d75a0b370af135c1fe00f27341b5e7415",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_680",
+    "seed_code_sha256": "df2a4fe8f48e00eefa5e1d1c989912bfa765229886f260a5b4f7b69e2440e554",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_571",
+    "seed_code_sha256": "21af88d025b94bd81b92febacc42a4803492db58a32fc318c48db80bce068932",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_899",
+    "seed_code_sha256": "9e05cbf8cd16e183c4918e58cd15dab76bbb8e690b3875a36471e10fd9d81c95",
+    "seed_outcome": "TIMEOUT"
+  },
+  {
+    "case_id": "mbpp_918",
+    "seed_code_sha256": "80cd284b9467fd4e92e90da9f523485cf41733131ddddf7c4fad4672571b09db",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_665",
+    "seed_code_sha256": "2ecb2ad12d94f2b6af5b9e934afc461d7c8f9c5dce1ce5d031ba8d9f2e222fc9",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_685",
+    "seed_code_sha256": "ae8d29c86160c2ff8e2afab65c12c89f6d48f37a6dfa95fec4ebfe0763fd7456",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_566",
+    "seed_code_sha256": "2a55912db000c2f20a8da713e6fb74437257cf304fba0052667ba19ab36bffe8",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_720",
+    "seed_code_sha256": "1d42c7ab3d256701a8936731bdf2f95d87ad453ee5272e5c99c53776c9c87945",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_634",
+    "seed_code_sha256": "8107711d44cf55b9eb3be5dcfad5a0f1e64f03104af1650ed87bbde4af24b91b",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_520",
+    "seed_code_sha256": "a3bdc1595987bacca9c478e716b202d51e6df722012a1ad7dc0358e34904ef12",
+    "seed_outcome": "TIMEOUT"
+  },
+  {
+    "case_id": "mbpp_758",
+    "seed_code_sha256": "dc8b5bea2e2be00eeec38d2802779ff8fd4ed58875f706e957848a01288bffba",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_632",
+    "seed_code_sha256": "f3775f94bd53f52114ca594c41f635e7d6520b7bd27e7079f9f589277ce872cf",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_940",
+    "seed_code_sha256": "fa689b95628d3a28d41d723efef09c9e6305db599a67ba54d1fcb9c734c22f3b",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_880",
+    "seed_code_sha256": "5892d480d06530051385b7cf298ab1de944b6bc4a14b7bff493260dcfbd31ca9",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_966",
+    "seed_code_sha256": "f9d6ef83e065c3dafcb0b42b645ed39ce9deef35a26c725d14cb279bf57ea0dc",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_917",
+    "seed_code_sha256": "78114ba376b3c394fe5b1ed19c1fe9671b598b5d534fcd87a0d0dbc32fd98ee2",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_941",
+    "seed_code_sha256": "f7b7582021d161d3eccba28bb804880d15d0bbd99a5beb668fd32c30aa266673",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_711",
+    "seed_code_sha256": "ba39322c420ec912035a33794b12864ea452c3936714c6814f9e282e8d7050e7",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_627",
+    "seed_code_sha256": "65905ae91761442a437bdc7d014b29d824420d021414ca6f0f62a9e3739d12a8",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_624",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_790",
+    "seed_code_sha256": "09e7b026928c2b39187f5fee82d8578e9afffdbd2018d99e4f4ca60d00a67727",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_955",
+    "seed_code_sha256": "677d9c8ad59e99769a6f77c26c48f27ef96c8a94434376e6b9196ea9a05e96a1",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_702",
+    "seed_code_sha256": "56aa5d331450d9a1b70c5b8571567476d122944c6c6ce43fc4d29691130fb80c",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_603",
+    "seed_code_sha256": "dbb0cd73f7817a1f81181c66c7872f240fa1b192ca981a38d1410ab98eb08ca3",
+    "seed_outcome": "TIMEOUT"
+  },
+  {
+    "case_id": "mbpp_616",
+    "seed_code_sha256": "33deab072525ab8f471de2526316ae17f3a036762a662aeecbfe4997a089a6b7",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_633",
+    "seed_code_sha256": "57aee9c6611593018049c85b85ab39567e2dd5dc6f0e5f6da91f57a260208cd9",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_846",
+    "seed_code_sha256": "4ce14fbc0c218e1152119618108fd7d44d91e796377e99493701de8268434e60",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_635",
+    "seed_code_sha256": "6adb9776306c51dc65d2340111fc899cf0882e267d67c30a39c53ce9fadb167f",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_754",
+    "seed_code_sha256": "88462fd72a35a917e24eda315d5e00a9d7a79abc4d014d34fa8bdd91839b9353",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_641",
+    "seed_code_sha256": "b9ab174102d16279f7c22a11e3aaee64f16d67dc4107f5b4e1424887e7f19571",
+    "seed_outcome": "TIMEOUT"
+  },
+  {
+    "case_id": "mbpp_926",
+    "seed_code_sha256": "a0b8d81d1c8e918aa77ae4519c5fbe443e553a059316046e86b223c5f90ccdaa",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_645",
+    "seed_code_sha256": "c9f9c5d28830cb7274667b8cc00a14b808c141744aa674c2e0e78c769fa85bf1",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_618",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_787",
+    "seed_code_sha256": "49e8afa0da34f131ce0ab6474adb9c040367caa50fe990d886f0ac3ab53af671",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_654",
+    "seed_code_sha256": "d79cbb3999ab01be3cd2981482a5a722b2d070871554a7f7d87259122af9d61b",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_617",
+    "seed_code_sha256": "de04d9b7c636d29b3b8e7dd257a7d2661b37448b1afb4a1f07b86d22d4425b22",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_706",
+    "seed_code_sha256": "1fa5ce64800fa858cb1d0d91f27fbcf99dd49a369aa633e18bd3f2fd52d20046",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_725",
+    "seed_code_sha256": "1324d14db9a3dc4509907193696fee600295248f4a843b6c9e7783d66e4176f7",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_769",
+    "seed_code_sha256": "dc08d4633b1c6be184d0327869999bb3ad6ee352c3c9265f6a528239fca7d5d2",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_716",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_952",
+    "seed_code_sha256": "2f4f972f7133210d5afeb936ed005e492b107a46d28563edc272f8efcff96eab",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_747",
+    "seed_code_sha256": "fb0d42ec43cdba5bdfdfbbafcf427db583a6b6b0bf18ddbcfb0751b24561a052",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_631",
+    "seed_code_sha256": "4ecda6ce4c19aefb571dbcf2453f3f7ec7a7bce772d5984db3f4f998f51c24c9",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_776",
+    "seed_code_sha256": "8f11a084e40722c88e2d9faeb62e24ac2e65c0fe5414a142e19e3d2217d2a205",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_962",
+    "seed_code_sha256": "2d395882bd64c43910d5e78c4c7e33c403292c0572ddc9d7790a8d8e12b99ba9",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_816",
+    "seed_code_sha256": "31505728fa01a5b539d5c9c83e1ed822a000794df755ffac75807d926af024ce",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_615",
+    "seed_code_sha256": "a9e554609d2598dac929650bfbe626915ec6302b81e357705943a4a9376a3343",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_934",
+    "seed_code_sha256": "63a868fe84126618222215e6b56a1f3fcd5aa090c05736c948dc0d20df094008",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_888",
+    "seed_code_sha256": "1c02335bb72801986e78f635b73404ded710f2e5e533b7abe45ab5ce9b17dd0e",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_797",
+    "seed_code_sha256": "480475d3b43cfd71f39770e225a8dd09125624893438d042495cf401a6bb1822",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_915",
+    "seed_code_sha256": "028a9f18e7df4b7f1d520520e33caba7185b26531eaa899f489ed3abb4100adb",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_925",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_759",
+    "seed_code_sha256": "9c7af18dbf6f486ffac15eb9815c1b0bdd659ac7cad58560040e6f159502396c",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_607",
+    "seed_code_sha256": "f0028e796bf7d19c51a9b149c014286e575f086b7ac68089bc06360c962e9b4f",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_813",
+    "seed_code_sha256": "4e43aaaa2f0b9e19b08e6c1063b6509a782c176a65d5c6dc8fe2f5295d1e1839",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_674",
+    "seed_code_sha256": "ddbb1034a7dfb335aba9fa3a135cb44ba3a27f96910a617cc4cb203b8055ed65",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_752",
+    "seed_code_sha256": "9ec16fbe6fbb743afc1edada04c7c88e572f6ef8ebd1fd0afb7134e8d09e9a9e",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_935",
+    "seed_code_sha256": "81cae999ec302c1e366c4e1dda88bb54c3698c683533bfeb9c73656d7add9ed6",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_713",
+    "seed_code_sha256": "a08f866e6dc2a88b42ea03e5eb37c03c21e2363faf4a93fbbf4aa8aa0cfecd0c",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_807",
+    "seed_code_sha256": "38672a8ed91b539b66f418313526e5049288a68840de2a44e528efcf7cff8d7e",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_844",
+    "seed_code_sha256": "186f844286641619ed9dcdf03cb881d97d33af36118ff20ec2c5aa6c7a556c99",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_919",
+    "seed_code_sha256": "5c261e7fc6d663bba0b7594c596531f5cf9a58fdff2edb40893dff2ce47a6068",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_805",
+    "seed_code_sha256": "d64855ecb9615753bf17bf9295b930ea13defcb18af903232d91439c440721bd",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_697",
+    "seed_code_sha256": "d9dc380b227a10a0d1ce4ffff1ef6aa1d08b568d956ddb607612b7595f200125",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_875",
+    "seed_code_sha256": "5d646cef29e6b5831495e49720ac4d997a45067c50e051ac59105b97c9c702b0",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_922",
+    "seed_code_sha256": "da32bf0803f34e27261dacd49423076f9aebe9eca9c019c94a03dfa53568bae3",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_704",
+    "seed_code_sha256": "e99d7da251cf8cd6876752f5986d288cace9d09b9836ae699a8597c7d87cf058",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_863",
+    "seed_code_sha256": "b1dbd6a56ee6e622fb2e8d5cdca04beb5c781293a80f4c07f10afea4120c2610",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_695",
+    "seed_code_sha256": "20937a68f6a4d5ac18f1dd49a6df68ba51563c56df1aae5b2409856b9547385e",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_664",
+    "seed_code_sha256": "259206855d799dc470ce8ce09b84a86f4c92c2e89b648bd3e2c627fb9e535403",
+    "seed_outcome": "TIMEOUT"
+  },
+  {
+    "case_id": "mbpp_760",
+    "seed_code_sha256": "543be5a6ac38d85445ac44ec30a358ba323a9953ce495255df78298d151278e3",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_742",
+    "seed_code_sha256": "de0d7c70666c3b5ab1dd21a68e8e7458a414ed40b9ac80a028493adcd5e07ff8",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_788",
+    "seed_code_sha256": "d058f58d8e6500302cb42bf8008af574f8961eeeb92c18bed85f5a532642443a",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_808",
+    "seed_code_sha256": "778721fc86ae32ebfdec9249ba243a4f887f6659f404e11d38e69c7913ab1aaf",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_848",
+    "seed_code_sha256": "2ba720af318f6f6e9fa28e6fac8e4a32ac0e5ad4b085260640aa5a8beea8d97c",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_611",
+    "seed_code_sha256": "7383fc663faa076fc7f7fa7366361ac1218e95ec8a21aa8eeb6c7e4bddde9b08",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_739",
+    "seed_code_sha256": "dbbd4767efc3c5cd62410a22922c14602941f84b29f99c2de014101e3be1ae93",
+    "seed_outcome": "TIMEOUT"
+  },
+  {
+    "case_id": "mbpp_963",
+    "seed_code_sha256": "b12b491e2933da1a2ae2df9cd07519cd6d65cea53c4e999c53debdd6e3bc3cbb",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_679",
+    "seed_code_sha256": "2868a1101d90b958c626a442686e48145159a6383641ad1d0ed8b7f52dfe5925",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_682",
+    "seed_code_sha256": "9bcfba8fc08e821d52e3f43440dae0ccb3c10fb33280fd3ab3a1961444483a33",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_876",
+    "seed_code_sha256": "ce120a8eb061ccaf05074f49b11a54f0e993b4e4b8cf2eaae76830d955a9b251",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_778",
+    "seed_code_sha256": "be32022990dbd7f3e6830124545b526f0f05913281b161d88a53702ea38d42ba",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_625",
+    "seed_code_sha256": "4c479afcb350a29f12874f30378f242b225a59f79b8800ea6edae6e973442dd8",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_661",
+    "seed_code_sha256": "9233bfd23f3b6607ca2c49f509d32810b68a8464b627b84fd08e9209b7344bf3",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_715",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_867",
+    "seed_code_sha256": "00c8ae1cbe3d467a14ab425bb83d2043267e659ab788f6bd082fb0628d178cc0",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_946",
+    "seed_code_sha256": "fd07ccb4d5a2896855b35886b6469e4626a5f915cfd785665602faad2aeeabfa",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_763",
+    "seed_code_sha256": "3248f57dd8cab24755d8605ebc171d7de92b321881df3e9d51425d6767762598",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_663",
+    "seed_code_sha256": "494bed51b702b423296ad8b2aa635deec9bcfbc4b83cb7c380341a543245ddc0",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_840",
+    "seed_code_sha256": "bf5dfe0c49dc2e158a7f461d3e75cfd35be60a55fa9e140a5a1b14b4fde6441c",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_683",
+    "seed_code_sha256": "e936e0a4ca4c1c86d40779d1b3d1c9beb3e89d7ecb59cc0347970c41c60018ce",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_748",
+    "seed_code_sha256": "67ef79da61b4e7e5df5b138f0256ed190df444006ab5c011ed08e5b947d0685a",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_602",
+    "seed_code_sha256": "f8bf7b29dbb76a2299cc789ae6ed310f61244d0361903379dcf8681715645913",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_964",
+    "seed_code_sha256": "33093b92e5c34b6a3f944f9c8f0f6b12141496729d4cbc92b5d2c9d9abe7291f",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_670",
+    "seed_code_sha256": "867c26d7d5171d1738bc4541d2b76c4ded7f96e2ec11cf35aa2652bfdae06e66",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_675",
+    "seed_code_sha256": "2a49ae164bab37961076aa4d4de4018f3beb9b41dcace41e4f5dfc59c9e20125",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_696",
+    "seed_code_sha256": "83c41a10bcd4165eacc1f945d9eec19d3703549c9caad20b32d7685c48552bd3",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_640",
+    "seed_code_sha256": "a450ee500fdf2f23a64fd30a8c4a42fcf520d65b1cf0de6208647327436ea341",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_828",
+    "seed_code_sha256": "bfc4e697d337471f83e1168d72b9891b01285aa39ff37f58929163f374a96c69",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_761",
+    "seed_code_sha256": "d21233aed3f3f4ced767b7b1686d2aed0ce99500bcf550bd5608a49aab72eaa4",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_920",
+    "seed_code_sha256": "5d659587b66f93f9d64c69b5d49092664d4a34841a4d0aace835d7d6eced90fe",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_672",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_819",
+    "seed_code_sha256": "df4ee59b5c61d1e1465ed6a357c991e03426c7327a7852896a73bf1c3ceb73a5",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_622",
+    "seed_code_sha256": "0db216815bc81b4654164c952fa336bab0e22ba3530ad1cb63479772d186796a",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_809",
+    "seed_code_sha256": "d6c0ebb2cf0fb935d1f30448989044a4141f71d608ee4bd89a3ff5143e9a7141",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_937",
+    "seed_code_sha256": "b386a869052f546520cb15a49e2db56a8e8bcc8c39cdb69aed70054aeb7910e3",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_903",
+    "seed_code_sha256": "d9d4cc4dd44bc395cd182c699f29adfb9bbe9e9b327650976ec094dd26bbadeb",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_779",
+    "seed_code_sha256": "1f94239da3683b406647c9b1da823c656293f0c81b2d7b5547b4689d9d1485a1",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_671",
+    "seed_code_sha256": "aa68b41575750cb75440a5e3804acd904ab12344618b3ebe66f27e4a7c59d0a5",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_668",
+    "seed_code_sha256": "44bb43d9a58b8c917e0815b8e854d0221eb391d5816a33eca80883af40952066",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_705",
+    "seed_code_sha256": "a5b5f006336edfe5e17d6eb22b052a9631681283bc36a07ce255a9313328f017",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_626",
+    "seed_code_sha256": "5d3f0966fe0625cf3df85347df0093186a723763b01d85d54e1004dba3f6e661",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_718",
+    "seed_code_sha256": "91f370b8db99f27516c38f2d2407ea395bf2731036bd45b1659dd5cbaa103b2c",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_743",
+    "seed_code_sha256": "df944dc7fc9f076c52d45c67126863158247b374a0ad2163a7ce66fa6972314f",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_612",
+    "seed_code_sha256": "47cb4c3d341ea0e2f2b33c55e6dbe06046ae59080f00177a1da51f34787cb2ca",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_648",
+    "seed_code_sha256": "4d0a986a97d5a7b3b51585296ed89c11e64c93fb2285df8d1c948d82c8d513d6",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_933",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_864",
+    "seed_code_sha256": "7f6d0f7f68fddd4e8409fe7b4cb83ede5cd5b851f60e2e3cee268fbcd04c78e6",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_928",
+    "seed_code_sha256": "07544d75dc21833156a96d6cd3fdf9b5d09546f12d1e3b5d5eaafbc1a8315880",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_958",
+    "seed_code_sha256": "14d9a896f3fcd472c6721565646ebaaae0598439ebb387aa5978faf4cbd5bf42",
+    "seed_outcome": "TIMEOUT"
+  },
+  {
+    "case_id": "mbpp_944",
+    "seed_code_sha256": "34256d82d4263c2a624230b6f58fb7ef5c542c589287b9e416af71174874eed0",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_721",
+    "seed_code_sha256": "83e4c2edbf17e0480d10226b508235998721063c5ef2dbd581497f607a389bc5",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_812",
+    "seed_code_sha256": "97ab8fd295f8beec3b521fd65281bec28b98a81889765d1d88f0ff6533116f6b",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_614",
+    "seed_code_sha256": "01ed95677dd4c10f097457b63583b83a6142e7e7bc48d8e845e1acacec4ecc56",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_667",
+    "seed_code_sha256": "bfd2460d614cdf5f074fc644f6bf2c87d73674a6526028ad62ad13f568b5cb17",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_827",
+    "seed_code_sha256": "5b214252bcbdea6184310cd433fe323f42fd48a22dc3b259c3948730399ffd46",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_651",
+    "seed_code_sha256": "83ffb5afd32055766c13e8fd6e4081740859a8a1396d150af374feaf5b1332b8",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_733",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_710",
+    "seed_code_sha256": "49204b98befc786ba8a6e64032e83db32ba60982ebb567b52f167d0002a48053",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_655",
+    "seed_code_sha256": "21a2e08e808015f083511f8cd39ac6dccb0ca9a87b63ebce40cd60cceabb5aff",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_771",
+    "seed_code_sha256": "04f85d374780ecea1152854471e7f670d0984b275a00d23ef357c944fd7df29e",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_767",
+    "seed_code_sha256": "629116e73c40abc05b20c3b05888e6496187133b1a00b7f0120c1cf1cda74f53",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_738",
+    "seed_code_sha256": "e54631fb0b42cd9c30719c554949cec18b241f99d959a5ab69e2a2dd35c0bf98",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_860",
+    "seed_code_sha256": "d05843c55701561e885f2f000b18aea013b46bb20f568a26aa240a2ee12240f9",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_883",
+    "seed_code_sha256": "a049e462036fde2a22a7ecc12e12c810f96620a39b9f1c9d444c35c1e10fbae2",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_637",
+    "seed_code_sha256": "2194ce04b6c45825a4cc3ed1e45e2ce142423ea786ee9cd0a337a4d53d9fa47e",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_727",
+    "seed_code_sha256": "05807ba8378e5132e501f970a0793647d11fdf4e771165ea9989cd7aa473e34b",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_642",
+    "seed_code_sha256": "1226553a5394046a73c7b89a94906eb1358748275e772f1eae93bb535bee408d",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_729",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_825",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_636",
+    "seed_code_sha256": "c05c24a25ab428f288fa38fda9d92affea86d15242e403f31e84ce7ca025330e",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_872",
+    "seed_code_sha256": "700ea1bf6663793dc019a9fb85d262cde8c66ae09915240f6ecf46b801c68ccd",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_951",
+    "seed_code_sha256": "f76489bf5026a3aafb82921a7901511bc9e62d03cdb74c9eb6097f03c3c4a2a3",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_852",
+    "seed_code_sha256": "9aef3949fb163947874408b063f94574618e6410036a81572abd48be369af83b",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_647",
+    "seed_code_sha256": "002e88cd41a69830e494ab51c6cf0d6abb64cd50c8c2f7fd29d2612c2c560694",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_857",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_731",
+    "seed_code_sha256": "156ae31ba78a4d9651fbae6c687c07b41ae5d0ff1f38ae1a504227620f4fbd21",
+    "seed_outcome": "SYNTAX_ERROR"
+  },
+  {
+    "case_id": "mbpp_726",
+    "seed_code_sha256": "b44b225bed11ebaa9dd1f9d33ad4d8dbe1b5b17c30eb7a8fc2a03c722b467091",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_745",
+    "seed_code_sha256": "10638ed34ad4970c6f1edad83e97d09279c62ee77a6c51ee399ace4bd61047a8",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_820",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_673",
+    "seed_code_sha256": "4c9abf94f48a46463a498dd986ba6e345153070cf59f40fb84f7d0af9288c8de",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_854",
+    "seed_code_sha256": "7fe42d6a7b3632f293c05865b12e258ef2b3218b3fd595b2f5c31523230fe2aa",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_882",
+    "seed_code_sha256": "aed6015dce53958c2f15d7e513f971edd61d218d8b724b58e4f7dbf7347eaf87",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_896",
+    "seed_code_sha256": "e953a82a415d57520cd6365be5204050fb9cf4e2a052d3b968473aeef31f82a5",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_774",
+    "seed_code_sha256": "da7733fc4f6d3883731fc45dca7617a2e268c05e0dd7af0ca11688d5948252f9",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_945",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_862",
+    "seed_code_sha256": "6a207deb4bda7db44e43f4b1131d7c4b35776a81cfdc23ad7cf59de519b01444",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_701",
+    "seed_code_sha256": "9f24ca81f8171dd19c1041ac05e99b3b366c7571d4f4f3abef3e650860ae7d7a",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_798",
+    "seed_code_sha256": "01cf9602a77091d2b1951d6a2c1719b59d6d9d6dc444fe157eeb9c970307df50",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_932",
+    "seed_code_sha256": "edf73176775912b9b8604b8e378355c14ebaf642613d8ad3ece8b8f8ef967522",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_870",
+    "seed_code_sha256": "fc310f6014838972bad5ba804c7b3bc9e48b929c240b7e46aa6cf5d9a93f9184",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_829",
+    "seed_code_sha256": "352e819d706d183ba0fa75a3b4ae0037ca50b5492b2a991d4b4e8c6f3e787ad8",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_971",
+    "seed_code_sha256": "4e66086ef197f0b5f035c451a513378a726187af132369e7b0b9bf499b1a2f4d",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_650",
+    "seed_code_sha256": "2d234599f2d48b0920c7d462392f050153023fac5c51e7cbf5e4d654148bc6b5",
+    "seed_outcome": "RUNTIME_ERROR"
+  },
+  {
+    "case_id": "mbpp_930",
+    "seed_code_sha256": "704af73fcd066e906c57ec6119c5826bddbdec4245bdea9be1da3e3833b93dcb",
+    "seed_outcome": "ASSERTION_FAILURE"
+  },
+  {
+    "case_id": "mbpp_781",
+    "seed_code_sha256": null,
+    "seed_outcome": null
+  },
+  {
+    "case_id": "mbpp_693",
+    "seed_code_sha256": "3580385a237d1b3440edb788d0d8f116e49f18c2d505b7ba89d5876749d6a95f",
+    "seed_outcome": "ASSERTION_FAILURE"
+  }
+]
