@@ -1,11 +1,11 @@
-# Arm B v2: the same SFT budget on cross-fitted harvested traces. Arm A and
-# the RL, validation and test sets are untouched; only this checkpoint changes.
+# Arm B v2: the published SFT budget on recovery traces that cover every
+# outcome class. Arm A, the RL tasks, validation and test are untouched.
 max_steps = 60
 output_dir = "outputs/arm_b_sft_v2"
 
 [wandb]
 project = "predict-mbpp"
-group = "harvested-sft"
+group = "sft-v2"
 name = "arm-b-sft-v2"
 
 [model]
@@ -19,7 +19,7 @@ eos_token = "<|im_end|>"
 
 [data]
 type = "sft"
-name = "data/sft_harvested/arm_b"
+name = "data/sft_v2/arm_b"
 batch_size = 32
 micro_batch_size = 1
 seq_len = 1280

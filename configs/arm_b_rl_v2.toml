@@ -14,7 +14,7 @@ eos_token = "<|im_end|>"
 
 [wandb]
 project = "predict-mbpp"
-group = "harvested-sft"
+group = "sft-v2"
 name = "arm-b-predict-v2"
 
 [orchestrator]

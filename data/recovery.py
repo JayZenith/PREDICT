@@ -8,7 +8,7 @@ import tokenize
 from dataclasses import dataclass
 from pathlib import Path
 
-from glyph.program import PASS, run_hidden_tests
+from glyph.program import PASS, RUNTIME_ERROR, SYNTAX_ERROR, TIMEOUT, run_hidden_tests
 
 
 @dataclass(frozen=True)
@@ -83,6 +83,37 @@ def _mutations(code: str):
             yield _Mutation(line_index, line, changed)
 
 
+# Operator and digit flips almost always land on ASSERTION_FAILURE: the code
+# still runs, it just computes the wrong answer. These break it in ways that
+# stop it running at all, which is how the other outcome classes arise. The
+# generator still verifies every candidate by execution, so a mutation only
+# counts as its intended class if the environment actually reports that class.
+_BREAKERS = {
+    RUNTIME_ERROR: lambda body: f"{body}[{body}]",
+    SYNTAX_ERROR: lambda body: f"{body} ==",
+    TIMEOUT: lambda body: f"[0 for _ in iter(int, 1)] and {body}",
+}
+
+
+def _breaking_mutations(code: str, outcome: str):
+    """Rewrite a return expression so the function fails before producing one."""
+    break_it = _BREAKERS.get(outcome)
+    if break_it is None:
+        return
+    lines = code.splitlines(keepends=True)
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        if not stripped.startswith("return ") or lines.count(line) != 1:
+            continue
+        indent = line[: len(line) - len(line.lstrip())]
+        body = stripped[len("return ") :].rstrip()
+        if not body:
+            continue
+        changed = f"{indent}return {break_it(body)}\n"
+        if changed != line and changed not in lines:
+            yield _Mutation(index, line, changed)
+
+
 def _apply(code: str, mutation: _Mutation) -> str:
     lines = code.splitlines(keepends=True)
     if lines[mutation.line] != mutation.original:
@@ -98,7 +129,14 @@ def generate_recovery(
     *,
     timeout: int = 5,
     gold_verified: bool = False,
+    want: str | None = None,
 ) -> RecoveryTrace | None:
+    """Find one mutation of `code` that the tests reject.
+
+    `want` asks for a specific outcome class and rejects any mutation the
+    verifier scores as something else. Left unset the first failing operator or
+    digit flip wins, which is what the published SFT data was built from.
+    """
     with tempfile.TemporaryDirectory(prefix="predict-sft-recovery-") as temporary:
         project = Path(temporary)
         solution = project / "solution.py"
@@ -110,13 +148,23 @@ def generate_recovery(
                     f"gold solution failed verification for {case_id}: {gold.outcome}"
                 )
 
-        for mutation in _mutations(code):
+        # Assertion failures come from the operator and digit flips: the code
+        # still runs, it just computes the wrong answer. The breaking families
+        # cannot produce one, so that class keeps using the original generator.
+        candidates = (
+            _mutations(code)
+            if want is None or want not in _BREAKERS
+            else _breaking_mutations(code, want)
+        )
+        for mutation in candidates:
             initial = _apply(code, mutation)
             if initial.count(mutation.changed) != 1:
                 continue
             solution.write_text(initial, encoding="utf-8")
             result = run_hidden_tests(project, test_code, timeout)
             if result.outcome == PASS:
+                continue
+            if want is not None and result.outcome != want:
                 continue
             return RecoveryTrace(
                 initial_code=initial,
