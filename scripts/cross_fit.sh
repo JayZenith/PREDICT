@@ -68,12 +68,26 @@ for fold in a b; do
   fi
   log "serving probe $fold to sample fold $other"
   serve "$(probe_weights "$fold")"
-  bash scripts/harvest.sh probe "data/folds/fold_${other}_tasks.jsonl" "$rollouts" \
+  BASE_URL="http://localhost:${port}/v1" \
+    bash scripts/harvest.sh probe "data/folds/fold_${other}_tasks.jsonl" "$rollouts" \
     2>&1 | tee "outputs/harvest_fold_${other}.log"
   stop_serving
   # The eval CLI prints the run directory it wrote; keep it for the builder.
   sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g' "outputs/harvest_fold_${other}.log" \
     | grep -oE 'outputs/glyph--[^ ]+' | tail -1 > "$marker"
+  traces="$(cat "$marker")/traces.jsonl"
+  # A run that cannot reach the server still finishes, writing a full file of
+  # errored rollouts. Refuse to treat that as a harvest.
+  if ! uv run python -c "
+import json, sys
+ok = sum(1 for line in open(sys.argv[1]) if not json.loads(line).get('errors'))
+print(f'{ok} usable rollouts')
+sys.exit(0 if ok else 1)
+" "$traces"; then
+    log "fold $other harvest produced no usable rollouts"
+    rm -f "$marker"
+    exit 1
+  fi
   log "fold $other traces at $(cat "$marker")"
 done
 

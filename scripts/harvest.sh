@@ -24,10 +24,15 @@ shift 2
 [[ $# -gt 0 ]] && shift 1
 
 count="$(grep -c . "$tasks")"
+# Without an explicit base URL the eval client talks to the hosted inference
+# endpoint, which answers 401 and produces a full run of errored rollouts that
+# still looks like a completed harvest.
 exec uv run eval glyph \
   --harness.id glyph \
   --harness.arm b \
   --taskset.data-path "$tasks" \
+  --client.base-url "${BASE_URL:-http://localhost:8024/v1}" \
+  --client.api-key-var HOME \
   --sampling.temperature 0.8 \
   --sampling.max-tokens 512 \
   --max-total-tokens 4096 \
