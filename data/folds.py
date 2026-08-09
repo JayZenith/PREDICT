@@ -75,10 +75,19 @@ def build(data_dir: Path, cache_dir: Path, *, seed: int, arm: str) -> dict:
             [row for row in sft_rows if row["case_id"] in members],
         )
         # The task rows the *other* probe will sample. Same write-from-scratch
-        # format as every other task set in the experiment.
+        # format as every other task set in the experiment, except that
+        # blueprint_root is resolved against the task file's own directory --
+        # these live one level deeper than data/arm_b_train.jsonl.
         _write_jsonl(
             root / f"fold_{name}_tasks.jsonl",
-            [{**task_row(tasks[case_id], arm), "fold": name} for case_id in case_ids],
+            [
+                {
+                    **task_row(tasks[case_id], arm),
+                    "blueprint_root": f"../blueprints/{case_id}",
+                    "fold": name,
+                }
+                for case_id in case_ids
+            ],
         )
         report["folds"][name] = {"tasks": len(case_ids)}
 

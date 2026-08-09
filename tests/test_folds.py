@@ -24,6 +24,26 @@ def test_split_is_balanced_disjoint_and_seed_stable() -> None:
     assert other_seed != first
 
 
+def test_fold_task_files_resolve_their_blueprints() -> None:
+    """GlyphTaskset resolves blueprint_root against the task file's own
+    directory. The fold sets sit one level deeper than data/arm_b_train.jsonl,
+    so a path copied from there points at a directory that does not exist and
+    the sampling run dies on load."""
+    from glyph.chat import message_content
+    from glyph.taskset import GlyphTaskset, GlyphTasksetConfig
+
+    root = Path(__file__).resolve().parents[1]
+    for fold in ("a", "b"):
+        path = root / "data" / "folds" / f"fold_{fold}_tasks.jsonl"
+        tasks = GlyphTaskset(GlyphTasksetConfig(id="glyph", data_path=str(path))).load()
+        assert len(tasks) == 106
+        for task in tasks:
+            assert Path(task.data.blueprint_root).is_dir()
+            # The prompt and the sandbox agree on where the project lives.
+            assert task.data.trace_prefix == f"data/blueprints/{task.data.case_id}"
+            assert task.data.trace_prefix in message_content(task.data.prompt[-1])
+
+
 def test_harvest_refuses_candidates_from_the_rl_or_validation_pools(tmp_path: Path) -> None:
     """The split is the experiment's whole defence against SFT/RL contact.
 
