@@ -45,6 +45,9 @@ class _Tokenizer:
     def decode(self, ids, **kwargs) -> str:
         return "".join(chr(identifier) for identifier in ids)
 
+    def batch_decode(self, groups, **kwargs) -> list[str]:
+        return [self.decode(group, **kwargs) for group in groups]
+
 
 class _MergingTokenizer(_Tokenizer):
     """A tokenizer that merges ``>`` with whatever follows it.

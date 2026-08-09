@@ -29,6 +29,32 @@ def _encoding(tokenizer: Any, text: str) -> tuple[list[int], list[tuple[int, int
     ]
 
 
+def _token_spans(
+    tokenizer: Any, node_ids: list[int]
+) -> tuple[str, list[tuple[int, int]]]:
+    """A node's text and the character span each of its own tokens covers.
+
+    Decoding one token at a time, rather than decoding the node and encoding
+    the result, because a re-encode is not guaranteed to reproduce the ids it
+    came from and when it does not there is nothing to line the offsets up
+    with. Concatenated per-token decodes are consistent with their own spans by
+    construction. A multi-byte character split across two tokens comes back as
+    a replacement character in each half, which moves this text away from a
+    true decode -- harmless, because the labels it locates are ASCII.
+    """
+    pieces = tokenizer.batch_decode(
+        [[token_id] for token_id in node_ids],
+        skip_special_tokens=False,
+        clean_up_tokenization_spaces=False,
+    )
+    spans: list[tuple[int, int]] = []
+    position = 0
+    for piece in pieces:
+        spans.append((position, position + len(piece)))
+        position += len(piece)
+    return "".join(pieces), spans
+
+
 def _mask_label_tokens(
     tokenizer: Any,
     node_ids: list[int],
@@ -41,23 +67,14 @@ def _mask_label_tokens(
     label text does not find it: byte-level BPE merges straight through the
     label's edges, so ``<PREDICTION>PASS`` ends on the single token ``">P"``
     and ``PASS`` on its own is one token that appears nowhere in what was
-    sampled. Decoding the node and encoding that exact string does round-trip,
-    which lines the offset mapping up with ``node_ids`` one for one.
+    sampled.
 
     A token that straddles the boundary takes the whole token's weight with it.
     That is the side to err on -- the structural ``>`` it also covers is fully
     determined by the format, while leaving a label token trained is the one
     thing this algorithm exists to prevent.
     """
-    text = tokenizer.decode(
-        node_ids, skip_special_tokens=False, clean_up_tokenization_spaces=False
-    )
-    ids, offsets = _encoding(tokenizer, text)
-    if ids != node_ids:
-        raise RuntimeError(
-            "sampled node does not survive a decode/encode round trip, so its "
-            "PREDICTION label cannot be located in its own token ids"
-        )
+    text, offsets = _token_spans(tokenizer, node_ids)
 
     masked = 0
     for match in PREDICTION_LABEL_RE.finditer(text):
@@ -145,9 +162,10 @@ class PredictAlgorithm(GRPOAlgorithm):
                     # keep saying whatever it guessed, which is the one thing
                     # this algorithm exists to prevent, so fail the run instead.
                     if not found:
+                        decoded, _ = _token_spans(tokenizer, list(node.token_ids))
                         raise RuntimeError(
                             "a sampled PREDICTION label is missing from the "
-                            "token ids of the node that produced it"
+                            f"token ids of the node that produced it: {decoded[:400]!r}"
                         )
                     masked += found
                 branch_offset += len(node.token_ids)
