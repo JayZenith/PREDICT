@@ -6,7 +6,7 @@ seq_len = 4096
 output_dir = "outputs/arm_b_rl_v2"
 
 [model]
-name = "JayZenith/SFT_ARM_B_v2"
+name = "JayZenith/SFT_ARM_B_V2"
 
 [tokenizer]
 chat_template = "configs/chat_template.jinja"

@@ -96,7 +96,7 @@ def test_v2_rl_config_changes_only_the_starting_checkpoint() -> None:
     baseline = tomllib.loads((ROOT / "configs" / "arm_b_rl.toml").read_text())
     v2 = tomllib.loads((ROOT / "configs" / "arm_b_rl_v2.toml").read_text())
 
-    assert v2.pop("model")["name"] == "JayZenith/SFT_ARM_B_v2"
+    assert v2.pop("model")["name"] == "JayZenith/SFT_ARM_B_V2"
     assert baseline.pop("model")["name"] == "JayZenith/SFT_ARM_B"
     assert v2.pop("output_dir") == "outputs/arm_b_rl_v2"
     baseline.pop("output_dir")
