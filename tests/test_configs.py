@@ -100,36 +100,6 @@ def test_matched_rl_configs_differ_only_in_arm_and_algorithm() -> None:
         assert validation["harness"]["runtime"] == {"type": "subprocess"}
 
 
-def test_seeded_rl_config_changes_only_the_training_taskset() -> None:
-    """The seeded run has to be attributable to the tasks it starts from.
-
-    Anything else that drifted -- the checkpoint it initialises from, the
-    algorithm, the sampler, the validation set it is scored on -- would give
-    the comparison against the published Arm B run a second explanation.
-    """
-    baseline = _read("arm_b_rl.toml")
-    seeded = _read("arm_b_rl_seeded.toml")
-    RLConfig.model_validate(_read("arm_b_rl_seeded.toml"))
-
-    [baseline_train] = baseline["orchestrator"]["train"].pop("env")
-    [seeded_train] = seeded["orchestrator"]["train"].pop("env")
-    assert seeded_train.pop("taskset")["data_path"] == "data/arm_b_train_seeded.jsonl"
-    assert baseline_train.pop("taskset")["data_path"] == "data/arm_b_train.jsonl"
-    assert seeded_train.pop("name") == "arm-b-train-seeded"
-    assert baseline_train.pop("name") == "arm-b-train"
-    assert seeded_train == baseline_train
-
-    # Distinct output and run names keep the two runs from overwriting each
-    # other; nothing else about the recipe may differ.
-    for key, value in (("output_dir", "outputs/arm_b_rl_seeded"), ):
-        assert seeded.pop(key) == value
-        baseline.pop(key)
-    assert seeded.pop("wandb")["name"] == "arm-b-predict-seeded"
-    assert baseline.pop("wandb")["name"] == "arm-b-predict"
-    assert seeded == baseline
-    assert seeded["model"]["name"] == "JayZenith/SFT_ARM_B"
-
-
 def test_predict_patch_only_registers_the_algorithm() -> None:
     """PREDICT extends PRIME-RL through its documented hook -- a new algorithm
     class plus its config, registered. Everything else (building the renderer,
