@@ -1,27 +1,34 @@
 #!/usr/bin/env bash
-# Sample an Arm B policy over the RL training pool so its own patches, and the
-# outcomes the verifier observes for them, can be turned into predictive SFT
-# data. Sampling matches the RL training temperature: the point is to collect
-# the mistakes the policy actually makes while it is being trained.
+# Sample a probe over the SFT fold it was held out of, so its patches and the
+# outcomes the verifier observes for them can become predictive SFT data.
+#
+# Sampling matches the RL training temperature: the point is to collect the
+# mistakes a policy of this kind actually makes. The task file must be a fold
+# from data/folds -- never the RL, validation or test set.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
 model="${1:-}"
-rollouts="${2:-32}"
-if [[ -z "$model" ]]; then
-  echo "usage: bash scripts/harvest.sh MODEL [rollouts] [extra eval arguments]" >&2
+tasks="${2:-}"
+rollouts="${3:-32}"
+if [[ -z "$model" || -z "$tasks" ]]; then
+  echo "usage: bash scripts/harvest.sh MODEL data/folds/fold_a_tasks.jsonl [rollouts]" >&2
   exit 2
 fi
-shift 1
+if [[ "$tasks" != data/folds/* ]]; then
+  echo "refusing to harvest outside data/folds: $tasks" >&2
+  exit 2
+fi
+shift 2
 [[ $# -gt 0 ]] && shift 1
 
-uv run python -m data.validate data
+count="$(grep -c . "$tasks")"
 exec uv run eval glyph \
   --harness.id glyph \
   --harness.arm b \
-  --taskset.data-path data/arm_b_train.jsonl \
+  --taskset.data-path "$tasks" \
   --sampling.temperature 0.8 \
   --sampling.max-tokens 512 \
   --max-total-tokens 4096 \
-  -m "$model" -n 212 -r "$rollouts" --no-push "$@"
+  -m "$model" -n "$count" -r "$rollouts" --no-push "$@"

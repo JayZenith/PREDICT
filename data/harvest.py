@@ -10,7 +10,9 @@ candidate is code the policy actually wrote, and every label is the outcome the
 verifier actually observed for that code, so the prediction target matches the
 distribution the policy meets during RL.
 
-Sample the policy over a task pool it has not been fine-tuned on, then::
+The traces must come from probes sampled on SFT tasks they were held out of --
+see `data.folds`. Harvesting the RL pool would put SFT and RL on the same
+tasks, which the experiment's split exists to prevent.
 
     uv run python -m data.harvest --traces <run>/traces.jsonl --output data/sft_harvested
 """
@@ -251,6 +253,7 @@ def build(
     recovery_fraction: float,
     shadow_fraction: float,
     seed: int,
+    arm: str = "b",
     max_tokens: int = SFT_MAX_TOKENS,
     model: str = DEFAULT_MODEL,
 ) -> dict:
@@ -258,8 +261,20 @@ def build(
     paths = {name: download_source(source, cache_dir) for name, source in SOURCES.items()}
     official_train = load_mbpp(paths["train"], "train")
     official_validation = load_mbpp(paths["validation"], "validation")
-    _, rl_train_tasks, _ = _split_experiment_tasks(official_train, official_validation, seed)
-    tasks = {task.case_id: task for task in rl_train_tasks}
+    sft_tasks, rl_train_tasks, validation_tasks = _split_experiment_tasks(
+        official_train, official_validation, seed
+    )
+    tasks = {task.case_id: task for task in sft_tasks}
+    # The whole point of cross-fitting is that the traces came from the SFT
+    # pool. A candidate from anywhere else means the sampling run was pointed
+    # at the wrong task file, and silently dropping it would hide that.
+    reserved = {task.case_id for task in (*rl_train_tasks, *validation_tasks)}
+    trespassing = sorted({c.case_id for c in candidates} & reserved)
+    if trespassing:
+        raise ValueError(
+            "harvested candidates come from tasks reserved for RL or validation: "
+            + ", ".join(trespassing[:5])
+        )
 
     from transformers import AutoTokenizer
 
@@ -269,12 +284,11 @@ def build(
     def fits(task: MBPPTask, recovery: RecoveryTrace | None, mode: str | None) -> bool:
         # The policy writes longer code than the gold solutions the synthetic
         # traces were cut from, so the SFT context is the binding constraint.
-        for arm in ("a", "b"):
-            row = sft_row(task, arm, recovery, recovery_mode=mode)
-            text = render_messages(row["messages"])
-            if len(tokenizer.encode(text, add_special_tokens=False)) > max_tokens:
-                oversize[recovery.outcome if recovery else PASS] += 1
-                return False
+        row = sft_row(task, arm, recovery, recovery_mode=mode)
+        text = render_messages(row["messages"])
+        if len(tokenizer.encode(text, add_special_tokens=False)) > max_tokens:
+            oversize[recovery.outcome if recovery else PASS] += 1
+            return False
         return True
 
     chosen = select(
@@ -287,14 +301,15 @@ def build(
         fits=fits,
     )
 
+    # Only the harvested arm is written. Arm A has no prediction turn, so
+    # nothing here would change what it learns, and leaving its published SFT
+    # data alone keeps its runs reproducible.
     output = output.expanduser().resolve()
-    (output / "arm_a").mkdir(parents=True, exist_ok=True)
-    (output / "arm_b").mkdir(parents=True, exist_ok=True)
-    for arm in ("a", "b"):
-        _write_jsonl(
-            output / f"arm_{arm}" / "train.jsonl",
-            [sft_row(task, arm, recovery, recovery_mode=mode) for task, recovery, mode in chosen],
-        )
+    (output / f"arm_{arm}").mkdir(parents=True, exist_ok=True)
+    _write_jsonl(
+        output / f"arm_{arm}" / "train.jsonl",
+        [sft_row(task, arm, recovery, recovery_mode=mode) for task, recovery, mode in chosen],
+    )
 
     # Only shadow recoveries put a failure label in the assistant turn; visible
     # ones keep PASS and let the executed failure do the teaching.
@@ -331,6 +346,7 @@ def main() -> None:
     parser.add_argument("--size", type=int, default=212)
     parser.add_argument("--recovery-fraction", type=float, default=0.6)
     parser.add_argument("--shadow-fraction", type=float, default=SHADOW_FRACTION)
+    parser.add_argument("--arm", default="b", choices=("a", "b"))
     parser.add_argument("--seed", type=int, default=SEED)
     args = parser.parse_args()
     report = build(
@@ -340,6 +356,7 @@ def main() -> None:
         size=args.size,
         recovery_fraction=args.recovery_fraction,
         shadow_fraction=args.shadow_fraction,
+        arm=args.arm,
         seed=args.seed,
     )
     print(json.dumps(report, indent=2, sort_keys=True))

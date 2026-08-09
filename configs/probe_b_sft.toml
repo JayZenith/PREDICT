@@ -1,11 +1,13 @@
-# Arm B, harvested: the same SFT budget on the policy's own verified mistakes.
-max_steps = 60
-output_dir = "outputs/arm_b_sft_harvested"
+# Arm B probe on SFT fold b: a throwaway checkpoint used only to sample the
+# opposite fold. 30 steps holds epochs over 106 traces equal to the baseline's
+# 60 steps over 212, so the probe is not simply trained twice as hard.
+max_steps = 30
+output_dir = "outputs/probe_b_sft"
 
 [wandb]
 project = "predict-mbpp"
-group = "harvested-sft"
-name = "arm-b-sft-harvested"
+group = "cross-fit-probes"
+name = "arm-b-probe-b"
 
 [model]
 name = "Qwen/Qwen3-4B-Base"
@@ -18,7 +20,7 @@ eos_token = "<|im_end|>"
 
 [data]
 type = "sft"
-name = "data/sft_harvested/arm_b"
+name = "data/folds/fold_b/sft/arm_b"
 batch_size = 32
 micro_batch_size = 1
 seq_len = 1280
@@ -39,12 +41,12 @@ weight_decay = 0.01
 
 [scheduler]
 type = "linear"
-warmup_steps = 2
-decay_steps = 58
+warmup_steps = 1
+decay_steps = 29
 min_lr = 0.0
 
 [ckpt]
-interval = 60
+interval = 30
 keep_last = 1
 weights_only = true
 
