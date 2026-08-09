@@ -39,8 +39,14 @@ done
 
 serve() {
   local weights="$1"
+  # PRIME-RL saves the chat template as a sibling chat_template.jinja rather
+  # than inside tokenizer_config.json, which is where the released checkpoints
+  # carry it. Without this flag the server formats prompts with a different
+  # template than the model was trained on and the policy emits junk between
+  # turns instead of stopping.
   uv run --project .vendor/prime-rl vllm serve "$weights" \
     --port "$port" --served-model-name probe \
+    --chat-template configs/chat_template.jinja \
     --gpu-memory-utilization 0.85 > "outputs/serve_probe.log" 2>&1 &
   echo $! > outputs/serve.pid
   until curl -sf "http://localhost:${port}/v1/models" | grep -q '"probe"'; do
