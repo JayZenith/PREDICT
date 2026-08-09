@@ -12,7 +12,7 @@ case "$arm" in
     export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-2,3}"
     ;;
   *)
-    echo "usage: bash scripts/train_rl_instance.sh a|b [extra PRIME-RL arguments]" >&2
+    echo "usage: bash scripts/train_rl_instance.sh a|b [v2] [extra PRIME-RL arguments]" >&2
     exit 2
     ;;
 esac
