@@ -99,16 +99,22 @@ class PredictAlgorithm(GRPOAlgorithm):
         chat template and EOS baked into it at SFT are what the auxiliary
         sample renders through, matching the rollout it corrects.
 
-        ``use_fastokens=False`` is required, not a preference: the fast
-        backend raises on ``return_offsets_mapping``, and offsets are how the
-        verified label is located inside its own encoding.
+        The tokenizer has to be a fast one: offsets are how the verified label
+        is located inside its own encoding, and only the Rust backend answers
+        ``return_offsets_mapping``. ``load_tokenizer`` gives us one whenever the
+        checkpoint ships a ``tokenizer.json``, so check rather than assume --
+        falling back to the slow backend would raise deep inside masking, one
+        rollout into the run.
         """
         await super().setup()
         from renderers.base import create_renderer, load_tokenizer
 
-        self.tokenizer = load_tokenizer(
-            self.policy_pool.model_name, use_fastokens=False
-        )
+        self.tokenizer = load_tokenizer(self.policy_pool.model_name)
+        if not getattr(self.tokenizer, "is_fast", False):
+            raise RuntimeError(
+                f"{self.policy_pool.model_name} loaded a slow tokenizer; PREDICT "
+                "needs offset mappings to mask the sampled label"
+            )
         self.renderer = create_renderer(self.tokenizer, self.renderer_config)
 
     def _mask_sampled_labels(self, rollout) -> None:
