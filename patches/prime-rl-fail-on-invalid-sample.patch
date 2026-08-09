@@ -1,0 +1,27 @@
+diff --git a/src/prime_rl/trainer/rl/packer.py b/src/prime_rl/trainer/rl/packer.py
+index 84b75d5..6f7bfa7 100644
+--- a/src/prime_rl/trainer/rl/packer.py
++++ b/src/prime_rl/trainer/rl/packer.py
+@@ -190,13 +190,18 @@ class MultiPacker(BasePacker):
+                 self.logger.warning("Received batch with no run index")
+                 continue
+             if len(batch.examples) == 0:
+-                self.multi_run_manager.evict_run(batch.run_idx, "Run wrote a batch with no samples")
+-                continue
++                raise RuntimeError("Run wrote a batch with no samples")
+             for sample in batch.examples:
+                 valid, reason = self._validate_sample(sample)
+                 if not valid:
+-                    self.multi_run_manager.evict_run(batch.run_idx, f"Run wrote a sample with invalid data: {reason}")
+-                    break
++                    # Eviction writes control/evicted.txt and hides the run from
++                    # discover_runs(). Nothing in this tree reads that file, so
++                    # with a single run the orchestrator keeps sending batches to
++                    # a trainer that has stopped consuming them and the job
++                    # stalls instead of failing. A malformed sample is a bug in
++                    # the algorithm that built it, and PREDICT's auxiliary CE
++                    # samples are exactly the kind that would go missing quietly.
++                    raise RuntimeError(f"Run wrote a sample with invalid data: {reason}")
+                 self.buffers[batch.run_idx].append((sample, batch.step))
+ 
+         # This is necessary to forget evicted runs

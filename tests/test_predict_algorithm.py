@@ -131,3 +131,72 @@ def test_predict_algorithm_uses_verified_label_ce_and_masks_sampled_label(
     assert set(weight for weight in auxiliary.ce_weights if weight) == {0.25}
     assert auxiliary.rl_weights == [0.0] * len(auxiliary.token_ids)
     sys.modules.pop("glyph.prime_rl", None)
+
+
+def test_unmaskable_sampled_label_fails_the_run(monkeypatch) -> None:
+    """A label the masker cannot find would keep its RL credit.
+
+    That is the one outcome the algorithm exists to prevent -- reward would
+    reinforce whatever the policy guessed -- and it is invisible from the
+    outside, so it has to stop the run rather than degrade it.
+    """
+
+    class GRPOAlgorithm:
+        action_loss_type = "rl"
+
+        def __init__(self, config, policy_pool):
+            self.policy_pool = policy_pool
+
+        async def setup(self) -> None:
+            return None
+
+    grpo = types.ModuleType("prime_rl.orchestrator.algo.grpo")
+    grpo.GRPOAlgorithm = GRPOAlgorithm
+    trajectories = types.ModuleType("prime_rl.orchestrator.trajectories")
+    trajectories.iter_trainable_branches = lambda rollout: iter(
+        [(rollout.branch, rollout.samples[0].mask)]
+    )
+    transport = types.ModuleType("prime_rl.transport")
+    transport.TrainingSample = _TrainingSample
+    monkeypatch.setitem(sys.modules, "prime_rl.orchestrator.algo.grpo", grpo)
+    monkeypatch.setitem(sys.modules, "prime_rl.orchestrator.trajectories", trajectories)
+    monkeypatch.setitem(sys.modules, "prime_rl.transport", transport)
+    sys.modules.pop("glyph.prime_rl", None)
+    module = importlib.import_module("glyph.prime_rl")
+
+    content = "<PREDICTION>PASS</PREDICTION>"
+    # Token ids that do not contain the label's encoding, as happens when the
+    # renderer the algorithm built disagrees with the one that sampled.
+    node = SimpleNamespace(
+        message=SimpleNamespace(role="assistant", content=content),
+        sampled=True,
+        token_ids=[7, 7, 7, 7],
+    )
+    sample = _TrainingSample(
+        token_ids=list(node.token_ids),
+        mask=[True] * len(node.token_ids),
+        logprobs=[0.0] * len(node.token_ids),
+        temperatures=[],
+        env_name="arm-b",
+    )
+    rollout = SimpleNamespace(
+        branch=SimpleNamespace(nodes=[node]),
+        samples=[sample],
+        info={"glyph": {"prediction_targets": []}},
+        env_name="arm-b",
+    )
+    algorithm = module.PredictAlgorithm(
+        SimpleNamespace(alpha=0.25, max_aux_tokens=256, renderer=None),
+        SimpleNamespace(model_name="stub"),
+    )
+    algorithm.tokenizer = _Tokenizer()
+    algorithm.renderer = _Renderer()
+
+    try:
+        asyncio.run(algorithm.score_rollout(rollout))
+    except RuntimeError as error:
+        assert "could not locate the sampled PREDICTION label" in str(error)
+    else:
+        raise AssertionError("an unmaskable label must not pass silently")
+    finally:
+        sys.modules.pop("glyph.prime_rl", None)

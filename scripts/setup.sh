@@ -33,7 +33,8 @@ for patch in \
   "$PWD/patches/prime-rl-warn-on-truncation.patch" \
   "$PWD/patches/prime-rl-eos-token.patch" \
   "$PWD/patches/prime-rl-predict.patch" \
-  "$PWD/patches/prime-rl-preserve-non-rl-signal.patch"
+  "$PWD/patches/prime-rl-preserve-non-rl-signal.patch" \
+  "$PWD/patches/prime-rl-fail-on-invalid-sample.patch"
 do
   if ! git -C "$PRIME_DIR" apply --reverse --check "$patch" 2>/dev/null; then
     git -C "$PRIME_DIR" apply --check "$patch"

@@ -128,7 +128,7 @@ class PredictAlgorithm(GRPOAlgorithm):
                     if matches:
                         node_ids = list(node.token_ids)
                         for match in matches:
-                            masked += _mask_label_tokens(
+                            found = _mask_label_tokens(
                                 tokenizer,
                                 node_ids,
                                 content,
@@ -136,6 +136,16 @@ class PredictAlgorithm(GRPOAlgorithm):
                                 branch_offset,
                                 rl_weights,
                             )
+                            # Silently leaving the label unmasked would train
+                            # the policy to keep saying whatever it guessed,
+                            # which is the one thing this algorithm exists to
+                            # prevent. Fail the run instead.
+                            if not found:
+                                raise RuntimeError(
+                                    "could not locate the sampled PREDICTION label "
+                                    f"{match.group(1)!r} in its own token ids"
+                                )
+                            masked += found
                 branch_offset += len(node.token_ids)
             if masked:
                 sample.rl_weights = rl_weights
