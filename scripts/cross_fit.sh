@@ -19,9 +19,11 @@ log() { echo "[cross_fit] $*" >&2; }
 test -s data/folds/fold_a_tasks.jsonl || uv run python -m data.folds
 
 probe_weights() {
-  # PRIME-RL names the SFT checkpoint directory after the step it saved at.
-  find "outputs/probe_${1}_sft/checkpoints" -mindepth 1 -maxdepth 1 -type d 2>/dev/null \
-    | sort | tail -1
+  # PRIME-RL writes the servable weights under weights/step_N; the sibling
+  # checkpoints/ directory holds resumable training state and stays empty when
+  # the run only saves weights.
+  find "outputs/probe_${1}_sft/weights" -mindepth 1 -maxdepth 1 -type d 2>/dev/null \
+    | sort -t_ -k2 -n | tail -1
 }
 
 for fold in a b; do
