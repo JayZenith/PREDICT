@@ -240,9 +240,10 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="tagline">Two Qwen3-4B coding agents, same environment, same tasks, same reward, same
     SFT&rarr;RL pipeline, on <a href="https://github.com/PrimeIntellect-ai/prime-rl">PRIME-RL</a>
     and <a href="https://github.com/PrimeIntellect-ai/verifiers">Verifiers</a>. <b>Arm A</b> is
-    reactive: patch, test, recover, trained with GRPO. <b>Arm B</b> is predictive: patch, predict
-    the verified outcome, KEEP or REVISE, then execute, trained with GRPO plus an auxiliary
-    cross-entropy loss on the outcome the verifier confirms afterward.</p>
+    reactive: patch, test, recover, trained with GRPO. <b>Arm B</b>, inspired by
+    <a href="#echo">ECHO-style auxiliary prediction</a>, is predictive: patch, predict the verified
+    outcome, KEEP or REVISE, then execute, trained with GRPO plus an auxiliary cross-entropy loss
+    on the outcome the verifier confirms afterward.</p>
   <p class="tagline">Arm B did not win. The useful result is why: <b>the prediction learned a real
     distinction, the decision gate discriminated in the right direction, and rollouts that acted on
     the prediction almost never recovered.</b> Rollouts that never revised passed 63%. Rollouts
