@@ -1,11 +1,19 @@
 # PREDICT
 
-PREDICT adds **verified pre-action outcome supervision** to GRPO for tool-using agents.
+**A post-training study of reactive vs. predictive coding agents.**
 
-Before executing an action, the policy predicts its outcome and decides whether to KEEP or REVISE
-it. After execution, the environment provides the verified outcome. GRPO trains the agent's
-actions, while an auxiliary CE objective trains the earlier prediction against that verified
-target.
+Two Qwen3-4B agents on the same verifier-backed MBPP environment, same tasks, same reward, same
+SFT → RL pipeline.
+
+```text
+Arm A   patch → test → recover                     GRPO
+Arm B   patch → predict outcome → KEEP/REVISE      GRPO + verified-label CE
+```
+
+Arm B predicts the verified outcome of its patch before executing, and that prediction decides
+whether the patch survives. GRPO trains the actions and decisions; the prediction-label tokens are
+held out of RL credit and trained separately with cross-entropy against the outcome the environment
+verifies afterward.
 
 [Full write-up](https://jayzenith.github.io/PREDICT/) ·
 [blog.md](docs/blog.md) ·
