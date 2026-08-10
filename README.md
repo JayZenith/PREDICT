@@ -14,6 +14,85 @@ target.
 [SFT_ARM_A](https://huggingface.co/JayZenith/SFT_ARM_A) ·
 [SFT_ARM_B](https://huggingface.co/JayZenith/SFT_ARM_B)
 
+## Headline result
+
+The predictive agent did **not** beat the reactive baseline on pass@1. The useful finding is why:
+the prediction learned, the decision gate discriminated, and the action the gate routed into was
+near-terminal.
+
+```text
+step-100 greedy pass@1, 500 held-out tasks
+
+              seed 42   seed 43
+Arm A          56.4%     54.2%
+Arm B          52.0%     53.6%
+```
+
+Splitting Arm B's trajectories by whether it ever chose REVISE:
+
+```text
+                     seed 42            seed 43
+                    n    pass@1        n    pass@1
+never revised     409     63.3%      439     60.4%
+revised            91      1.1%       61      4.9%
+```
+
+Both seeds. Arm B's entire deficit is the REVISE path.
+
+It was not a bad predictor. The gate discriminated in the right direction on both seeds:
+
+```text
+chose REVISE on...      seed 42   seed 43
+a genuinely bad patch    22.2%     14.3%
+a good patch              8.5%      4.2%
+```
+
+## Why REVISE failed
+
+REVISE hides the test result by design — that is what makes the prediction load-bearing. But it
+still costs a tool call, and the agent gets nothing back except `patch applied`. So it rewrites a
+patch it never tested, with no information about how the previous one was wrong, against a fixed
+8-call budget:
+
+```text
+                mean tool calls   hit the 8-call cap
+seed 42  KEEP        4.90               35%
+         REVISE      7.99               99%
+seed 43  KEEP        5.03               37%
+         REVISE      7.95               95%
+```
+
+Effectively every REVISE trajectory exhausts its budget and terminates before it can run a test.
+
+That makes always predicting `PASS` the rational policy, not a training failure:
+
+```text
+predict PASS  → KEEP   → test → see the real failure → repair
+predict fail  → REVISE → no feedback, one call spent → run out of budget
+```
+
+RL learned the first one.
+
+**Scope.** Splitting by REVISE is correlational — harder patches attract REVISE. The 8.5% / 4.2%
+false-positive rate on patches that would have passed is the control that makes it more than
+selection bias, but it is not a controlled ablation.
+
+## The auxiliary objective did work
+
+The Arm B SFT checkpoint effectively predicted `PASS` for everything. After RLVR it learned a real
+execution-outcome distinction:
+
+```text
+RUNTIME_ERROR precision      seed 42: 62.5%   seed 43: 64.1%
+```
+
+against a ~16% base rate, and not by over-predicting the class (18.0% of predictions against 18.2%
+of real outcomes). It did not learn `ASSERTION_FAILURE` at all — 0% recall against ~57% of
+outcomes. `SYNTAX_ERROR` and `TIMEOUT` were never shown during SFT and cannot be judged.
+
+So the supervision teaches the distinction. The agent protocol is what prevents that distinction
+from paying for itself.
+
 ## Core idea
 
 Example:
@@ -62,159 +141,36 @@ state → predicted outcome → action → verified outcome
 
 ## Agent protocol
 
-### Arm A
-
 ```text
-patch → test → react
-```
-
-### Arm B / PREDICT
-
-```text
-patch → predict outcome → KEEP / REVISE → execute
+Arm A    patch → test → react
+Arm B    patch → predict outcome → KEEP / REVISE → execute
 ```
 
 Prediction classes:
 
 ```text
-PASS
-ASSERTION_FAILURE
-RUNTIME_ERROR
-SYNTAX_ERROR
-TIMEOUT
-OTHER
+PASS  ASSERTION_FAILURE  RUNTIME_ERROR  SYNTAX_ERROR  TIMEOUT  OTHER
 ```
 
-Rejected patches can still be evaluated through shadow execution, so the policy receives no result
+Rejected patches are still evaluated through shadow execution, so the policy receives no result
 during the rollout while training can still recover the verified target afterward.
 
 ## Stack
 
-PREDICT is built on Prime Intellect's open-source post-training stack.
+Built on Prime Intellect's open-source post-training stack.
 
-### Verifiers
+**Verifiers** runs and scores the coding environment. `GlyphTaskset` handles task setup,
+reward/metrics, and verified trace extraction; `GlyphHarness` launches the agent program in the
+sandbox; `program.py` implements the interaction loop. Verified prediction targets are recovered
+from the Glyph trace and attached to the rollout metadata.
 
-Runs and scores the coding environment.
+**PRIME-RL** performs training. `PredictAlgorithm` extends GRPO by masking sampled prediction-label
+tokens from RL credit, constructing CE-only verified-label samples, and assigning CE weight only to
+the verified prediction tokens. It registers through PRIME-RL's algorithm hook; the pinned
+integration patch touches only the algorithm registry and its config schema.
 
-```text
-src/glyph/taskset.py
-src/glyph/harness.py
-src/glyph/program.py
-```
-
-`GlyphTaskset` handles task setup, reward/metrics, and verified trace extraction. `GlyphHarness`
-launches the agent program in the sandbox. `program.py` implements the coding-agent interaction
-loop. Verified prediction targets are recovered from the Glyph trace and attached to the rollout
-metadata.
-
-### PRIME-RL
-
-Performs model training.
-
-```text
-src/glyph/prime_rl.py
-```
-
-`PredictAlgorithm` extends GRPO by:
-
-1. masking sampled prediction-label tokens from RL credit;
-2. constructing CE-only verified-label samples;
-3. assigning CE weight only to the verified prediction tokens.
-
-It registers through PRIME-RL's algorithm hook; the pinned integration patch touches only the
-algorithm registry and its config schema.
-
-### Renderer / tokenizer
-
-PREDICT uses the policy's chat template and tokenizer to construct the synthetic CE sample with
-exactly the same formatting and tokenization as the policy.
-
-## Experiment
-
-Model:
-
-```text
-Qwen3-4B-Base
-```
-
-Task environment:
-
-```text
-MBPP
-```
-
-Pipeline:
-
-```text
-SFT → RLVR
-```
-
-Data:
-
-```text
-212 SFT tasks
-212 RL tasks
- 40 validation tasks
-500 final test tasks
-```
-
-Two RL seeds were run for each arm.
-
-## Results
-
-Step-100 pass@1:
-
-```text
-Arm A
-seed 42: 56.4%
-seed 43: 54.2%
-
-Arm B
-seed 42: 52.0%
-seed 43: 53.6%
-```
-
-PREDICT did not establish a pass@1 advantage over the test-and-recover baseline.
-
-The stronger result was outcome prediction. The Arm B SFT checkpoint effectively predicted `PASS`
-for every case. After RLVR, the policy learned to detect runtime failures:
-
-```text
-RUNTIME_ERROR precision
-seed 42: 62.5%
-seed 43: 64.1%
-```
-
-At step 100, seed 42:
-
-```text
-PASS recall:              92%
-RUNTIME_ERROR recall:     63%
-ASSERTION_FAILURE recall:  0%
-```
-
-So the experiment shows that verifier-derived auxiliary supervision can teach the policy a
-nontrivial future execution-outcome distinction, but it does not yet show improved overall
-coding-agent performance.
-
-## Current limitations
-
-The policy failed to learn assertion-failure prediction, the class that would be most useful to
-catch early.
-
-MBPP also makes many execution outcomes cheap to observe immediately, reducing the behavioral value
-of predicting them one step earlier.
-
-The next experiments should therefore focus on:
-
-```text
-better predictive SFT
-alpha = 0 ablation
-native ECHO baseline
-environments where actions are costly or irreversible
-```
-
-## Repository structure
+**Renderer / tokenizer** builds the synthetic CE sample with exactly the same formatting and
+tokenization the policy uses, so CE weight lands only on the intended tokens.
 
 ```text
 src/glyph/taskset.py      Verifiers task/environment integration
@@ -230,6 +186,23 @@ tests/                    config, integration, algorithm tests
 docs/                     research specification and reproduction docs
 ```
 
+## Upstream contribution
+
+`ZeroAdvantageFilter` could discard a rollout whose GRPO advantages collapsed to zero even when
+another objective still carried valid training signal. The fix preserves such rollouts when they
+contain nonzero `ce_weights` or `ref_kl_weights`, while still filtering rollouts with no remaining
+objective. Reproduced with native ECHO and ref-KL routing rather than PREDICT-specific behavior.
+
+## Experiment
+
+```text
+Qwen3-4B-Base · MBPP · SFT → RLVR · two RL seeds per arm
+
+212 SFT tasks   212 RL tasks   40 validation   500 final test
+```
+
+Splits are disjoint. The 500-task test set was evaluated once, after the design was frozen.
+
 ## Reproduction
 
 Python 3.12, `uv`, 1 GPU for SFT, 2 GPUs for RL (1 train + 1 inference).
@@ -243,25 +216,20 @@ bash scripts/train_rl.sh a           # and b; 100 steps from the SFT ckpts
 bash scripts/evaluate.sh a MODEL test
 ```
 
-See:
+See `docs/REPRODUCTION.md` and `docs/research_specs.md`. Upstream dependencies and the PRIME-RL
+commit are pinned. All headline numbers come from the four Arm A / Arm B runs across seeds 42 and
+43 in [`RESULTS_PUBLISHED/`](RESULTS_PUBLISHED/).
 
-```text
-docs/REPRODUCTION.md
-docs/research_specs.md
-```
+## What this establishes
 
-The project pins its upstream dependencies and PRIME-RL commit for reproducibility. All headline
-results are derived from the four Arm A / Arm B runs across seeds 42 and 43, in
-[`RESULTS_PUBLISHED/`](RESULTS_PUBLISHED/).
+PREDICT does **not** show that explicit outcome prediction improves coding-agent pass@1. It does
+show:
 
-## Status
+* verifier-derived future outcomes can supervise an earlier prediction point during RL;
+* GRPO and auxiliary CE coexist cleanly through token-level loss routing;
+* the policy learns an execution-outcome distinction absent from its SFT behavior, across two seeds;
+* **a correct prediction is worthless if the action it gates is worse than simply observing the
+  environment.**
 
-PREDICT currently demonstrates:
-
-* verifier-derived future outcomes can supervise an earlier prediction point;
-* GRPO and auxiliary CE can be separated through token-level loss routing;
-* the policy can learn at least one execution-outcome class that was absent from its SFT prediction
-  behavior.
-
-The main open question is whether this predictive supervision improves agent decisions in
-environments where consequences cannot simply be observed immediately after acting.
+The next environment worth testing is one where acting first is expensive, irreversible, or
+delayed — so that foresight has something real to buy.
