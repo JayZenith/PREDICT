@@ -57,7 +57,7 @@ a good patch              8.5%      4.2%
 
 ## Why REVISE failed
 
-REVISE hides the test result by design — that is what makes the prediction load-bearing. But it
+REVISE hides the test result by design. That is what makes the prediction load-bearing. But it
 still costs a tool call, and the agent gets nothing back except `patch applied`. So it rewrites a
 patch it never tested, with no information about how the previous one was wrong, against a fixed
 8-call budget:
@@ -81,7 +81,7 @@ predict fail  → REVISE → no feedback, one call spent → run out of budget
 
 RL learned the first one.
 
-**Scope.** Splitting by REVISE is correlational — harder patches attract REVISE. The 8.5% / 4.2%
+**Scope.** Splitting by REVISE is correlational, because harder patches attract REVISE. The 8.5% / 4.2%
 false-positive rate on patches that would have passed is the control that makes it more than
 selection bias, but it is not a controlled ablation.
 
@@ -95,7 +95,7 @@ RUNTIME_ERROR precision      seed 42: 62.5%   seed 43: 64.1%
 ```
 
 against a ~16% base rate, and not by over-predicting the class (18.0% of predictions against 18.2%
-of real outcomes). It did not learn `ASSERTION_FAILURE` at all — 0% recall against ~57% of
+of real outcomes). It did not learn `ASSERTION_FAILURE` at all: 0% recall against ~57% of
 outcomes. `SYNTAX_ERROR` and `TIMEOUT` were never shown during SFT and cannot be judged.
 
 The distinction is learned during GRPO+CE training and replicates across both seeds. Attributing it
@@ -234,4 +234,4 @@ show:
   environment.**
 
 The next environment worth testing is one where acting first is expensive, irreversible, or
-delayed — so that foresight has something real to buy.
+delayed, so that foresight has something real to buy.
