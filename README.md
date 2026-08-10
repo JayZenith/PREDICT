@@ -24,9 +24,9 @@ verifies afterward.
 
 ## Headline result
 
-The predictive agent did **not** beat the reactive baseline on pass@1. The useful finding is why:
-the prediction learned, the decision gate discriminated, and the action the gate routed into was
-near-terminal.
+The predictive agent did **not** beat the reactive baseline on pass@1. The useful finding is why,
+and it holds on both seeds: the prediction learned, the decision gate discriminated, and the action
+the gate routed into was near-terminal.
 
 ```text
 step-100 greedy pass@1, 500 held-out tasks
@@ -45,9 +45,9 @@ never revised     409     63.3%      439     60.4%
 revised            91      1.1%       61      4.9%
 ```
 
-Both seeds. Arm B's entire deficit is the REVISE path.
+Both seeds. Arm B's observed deficit concentrates in the REVISE path.
 
-It was not a bad predictor. The gate discriminated in the right direction on both seeds:
+The gate had useful discrimination; REVISE was the dominant observed failure mode:
 
 ```text
 chose REVISE on...      seed 42   seed 43
@@ -98,8 +98,9 @@ against a ~16% base rate, and not by over-predicting the class (18.0% of predict
 of real outcomes). It did not learn `ASSERTION_FAILURE` at all — 0% recall against ~57% of
 outcomes. `SYNTAX_ERROR` and `TIMEOUT` were never shown during SFT and cannot be judged.
 
-So the supervision teaches the distinction. The agent protocol is what prevents that distinction
-from paying for itself.
+The distinction is learned during GRPO+CE training and replicates across both seeds. Attributing it
+to the CE term specifically would need an `alpha = 0` ablation, which was not run. Either way, the
+agent protocol is what prevents that distinction from paying for itself.
 
 ## Core idea
 
@@ -197,9 +198,10 @@ docs/                     research specification and reproduction docs
 ## Upstream contribution
 
 `ZeroAdvantageFilter` could discard a rollout whose GRPO advantages collapsed to zero even when
-another objective still carried valid training signal. The fix preserves such rollouts when they
-contain nonzero `ce_weights` or `ref_kl_weights`, while still filtering rollouts with no remaining
-objective. Reproduced with native ECHO and ref-KL routing rather than PREDICT-specific behavior.
+another objective still carried valid training signal. Reproduced with native ECHO and ref-KL
+routing rather than PREDICT-specific behavior, and a generic upstream fix submitted: such rollouts
+survive when `ce_weights` or `ref_kl_weights` are nonzero, and are still filtered when no objective
+remains.
 
 ## Experiment
 

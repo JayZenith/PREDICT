@@ -217,10 +217,10 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     reactive: patch, test, recover, trained with GRPO. <b>Arm B</b> is predictive: patch, predict
     the verified outcome, KEEP or REVISE, then execute &mdash; trained with GRPO plus an auxiliary
     cross-entropy loss on the outcome the verifier confirms afterward.</p>
-  <p class="tagline">Arm B did not win. The useful result is why, and it replicates across both
-    seeds: <b>the prediction learned a real distinction, the decision gate discriminated in the
-    right direction, and the action that gate routed into was near-terminal.</b> Arm B's
-    trajectories that never revised pass 63.3%; the ones that revised pass 1.1%.</p>
+  <p class="tagline">Arm B did not win. The useful result is why, and it holds on both seeds:
+    <b>the prediction learned a real distinction, the decision gate discriminated in the right
+    direction, and the action that gate routed into was near-terminal.</b> Across seeds,
+    never-revised trajectories passed 63.3% / 60.4%; revised trajectories passed 1.1% / 4.9%.</p>
   <p class="tagline">Testing on MBPP costs one tool call and returns the same information a
     prediction guesses at, so foresight had nothing to buy &mdash; and the mechanism for acting on
     it cost more than it saved. <a href="#bottleneck">Jump to the finding &darr;</a></p>
@@ -229,7 +229,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="protocol">
   <p class="section-kicker">Agent design</p>
   <h2 class="section-title">Two agents, one environment</h2>
-  <p class="section-lede">Only the agent design differs. Arm B predicts one of six classes &mdash;
+  <p class="section-lede">The environment, tasks, tools, and reward are shared; the agent protocol
+    and the training objective differ. Arm B predicts one of six classes &mdash;
     <code>PASS</code>, <code>ASSERTION_FAILURE</code>, <code>RUNTIME_ERROR</code>,
     <code>SYNTAX_ERROR</code>, <code>TIMEOUT</code>, <code>OTHER</code> &mdash; before it is allowed
     to test. If it chooses REVISE, the rejected patch is still evaluated through shadow execution,
@@ -384,7 +385,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
 <section class="section" id="bottleneck">
   <p class="section-kicker">The main finding</p>
-  <h2 class="section-title">The whole deficit is the REVISE path</h2>
+  <h2 class="section-title">The observed deficit concentrates in the REVISE path</h2>
   <p class="section-lede">Split Arm B's 500 test trajectories by whether the agent ever chose
     REVISE. The two halves are not slightly different &mdash; they are different agents.</p>
 
@@ -408,12 +409,13 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     <span class="legend-item"><span class="swatch" style="background:#00d17a"></span>seed 43</span>
   </div>
   <p class="chart-caption">Greedy pass@1, step 100. Arm B's headline 52.0% is almost exactly
-    409 &times; 63.3% out of 500: the never-revised trajectories carry the entire score.</p>
+    409 &times; 63.3% out of 500: the never-revised trajectories carry nearly the entire score.</p>
 
-  <p class="section-lede mt-lg">The predictor was not what failed. The gate chose REVISE two to
-    three times more often on patches that genuinely failed than on patches that would have
-    passed &mdash; <b>22.2%</b> against <b>8.5%</b> in seed 42, <b>14.3%</b> against <b>4.2%</b> in
-    seed 43. It detected risk, acted on that detection, and lost.</p>
+  <p class="section-lede mt-lg">The gate had useful discrimination; REVISE was the dominant
+    observed failure mode. It chose REVISE two to three times more often on patches that genuinely
+    failed than on patches that would have passed &mdash; <b>22.2%</b> against <b>8.5%</b> in
+    seed 42, <b>14.3%</b> against <b>4.2%</b> in seed 43. It detected risk, acted on that
+    detection, and lost.</p>
 
   <div class="callout crit">
     <div class="callout-label">&#9888; REVISE spends a call and returns nothing</div>
@@ -470,11 +472,12 @@ predict <b class="wrong">failure</b> &rarr; REVISE &rarr; no feedback, one call 
   </div>
 
   <div class="callout good">
-    <div class="callout-label">&#10003; Learned, from verified supervision alone, on both seeds</div>
+    <div class="callout-label">&#10003; Learned during GRPO+CE training, replicated across both seeds</div>
     Not by over-predicting the class: prediction frequency roughly matched real frequency (18.0% of
     predictions against 18.2% of real training outcomes), against a ~16% base rate in evaluation.
     The policy learned a nontrivial distinction about the future execution behavior of its own
-    patches. <b>That distinction then had nowhere useful to go.</b>
+    patches. Attributing that to the CE term specifically would need an <code>alpha = 0</code>
+    ablation, which was not run. <b>Either way, the distinction had nowhere useful to go.</b>
   </div>
 </section>
 
@@ -719,9 +722,10 @@ patch applied</code></div>
   <div class="callout info mt-md">
     <div class="callout-label">Upstream fix</div>
     PRIME-RL's <code>ZeroAdvantageFilter</code> could discard a rollout when GRPO advantages
-    collapsed to zero even though CE or ref-KL still carried valid signal. Reproduced with native
-    ECHO and ref-KL routing rather than PREDICT-specific behavior, and fixed generically: such
-    rollouts survive when <code>ce_weights</code> or <code>ref_kl_weights</code> are nonzero.
+    collapsed to zero even though CE or ref-KL still carried valid signal. I reproduced it with
+    native ECHO and ref-KL routing rather than PREDICT-specific behavior, and submitted a generic
+    upstream fix: such rollouts survive when <code>ce_weights</code> or <code>ref_kl_weights</code>
+    are nonzero.
   </div>
 </section>
 
