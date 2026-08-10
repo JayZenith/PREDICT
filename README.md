@@ -25,8 +25,8 @@ verifies afterward.
 ## Headline result
 
 The predictive agent did **not** beat the reactive baseline on pass@1. The useful finding is why,
-and it holds on both seeds: the prediction learned, the decision gate discriminated, and the action
-the gate routed into was near-terminal.
+and it holds on both seeds: the prediction learned, the decision gate discriminated, and rollouts
+that acted on the prediction almost never recovered.
 
 ```text
 step-100 greedy pass@1, 500 held-out tasks
@@ -194,14 +194,6 @@ patches/                  pinned PRIME-RL integration patches
 tests/                    config, integration, algorithm tests
 docs/                     research specification and reproduction docs
 ```
-
-## Upstream contribution
-
-`ZeroAdvantageFilter` could discard a rollout whose GRPO advantages collapsed to zero even when
-another objective still carried valid training signal. Reproduced with native ECHO and ref-KL
-routing rather than PREDICT-specific behavior, and a generic upstream fix submitted: such rollouts
-survive when `ce_weights` or `ref_kl_weights` are nonzero, and are still filtered when no objective
-remains.
 
 ## Experiment
 
