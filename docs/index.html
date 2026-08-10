@@ -463,6 +463,15 @@ predict <b class="wrong">failure</b> &rarr; REVISE &rarr; no feedback, one call 
   </div>
 
   <div class="callout warn">
+    <div class="callout-label">One interpretation: the masking has a gap</div>
+    The <code>&lt;PREDICTION&gt;</code> label is held out of RL credit, but
+    <code>&lt;DECISION&gt;</code> is not, and the protocol ties them together: a non-PASS
+    prediction forces REVISE. So reward pressure toward KEEP is also pressure toward predicting
+    PASS, working against the CE term. Masking stops reward reinforcing a lucky label, not the
+    behaviour of predicting PASS. Untested here.
+  </div>
+
+  <div class="callout warn">
     <div class="callout-label">Scope</div>
     The split is correlational, because harder patches attract REVISE. The false-positive rate on
     patches that would have passed is the control, and budget exhaustion is the mechanism, but this
