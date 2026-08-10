@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PREDICT: Training an Agent to Predict the Outcome of Its Actions</title>
-<meta name="description" content="PREDICT adds verified pre-action outcome supervision to GRPO: a coding agent predicts what its patch will do, decides KEEP or REVISE, and is trained on the verifier's ground truth. Mechanism, evidence, and limitations.">
+<title>Reactive vs. Predictive Post-Training for Coding Agents</title>
+<meta name="description" content="Two Qwen3-4B coding agents on one RL environment: test-and-recover versus predict-and-decide. The predictive agent learned real outcome prediction and still lost, and the trajectory split shows exactly which part of its protocol cost it.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='black'/%3E%3Cpath d='M13 2 L4 14 H11 L10 22 L20 9 H13 Z' fill='%2339ff14'/%3E%3C/svg%3E">
 <style>
 :root {
@@ -69,7 +69,7 @@ code { font-family: var(--mono); font-size: 0.86em; color: #d8ecd9;
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px 26px; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-@media (max-width: 760px) { .grid-2, .grid-3, .transcript-grid, .next-grid { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .grid-2, .grid-3, .transcript-grid { grid-template-columns: 1fr; } }
 
 .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 0 0 18px; }
 @media (max-width: 700px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -173,7 +173,6 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 16.5px; ma
   text-transform: uppercase; color: var(--green); margin: 0 0 8px; }
 
 /* ---- next steps ---- */
-.next-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .next-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px 22px; }
 .next-card p { color: var(--ink-2); margin: 0; font-size: 16px; line-height: 1.65; }
 .next-num { font-size: 12.5px; color: var(--mute); margin-bottom: 8px;
@@ -204,97 +203,39 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
 <header class="hero">
   <p class="kicker">PREDICT</p>
-  <h1 class="h1">Training an Agent to Predict the Outcome of Its Actions</h1>
+  <h1 class="h1">Reactive vs. Predictive Post-Training for Coding Agents</h1>
   <p class="tagline" style="margin-top:-4px">
     <a href="https://x.com/jayz3nith">X</a> &middot;
     <a href="https://jayzenith.me/">jayzenith.me</a> &middot;
     <a href="https://github.com/JayZenith/PREDICT">GitHub</a>
   </p>
-  <p class="tagline"><b style="color:#39ff14">Can an agent learn a better internal model of its
-    environment if we explicitly train it to predict the verified outcome of an action before
-    taking it?</b></p>
-  <p class="tagline">I tested this with a coding agent built on Qwen3-4B-Base using
-    <a href="https://github.com/PrimeIntellect-ai/prime-rl">PRIME-RL</a> and
-    <a href="https://github.com/PrimeIntellect-ai/verifiers">Verifiers</a>. The agent proposes a
-    patch, predicts its outcome, and chooses whether to KEEP or REVISE it before seeing the real
-    execution result. After execution, the environment supplies the verified outcome.</p>
-  <p class="tagline">Training then uses two signals. <b>GRPO</b> trains the agent's actions and
-    decisions from task reward. <b>Auxiliary cross-entropy</b> trains the earlier prediction
-    against the verified outcome. The prediction tokens themselves are masked from GRPO, so reward
-    cannot directly reinforce a lucky prediction.</p>
-  <p class="tagline">The predictive agent did not beat the reactive one. The useful result is
-    <b>why</b>: the prediction learned, the gate discriminated, and the action it routed into was
-    near-terminal.</p>
+  <p class="tagline"><b style="color:#39ff14">When does teaching an agent to predict the consequence
+    of an action actually improve its behavior?</b></p>
+  <p class="tagline">Two Qwen3-4B coding agents, same environment, same tasks, same reward, same
+    SFT&rarr;RL pipeline, on <a href="https://github.com/PrimeIntellect-ai/prime-rl">PRIME-RL</a>
+    and <a href="https://github.com/PrimeIntellect-ai/verifiers">Verifiers</a>. <b>Arm A</b> is
+    reactive: patch, test, recover, trained with GRPO. <b>Arm B</b> is predictive: patch, predict
+    the verified outcome, KEEP or REVISE, then execute &mdash; trained with GRPO plus an auxiliary
+    cross-entropy loss on the outcome the verifier confirms afterward.</p>
+  <p class="tagline">Arm B did not win. The useful result is why, and it replicates across both
+    seeds: <b>the prediction learned a real distinction, the decision gate discriminated in the
+    right direction, and the action that gate routed into was near-terminal.</b> Arm B's
+    trajectories that never revised pass 63.3%; the ones that revised pass 1.1%.</p>
+  <p class="tagline">Testing on MBPP costs one tool call and returns the same information a
+    prediction guesses at, so foresight had nothing to buy &mdash; and the mechanism for acting on
+    it cost more than it saved. <a href="#bottleneck">Jump to the finding &darr;</a></p>
 </header>
-
-<section class="section" id="mechanism">
-  <p class="section-kicker">Mechanism</p>
-  <h2 class="section-title">The core mechanism</h2>
-  <p class="section-lede lede-narrow">Suppose the agent writes a patch, predicts
-    <code>&lt;PREDICTION&gt;PASS&lt;/PREDICTION&gt;</code>, commits to
-    <code>&lt;DECISION&gt;KEEP&lt;/DECISION&gt;</code> &mdash; and the patch actually produces
-    <code>RUNTIME_ERROR</code>.</p>
-
-  <p class="block-label">The rollout that happened</p>
-  <div class="flow">prefix &rarr; <b class="wrong">PASS</b> &rarr; KEEP &rarr; execute &rarr; <b>RUNTIME_ERROR</b>
-<span class="flow-note">the sampled PASS label loses its RL credit &mdash; reward never reinforces it</span></div>
-
-  <p class="block-label mt-md">The sample PREDICT adds</p>
-  <div class="flow">same prefix &rarr; <b>RUNTIME_ERROR</b>
-<span class="flow-note">CE-only: rl_weights = 0, ce_weights = alpha on the verified-label tokens</span></div>
-
-  <p class="section-lede mt-md">So the model is not rewarded for having predicted <code>PASS</code>.
-    Instead, after the rollout, it is explicitly trained that at that earlier point in the
-    trajectory the correct prediction was <code>RUNTIME_ERROR</code>.</p>
-
-  <div class="callout info">
-    <div class="callout-label">Why the target does not have to be in the rollout</div>
-    This supervision also works when the verified outcome never appeared in the visible rollout
-    &mdash; for example when a rejected patch is evaluated through shadow execution. The label is
-    manufactured by the verifier after the fact and rendered onto the pre-execution context as its
-    own training sample.
-  </div>
-</section>
-
-<section class="section" id="echo">
-  <p class="section-kicker">Distinction</p>
-  <h2 class="section-title">How this differs from ECHO</h2>
-  <p class="section-lede lede-narrow"><a href="https://arxiv.org/abs/2605.24517">ECHO</a>
-    (Shrivastava et al., 2026) trains the model to predict environment observations that already
-    occur in the trajectory. The tool output exists as tokens in the rollout, so ECHO can place CE
-    weight directly on those observation tokens. PREDICT targets a different point.</p>
-
-  <div class="grid-2 mt-md">
-    <div class="next-card">
-      <div class="next-title">ECHO</div>
-      <div class="flow">action &rarr; <b>environment observation</b>
-<span class="flow-note">CE target already present in the rollout</span></div>
-      <p>Learn from the observation the environment produced.</p>
-    </div>
-    <div class="next-card">
-      <div class="next-title">PREDICT</div>
-      <div class="flow">state &rarr; <b>predicted outcome</b> &rarr; action &rarr; verified outcome
-<span class="flow-note">train this point &mdash; using a target that only exists later</span></div>
-      <p>Learn what the environment was going to produce, before committing to the action.</p>
-    </div>
-  </div>
-
-  <p class="section-lede mt-md">Both combine RL with auxiliary prediction learning. PREDICT turns
-    that prediction into an explicit decision variable in the agent's behavior: the predicted class
-    gates whether the patch is kept at all.</p>
-</section>
 
 <section class="section" id="protocol">
   <p class="section-kicker">Agent design</p>
   <h2 class="section-title">Two agents, one environment</h2>
-  <p class="section-lede">Both arms share the same environment, tools, tasks, and binary task
-    reward. Only the agent design differs. Arm A is test-and-recover: patch, test, react. Arm B is
-    predict-and-decide: patch, predict, KEEP or REVISE, execute. If Arm B chooses REVISE, the
-    rejected patch is still evaluated through shadow execution, so training recovers a verified
-    label without revealing that result to the policy during the rollout.</p>
-  <p class="section-lede">The agent predicts one of six classes: <code>PASS</code>,
-    <code>ASSERTION_FAILURE</code>, <code>RUNTIME_ERROR</code>, <code>SYNTAX_ERROR</code>,
-    <code>TIMEOUT</code>, <code>OTHER</code>.</p>
+  <p class="section-lede">Only the agent design differs. Arm B predicts one of six classes &mdash;
+    <code>PASS</code>, <code>ASSERTION_FAILURE</code>, <code>RUNTIME_ERROR</code>,
+    <code>SYNTAX_ERROR</code>, <code>TIMEOUT</code>, <code>OTHER</code> &mdash; before it is allowed
+    to test. If it chooses REVISE, the rejected patch is still evaluated through shadow execution,
+    so training recovers a verified label without ever revealing that result to the policy during
+    the rollout. <b>That hiding is what makes the prediction load-bearing, and it is also what the
+    finding below turns on.</b></p>
     <div class="card"><svg viewBox="0 0 1000 600" class="diagram-svg" role="img" aria-label="Arm A versus Arm B execution flow">
 <defs><marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#93a897"/></marker>
@@ -654,11 +595,68 @@ patch applied</code></div>
   </div>
 </section>
 
+<section class="section" id="mechanism">
+  <p class="section-kicker">How it works</p>
+  <h2 class="section-title">How the auxiliary objective is built</h2>
+  <p class="section-lede lede-narrow">Suppose the agent writes a patch, predicts
+    <code>&lt;PREDICTION&gt;PASS&lt;/PREDICTION&gt;</code>, commits to
+    <code>&lt;DECISION&gt;KEEP&lt;/DECISION&gt;</code> &mdash; and the patch actually produces
+    <code>RUNTIME_ERROR</code>.</p>
+
+  <p class="block-label">The rollout that happened</p>
+  <div class="flow">prefix &rarr; <b class="wrong">PASS</b> &rarr; KEEP &rarr; execute &rarr; <b>RUNTIME_ERROR</b>
+<span class="flow-note">the sampled PASS label loses its RL credit &mdash; reward never reinforces it</span></div>
+
+  <p class="block-label mt-md">The sample PREDICT adds</p>
+  <div class="flow">same prefix &rarr; <b>RUNTIME_ERROR</b>
+<span class="flow-note">CE-only: rl_weights = 0, ce_weights = alpha on the verified-label tokens</span></div>
+
+  <p class="section-lede mt-md">So the model is not rewarded for having predicted <code>PASS</code>.
+    Instead, after the rollout, it is explicitly trained that at that earlier point in the
+    trajectory the correct prediction was <code>RUNTIME_ERROR</code>.</p>
+
+  <div class="callout info">
+    <div class="callout-label">Why the target does not have to be in the rollout</div>
+    This supervision also works when the verified outcome never appeared in the visible rollout
+    &mdash; for example when a rejected patch is evaluated through shadow execution. The label is
+    manufactured by the verifier after the fact and rendered onto the pre-execution context as its
+    own training sample.
+  </div>
+</section>
+
+<section class="section" id="echo">
+  <p class="section-kicker">How it works</p>
+  <h2 class="section-title">How this differs from ECHO</h2>
+  <p class="section-lede lede-narrow"><a href="https://arxiv.org/abs/2605.24517">ECHO</a>
+    (Shrivastava et al., 2026) trains the model to predict environment observations that already
+    occur in the trajectory. The tool output exists as tokens in the rollout, so ECHO can place CE
+    weight directly on those observation tokens. PREDICT targets a different point.</p>
+
+  <div class="grid-2 mt-md">
+    <div class="next-card">
+      <div class="next-title">ECHO</div>
+      <div class="flow">action &rarr; <b>environment observation</b>
+<span class="flow-note">CE target already present in the rollout</span></div>
+      <p>Learn from the observation the environment produced.</p>
+    </div>
+    <div class="next-card">
+      <div class="next-title">PREDICT</div>
+      <div class="flow">state &rarr; <b>predicted outcome</b> &rarr; action &rarr; verified outcome
+<span class="flow-note">train this point &mdash; using a target that only exists later</span></div>
+      <p>Learn what the environment was going to produce, before committing to the action.</p>
+    </div>
+  </div>
+
+  <p class="section-lede mt-md">Both combine RL with auxiliary prediction learning. PREDICT turns
+    that prediction into an explicit decision variable in the agent's behavior: the predicted class
+    gates whether the patch is kept at all.</p>
+</section>
+
 <section class="section" id="establishes">
   <p class="section-kicker">What this establishes</p>
-  <h2 class="section-title">Four claims, and the one still open</h2>
-  <p class="section-lede">PREDICT does <b>not</b> yet establish that explicit environment
-    prediction improves overall agent performance. It does establish:</p>
+  <h2 class="section-title">Five claims, and the one still open</h2>
+  <p class="section-lede">This does <b>not</b> establish that explicit environment prediction
+    improves overall agent performance. It does establish:</p>
   <div class="card">
     <ol class="learned-list">
       <li><span class="learned-tag">Verified targets can supervise an earlier point</span>Outcomes
@@ -681,7 +679,8 @@ patch applied</code></div>
   <div class="callout info">
     <div class="callout-label">The remaining question is the important one</div>
     Does learning to predict consequences improve decisions when those consequences cannot be
-    cheaply observed after acting?
+    cheaply observed after acting? Answering it needs a different environment, not a better
+    predictor &mdash; one where acting first is expensive, irreversible, or delayed.
   </div>
 </section>
 
@@ -723,29 +722,6 @@ patch applied</code></div>
     collapsed to zero even though CE or ref-KL still carried valid signal. Reproduced with native
     ECHO and ref-KL routing rather than PREDICT-specific behavior, and fixed generically: such
     rollouts survive when <code>ce_weights</code> or <code>ref_kl_weights</code> are nonzero.
-  </div>
-</section>
-
-<section class="section" id="next">
-  <p class="section-kicker">Next</p>
-  <h2 class="section-title">Fix the action before improving the predictor</h2>
-  <p class="section-lede">The obvious next move was better predictive SFT &mdash; more
-    <code>ASSERTION_FAILURE</code> coverage drawn from the policy's own failures. Worth doing, but
-    no longer the binding constraint: a better predictor routed into the same REVISE path buys
-    nothing.</p>
-  <div class="grid-2 mt-md">
-    <div class="next-card">
-      <div class="next-title">Make REVISE survivable</div>
-      <p>Give the revising agent something for the call it spends &mdash; the predicted failure
-      class, or a budget exemption. Until a REVISE trajectory can finish, the gate cannot be
-      judged on its merits.</p>
-    </div>
-    <div class="next-card">
-      <div class="next-title">Leave MBPP</div>
-      <p>An environment where the agent must choose among consequential actions <b>before</b>
-      getting enough feedback to know which one is safe. That is where foresight should have
-      something to buy.</p>
-    </div>
   </div>
 </section>
 
