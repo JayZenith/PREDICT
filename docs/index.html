@@ -223,8 +223,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     against the verified outcome. The prediction tokens themselves are masked from GRPO, so reward
     cannot directly reinforce a lucky prediction.</p>
   <p class="tagline">The predictive agent did not beat the reactive one. The useful result is
-    <b>why</b>: the prediction learned a real distinction, the decision gate discriminated in the
-    right direction, and the action that gate routed into was near-terminal. Both seeds.</p>
+    <b>why</b>: the prediction learned, the gate discriminated, and the action it routed into was
+    near-terminal.</p>
 </header>
 
 <section class="section" id="mechanism">
@@ -465,70 +465,45 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <div class="legend">
     <span class="legend-item"><span class="swatch" style="background:#39ff14"></span>seed 42</span>
     <span class="legend-item"><span class="swatch" style="background:#00d17a"></span>seed 43</span>
-    <span class="legend-item"><span class="swatch" style="background:#ef4444"></span>trajectories that used REVISE</span>
   </div>
-  <p class="chart-caption">Greedy pass@1 at step 100 on the 500-task test set. Arm B's headline
-    52.0% is almost exactly 409 &times; 63.3% out of 500: the trajectories that never revised carry
-    the whole score, and the ones that revised contribute nothing.</p>
+  <p class="chart-caption">Greedy pass@1, step 100. Arm B's headline 52.0% is almost exactly
+    409 &times; 63.3% out of 500: the never-revised trajectories carry the entire score.</p>
 
-  <p class="section-lede mt-lg"><span class="block-label">The predictor was not the problem</span>
-    The decision gate discriminated in the right direction on both seeds. It chose REVISE two to
+  <p class="section-lede mt-lg">The predictor was not what failed. The gate chose REVISE two to
     three times more often on patches that genuinely failed than on patches that would have
-    passed.</p>
-
-  <table class="data-table">
-    <thead><tr><th>chose REVISE on&hellip;</th><th>seed 42</th><th>seed 43</th></tr></thead>
-    <tbody>
-      <tr><td>a genuinely bad patch</td><td>22.2%</td><td>14.3%</td></tr>
-      <tr><td>a patch that would have passed</td><td>8.5%</td><td>4.2%</td></tr>
-    </tbody>
-  </table>
-  <p class="chart-caption">So this is not a policy revising at random. It detected risk, acted on
-    that detection, and lost.</p>
-
-  <p class="section-lede mt-lg"><span class="block-label">What REVISE actually costs</span>
-    REVISE hides the test result on purpose &mdash; that hiding is what makes the prediction
-    load-bearing rather than decorative. But it still spends a visible tool call, and the only
-    thing the agent gets back is <code>patch applied</code>. It rewrites a patch it never ran, with
-    no information about how the previous one was wrong, against a fixed 8-call budget.</p>
-
-  <div class="stat-grid mt-md" style="grid-template-columns:repeat(2,1fr)">
-    <div class="stat-tile" style="border-top-color:#ef4444">
-      <div class="stat-value" style="color:#ef4444">99% &middot; 95%</div>
-      <div class="stat-label">of REVISE trajectories exhaust the 8-call budget (seeds 42, 43)</div></div>
-    <div class="stat-tile">
-      <div class="stat-value">35% &middot; 37%</div>
-      <div class="stat-label">of KEEP-only trajectories do &mdash; they average 4.9 calls, not 8.0</div></div>
-  </div>
-  <p class="chart-caption">Effectively every REVISE trajectory runs out of budget and terminates
-    before it can test anything.</p>
+    passed &mdash; <b>22.2%</b> against <b>8.5%</b> in seed 42, <b>14.3%</b> against <b>4.2%</b> in
+    seed 43. It detected risk, acted on that detection, and lost.</p>
 
   <div class="callout crit">
-    <div class="callout-label">&#9888; Why the policy learned to predict PASS everywhere</div>
-    This looked like a failure to learn prediction. It is the opposite &mdash; it is the correct
-    policy under this protocol.
-    <div class="flow" style="margin-top:12px">predict <b>PASS</b> &rarr; KEEP &rarr; test &rarr; see the real failure &rarr; repair
+    <div class="callout-label">&#9888; REVISE spends a call and returns nothing</div>
+    Hiding the test result is deliberate &mdash; it is what makes the prediction load-bearing. But
+    REVISE still costs a visible tool call and hands back only <code>patch applied</code>, so the
+    agent rewrites a patch it never ran against a fixed 8-call budget. <b>99% of REVISE
+    trajectories exhaust that budget in seed 42 and 95% in seed 43</b>, against 35% and 37% of
+    KEEP-only ones. Effectively every REVISE trajectory dies before it can test anything.
+  </div>
+
+  <div class="callout info">
+    <div class="callout-label">So predicting PASS everywhere was correct, not broken</div>
+    <div class="flow" style="margin-top:2px">predict <b>PASS</b> &rarr; KEEP &rarr; test &rarr; see the real failure &rarr; repair
 predict <b class="wrong">failure</b> &rarr; REVISE &rarr; no feedback, one call spent &rarr; run out of budget
-<span class="flow-note">on MBPP a test costs one call and returns the same class a prediction guesses, so foresight buys nothing and the gate costs everything</span></div>
-    RL found the first row.
+<span class="flow-note">RL found the first row</span></div>
   </div>
 
   <div class="callout warn">
-    <div class="callout-label">Scope of this claim</div>
-    Splitting by REVISE is correlational: harder patches attract REVISE. The false-positive rate
-    &mdash; 8.5% and 4.2% REVISE on patches that would have passed &mdash; is the control that makes
-    this more than selection bias, and the budget-exhaustion figures give a mechanism. It is still
-    not a controlled ablation; forcing KEEP on the same trajectories would settle it.
+    <div class="callout-label">Scope</div>
+    The split is correlational &mdash; harder patches attract REVISE. The false-positive rate on
+    patches that would have passed is the control, and budget exhaustion is the mechanism, but this
+    is not a controlled ablation. Forcing KEEP on the same trajectories would settle it.
   </div>
 </section>
 
 <section class="section" id="prediction">
   <p class="section-kicker">Supporting evidence</p>
   <h2 class="section-title">The auxiliary objective did teach a real distinction</h2>
-  <p class="section-lede">If the gate is what failed, the objective behind it still has to be shown
-    to work. It does. The Arm B SFT checkpoint effectively predicted <code>PASS</code> for
-    everything; after RLVR it did not. The gate is mechanically faithful too &mdash; non-PASS
-    predictions lead to REVISE 100% of the time, PASS leads to KEEP 96&ndash;99% of the time.</p>
+  <p class="section-lede">If the gate is what failed, the objective behind it still has to work.
+    It does. The Arm B SFT checkpoint effectively predicted <code>PASS</code> for everything; after
+    RLVR it did not.</p>
 
     <div class="chart-wrap"><svg viewBox="0 0 620 220" class="chart-svg" role="img" aria-label="bar chart">
 <line x1="16" y1="186.0" x2="604" y2="186.0" stroke="#7a7a7a" stroke-width="1"/>
@@ -603,12 +578,10 @@ predict <b class="wrong">failure</b> &rarr; REVISE &rarr; no feedback, one call 
   </div>
 
   <p class="section-lede mt-lg"><span class="block-label">MBPP was the wrong environment for the
-    question</span>Even a perfect predictor has little to sell here. Running the test costs one
-    tool call and returns the same outcome class the prediction was guessing at, so foresight saves
-    the agent nothing &mdash; while the REVISE gate that acts on it costs a call and returns no
-    information. A benchmark that could answer this question would make actions expensive,
-    irreversible, delayed, or partially observable enough that anticipating consequences is
-    cheaper than discovering them.</p>
+    question</span>Even a perfect predictor has little to sell here. A test costs one tool call and
+    returns the same outcome class the prediction was guessing at, so foresight saves nothing while
+    the gate that acts on it costs a call. Answering this question needs actions expensive enough
+    that anticipating consequences beats discovering them.</p>
 </section>
 
 <section class="section" id="demo">
@@ -667,11 +640,10 @@ patch applied</code></div>
   </div>
   <div class="callout warn">
     <div class="callout-label">What this shows</div>
-    This is the winning strategy, and it is the baseline's strategy. The prediction carries no
-    information &mdash; two logical failures labelled PASS &mdash; and the agent recovers purely on
-    visible test feedback, exactly like Arm A. Three KEEPs, three tests, reward 1.0. It is the
-    0% ASSERTION_FAILURE recall and the <a href="#bottleneck">63.3% never-revised pass rate</a> in
-    a single trace.
+    This is the winning strategy, and it is the baseline's strategy. Two logical failures labelled
+    PASS, three KEEPs, three tests, reward 1.0 &mdash; recovery entirely on visible test feedback,
+    exactly like Arm A. The 0% ASSERTION_FAILURE recall and the
+    <a href="#bottleneck">63.3% never-revised pass rate</a> in one trace.
   </div>
   <div class="callout crit">
     <div class="callout-label">Verifier gap</div>
@@ -703,8 +675,7 @@ patch applied</code></div>
       auxiliary objective.</li>
       <li><span class="learned-tag">A correct prediction is not a useful action</span>The policy
       detected risk correctly and still performed worse, because the action attached to that
-      detection destroyed more information than the prediction supplied. Agent protocol dominated
-      the training objective.</li>
+      detection destroyed more information than the prediction supplied.</li>
     </ol>
   </div>
   <div class="callout info">
@@ -749,10 +720,9 @@ patch applied</code></div>
   <div class="callout info mt-md">
     <div class="callout-label">Upstream fix</div>
     PRIME-RL's <code>ZeroAdvantageFilter</code> could discard a rollout when GRPO advantages
-    collapsed to zero even though CE or ref-KL still carried valid training signal. Reproduced with
-    native ECHO and ref-KL routing rather than PREDICT-specific behavior, and fixed generically:
-    zero-advantage rollouts survive when they contain nonzero <code>ce_weights</code> or
-    <code>ref_kl_weights</code>, and are still filtered when no objective remains.
+    collapsed to zero even though CE or ref-KL still carried valid signal. Reproduced with native
+    ECHO and ref-KL routing rather than PREDICT-specific behavior, and fixed generically: such
+    rollouts survive when <code>ce_weights</code> or <code>ref_kl_weights</code> are nonzero.
   </div>
 </section>
 
@@ -760,32 +730,21 @@ patch applied</code></div>
   <p class="section-kicker">Next</p>
   <h2 class="section-title">Fix the action before improving the predictor</h2>
   <p class="section-lede">The obvious next move was better predictive SFT &mdash; more
-    <code>ASSERTION_FAILURE</code> coverage drawn from the policy's own failures. That is worth
-    doing, but it is no longer the binding constraint. A better predictor routed into the same
-    REVISE path buys nothing.</p>
+    <code>ASSERTION_FAILURE</code> coverage drawn from the policy's own failures. Worth doing, but
+    no longer the binding constraint: a better predictor routed into the same REVISE path buys
+    nothing.</p>
   <div class="grid-2 mt-md">
     <div class="next-card">
       <div class="next-title">Make REVISE survivable</div>
-      <p>Give the revising agent something for the call it spends &mdash; the failure class it
-      predicted, or a budget exemption &mdash; then re-measure. Until a REVISE trajectory can
-      finish, the gate cannot be evaluated on its merits.</p>
-    </div>
-    <div class="next-card">
-      <div class="next-title">Isolate the objective</div>
-      <p>An <code>alpha = 0</code> ablation separates the auxiliary loss from the rest of the Arm B
-      bundle. Forcing KEEP on the revised trajectories would turn the correlational split above
-      into a controlled one.</p>
+      <p>Give the revising agent something for the call it spends &mdash; the predicted failure
+      class, or a budget exemption. Until a REVISE trajectory can finish, the gate cannot be
+      judged on its merits.</p>
     </div>
     <div class="next-card">
       <div class="next-title">Leave MBPP</div>
-      <p>An environment where the agent has to choose among consequential actions <b>before</b>
-      receiving enough feedback to know which one is safe. That is where predicting the world
-      before acting should actually matter.</p>
-    </div>
-    <div class="next-card">
-      <div class="next-title">Fix the verifier gap</div>
-      <p>The trace above scored reward 1.0 for a solution that violated the task statement. Reward
-      that only checks output will keep paying for it.</p>
+      <p>An environment where the agent must choose among consequential actions <b>before</b>
+      getting enough feedback to know which one is safe. That is where foresight should have
+      something to buy.</p>
     </div>
   </div>
 </section>
