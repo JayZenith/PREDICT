@@ -241,14 +241,14 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     SFT&rarr;RL pipeline, on <a href="https://github.com/PrimeIntellect-ai/prime-rl">PRIME-RL</a>
     and <a href="https://github.com/PrimeIntellect-ai/verifiers">Verifiers</a>. <b>Arm A</b> is
     reactive: patch, test, recover, trained with GRPO. <b>Arm B</b> is predictive: patch, predict
-    the verified outcome, KEEP or REVISE, then execute &mdash; trained with GRPO plus an auxiliary
+    the verified outcome, KEEP or REVISE, then execute, trained with GRPO plus an auxiliary
     cross-entropy loss on the outcome the verifier confirms afterward.</p>
   <p class="tagline">Arm B did not win. The useful result is why, and it holds on both seeds:
     <b>the prediction learned a real distinction, the decision gate discriminated in the right
     direction, and rollouts that acted on the prediction almost never recovered.</b> Across seeds,
     never-revised trajectories passed 63.3% / 60.4%; revised trajectories passed 1.1% / 4.9%.</p>
   <p class="tagline">Testing on MBPP costs one tool call and returns the same information a
-    prediction guesses at, so foresight had nothing to buy &mdash; and the mechanism for acting on
+    prediction guesses at, so foresight had nothing to buy, and the mechanism for acting on
     it cost more than it saved. <a href="#bottleneck">Jump to the finding &darr;</a></p>
 </header>
 
@@ -256,9 +256,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="section-kicker">Agent design</p>
   <h2 class="section-title">Two agents, one environment</h2>
   <p class="section-lede">The environment, tasks, tools, and reward are shared; the agent protocol
-    and the training objective differ. Arm B predicts one of six classes &mdash;
+    and the training objective differ. Arm B predicts one of six classes
     <code>PASS</code>, <code>ASSERTION_FAILURE</code>, <code>RUNTIME_ERROR</code>,
-    <code>SYNTAX_ERROR</code>, <code>TIMEOUT</code>, <code>OTHER</code> &mdash; before it is allowed
+    <code>SYNTAX_ERROR</code>, <code>TIMEOUT</code>, <code>OTHER</code>, before it is allowed
     to test. If it chooses REVISE, the rejected patch is still evaluated through shadow execution,
     so training recovers a verified label without ever revealing that result to the policy during
     the rollout. <b>That hiding is what makes the prediction load-bearing, and it is also what the
@@ -405,7 +405,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="chart-caption">The measured RLVR gain came from better first patches, not better
     recovery: Arm A seed 42 went 42.8%&rarr;47.8% on first-patch correctness (p=0.0013) while its
     recovery rate moved 14.1%&rarr;16.7% (p=0.58). About 270 of 500 first patches fail but only
-    around 40 are later fixed &mdash; too few recoveries to detect a small effect. Full McNemar and
+    around 40 are later fixed, too few recoveries to detect a small effect. Full McNemar and
     paired-bootstrap results:
     <a href="https://github.com/JayZenith/PREDICT/blob/main/docs/REPRODUCTION.md#6-statistics">REPRODUCTION.md &sect; 6</a>.</p>
 </section>
@@ -414,7 +414,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="section-kicker">The main finding</p>
   <h2 class="section-title">The observed deficit concentrates in the REVISE path</h2>
   <p class="section-lede">Split Arm B's 500 test trajectories by whether the agent ever chose
-    REVISE. The two halves are not slightly different &mdash; they are different agents.</p>
+    REVISE. The two halves are not slightly different. They are different agents.</p>
 
     <div class="chart-wrap"><svg viewBox="0 0 620 226" class="chart-svg" role="img" aria-label="pass@1 by whether the trajectory used REVISE">
 <line x1="16" y1="186" x2="604" y2="186" stroke="#8b948d" stroke-width="1"/>
@@ -441,13 +441,13 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 
   <p class="section-lede mt-lg">The gate had useful discrimination; REVISE was the dominant
     observed failure mode. It chose REVISE two to three times more often on patches that genuinely
-    failed than on patches that would have passed &mdash; <b>22.2%</b> against <b>8.5%</b> in
+    failed than on patches that would have passed: <b>22.2%</b> against <b>8.5%</b> in
     seed 42, <b>14.3%</b> against <b>4.2%</b> in seed 43. It detected risk, acted on that
     detection, and lost.</p>
 
   <div class="callout crit">
     <div class="callout-label">&#9888; REVISE spends a call and returns nothing</div>
-    Hiding the test result is deliberate &mdash; it is what makes the prediction load-bearing. But
+    Hiding the test result is deliberate. It is what makes the prediction load-bearing. But
     REVISE still costs a visible tool call and hands back only <code>patch applied</code>, so the
     agent rewrites a patch it never ran against a fixed 8-call budget. <b>99% of REVISE
     trajectories exhaust that budget in seed 42 and 95% in seed 43</b>, against 35% and 37% of
@@ -463,7 +463,7 @@ predict <b class="wrong">failure</b> &rarr; REVISE &rarr; no feedback, one call 
 
   <div class="callout warn">
     <div class="callout-label">Scope</div>
-    The split is correlational &mdash; harder patches attract REVISE. The false-positive rate on
+    The split is correlational, because harder patches attract REVISE. The false-positive rate on
     patches that would have passed is the control, and budget exhaustion is the mechanism, but this
     is not a controlled ablation. Forcing KEEP on the same trajectories would settle it.
   </div>
@@ -613,7 +613,7 @@ patch applied</code></div>
   <div class="callout warn">
     <div class="callout-label">What this shows</div>
     This is the winning strategy, and it is the baseline's strategy. Two logical failures labelled
-    PASS, three KEEPs, three tests, reward 1.0 &mdash; recovery entirely on visible test feedback,
+    PASS, three KEEPs, three tests, reward 1.0, with recovery entirely on visible test feedback,
     exactly like Arm A. The 0% ASSERTION_FAILURE recall and the
     <a href="#bottleneck">63.3% never-revised pass rate</a> in one trace.
   </div>
@@ -631,12 +631,12 @@ patch applied</code></div>
   <h2 class="section-title">How the auxiliary objective is built</h2>
   <p class="section-lede lede-narrow">Suppose the agent writes a patch, predicts
     <code>&lt;PREDICTION&gt;PASS&lt;/PREDICTION&gt;</code>, commits to
-    <code>&lt;DECISION&gt;KEEP&lt;/DECISION&gt;</code> &mdash; and the patch actually produces
+    <code>&lt;DECISION&gt;KEEP&lt;/DECISION&gt;</code>, and the patch actually produces
     <code>RUNTIME_ERROR</code>.</p>
 
   <p class="block-label">The rollout that happened</p>
   <div class="flow">prefix &rarr; <b class="wrong">PASS</b> &rarr; KEEP &rarr; execute &rarr; <b>RUNTIME_ERROR</b>
-<span class="flow-note">the sampled PASS label loses its RL credit &mdash; reward never reinforces it</span></div>
+<span class="flow-note">the sampled PASS label loses its RL credit, so reward never reinforces it</span></div>
 
   <p class="block-label mt-md">The sample PREDICT adds</p>
   <div class="flow">same prefix &rarr; <b>RUNTIME_ERROR</b>
@@ -649,7 +649,7 @@ patch applied</code></div>
   <div class="callout info">
     <div class="callout-label">Why the target does not have to be in the rollout</div>
     This supervision also works when the verified outcome never appeared in the visible rollout
-    &mdash; for example when a rejected patch is evaluated through shadow execution. The label is
+    for example when a rejected patch is evaluated through shadow execution. The label is
     manufactured by the verifier after the fact and rendered onto the pre-execution context as its
     own training sample.
   </div>
@@ -673,7 +673,7 @@ patch applied</code></div>
     <div class="next-card">
       <div class="next-title">PREDICT</div>
       <div class="flow">state &rarr; <b>predicted outcome</b> &rarr; action &rarr; verified outcome
-<span class="flow-note">train this point &mdash; using a target that only exists later</span></div>
+<span class="flow-note">train this point, using a target that only exists later</span></div>
       <p>Learn what the environment was going to produce, before committing to the action.</p>
     </div>
   </div>
@@ -711,7 +711,7 @@ patch applied</code></div>
     <div class="callout-label">The remaining question is the important one</div>
     Does learning to predict consequences improve decisions when those consequences cannot be
     cheaply observed after acting? Answering it needs a different environment, not a better
-    predictor &mdash; one where acting first is expensive, irreversible, or delayed.
+    predictor. It needs one where acting first is expensive, irreversible, or delayed.
   </div>
 </section>
 
@@ -740,7 +740,7 @@ patch applied</code></div>
       same policy formatting, so CE weight lands only on the intended prediction tokens.</p>
     </div>
     <div class="next-card">
-      <div class="next-title">Glyph &mdash; <code>src/glyph/</code></div>
+      <div class="next-title">Glyph: <code>src/glyph/</code></div>
       <p><code>taskset.py</code> task setup, scoring, verified trace extraction &middot;
       <code>harness.py</code> sandbox and program launch &middot; <code>program.py</code>
       coding-agent interaction loop &middot; <code>prime_rl.py</code> the PREDICT training
