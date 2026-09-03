@@ -247,10 +247,12 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     on the outcome the verifier confirms afterward.</p>
   <p class="tagline">Conceptually, PREDICT is a narrow experiment in internalized reasoning about
     action consequences. Rather than requiring the model to emit a natural-language chain of
-    thought, it trains the policy's representation to support a small verified prediction expressed
-    through outcome-label tokens: what will happen if this patch is executed? The goal is not to
-    recover general hidden reasoning, but to test whether externally verified future consequences
-    can supervise an internal predictive distinction before the agent acts.</p>
+    thought, cross-entropy on verified outcome-label tokens trains the transformer's internal
+    hidden states to encode a prediction of what will happen if this patch is executed &mdash; a
+    distinction the model must carry in its activations, since the label is emitted immediately
+    after <code>apply_patch</code> with no visible reasoning in between. The goal is not to recover
+    general hidden reasoning, but to test whether externally verified future consequences can
+    supervise an internal predictive distinction before the agent acts.</p>
   <p class="tagline">Arm B did not win. The useful result is why: <b>the prediction learned a real
     distinction, the decision gate discriminated in the right direction, and rollouts that acted on
     the prediction almost never recovered.</b> Rollouts that never revised passed 63%. Rollouts
