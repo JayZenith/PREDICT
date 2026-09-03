@@ -39,8 +39,8 @@ pool into disjoint SFT and RL task IDs:
 ```
 
 Each task becomes a blank `solution.py`. The task prompt shows the exact
-assertions the implementation must satisfy—this is a test-driven workflow,
-not blind-signature guessing—but the assertions are never written into the
+assertions the implementation must satisfy: this is a test-driven workflow,
+not blind-signature guessing, but the assertions are never written into the
 editable project; the agent must still run `python_test` to find out whether
 its candidate actually satisfies them.
 
@@ -65,7 +65,7 @@ Assign tasks reproducibly with seed 42 and save the assignment manifest. Every
 faulty state must genuinely fail and every final state must pass. Dataset
 generation must fail if it cannot construct the required verified trace.
 
-The arms match on task, candidate code, final solution, and real outcomes—not
+The arms match on task, candidate code, final solution, and real outcomes, not
 exact ChatML. Arm B adds `PREDICTION` and `KEEP/REVISE`.
 
 Arm B recovery traces must cover both recovery modes:
@@ -85,7 +85,7 @@ Both arms start from `Qwen3-4B-Base` and use:
 - The same final reward: `1` after a visible passing test, a passing hidden
   final-state check, and terminal `FINAL`; otherwise `0`.
 
-## Arm A — reactive baseline
+## Arm A: reactive baseline
 
 ```text
 read_file → apply_patch → python_test → inspect result → revise if needed → FINAL
@@ -97,7 +97,7 @@ Training:
 Base → ordinary agent SFT → ordinary GRPO
 ```
 
-## Arm B — consequence predictor
+## Arm B: consequence predictor
 
 ```text
 read_file
@@ -151,7 +151,7 @@ total loss = GRPO loss + λ × prediction loss
 - Mask prediction-label tokens out of the GRPO loss. Predictions receive no
   scalar reward; only final test success determines RL reward.
 
-## Prediction CE — exact training target
+## Prediction CE: exact training target
 
 For every candidate:
 
@@ -280,7 +280,7 @@ claim must stand on prediction quality, decisions, correctness, and efficiency.
   resulting SFT trace format (`PREDICTION`/`DECISION` tags, deeper two-step
   recovery chains), and the token cost of emitting that protocol on every
   turn within the same shared tool/token budget. This experiment tests the
-  complete Arm B system against Arm A — it does not attribute any observed
+  complete Arm B system against Arm A; it does not attribute any observed
   effect to "prediction" as an isolated causal factor, since the protocol,
   loss, and data format cannot currently be varied independently of each
   other.
@@ -292,14 +292,13 @@ claim must stand on prediction quality, decisions, correctness, and efficiency.
   Python capability.
 - **Reward only checks the given asserts, not the full natural-language
   spec.** A handful of MBPP prompts state a constraint in prose that the
-  paired test assertions don't check (e.g. "without using the `*` operator")
-  — the tests verify input/output behavior only, never how the candidate
+  paired test assertions don't check (e.g. "without using the `*` operator"); the tests verify input/output behavior only, never how the candidate
   computed it. A verified real case: `mbpp_127`, step 100 seed 42, Arm B's
   winning candidate is `z = x * y`, using the exact operator the prompt
   forbids, and still scores reward 1 because the three numeric asserts can't
   detect it (Arm A's real solution for the same task, a repeated-addition
   loop, does honor the constraint). This is a verifier gap, not a training
-  bug — pass@1 and RL reward measure
+  bug: pass@1 and RL reward measure
   test-assertion satisfaction, not spec compliance, for any part of a prompt
   that isn't encoded as a test. A quick check found this exact phrasing on
   only one of the 500 test tasks, so it's a real but isolated case here, not
@@ -311,7 +310,7 @@ Shrivastava, Kauffmann, Awadallah & Papailiopoulos,
 ["ECHO: Terminal Agents Learn World Models for Free"](https://arxiv.org/abs/2605.24517)
 (2026), applies CE to the environment's actual output tokens (the literal
 stdout/error/trace text), reusing the same rollout as GRPO with no separate
-reasoning step — but those predictions are not emitted as a pre-execution
+reasoning step, but those predictions are not emitted as a pre-execution
 assistant action and do not control whether the agent executes or revises.
 
 This experiment combines:

@@ -118,7 +118,7 @@ each on its own port.
 
 Results from the runs at commit `9eefac7` (n=500, greedy pass@1). Both arms
 were trained twice, independently, from the same SFT checkpoint
-(`inference.seed` 42 then 43 — the only difference between each pair of
+(`inference.seed` 42 then 43, the only difference between each pair of
 runs):
 
 | step | Arm A (seed 42) | Arm A (seed 43) | Arm B (seed 42) | Arm B (seed 43) |
@@ -140,15 +140,14 @@ HF: `RLVR_ARM_{A,B}_STEP{25,50,75,100}_V0` (seed 42), `..._V1` (seed 43).
 ## 6. Statistics
 
 Compare paired per-task pass/fail outcomes with McNemar's test
-(continuity-corrected) and a paired bootstrap CI on the pass-rate difference —
-never trust the raw percentage gap alone at n=500. Script:
+(continuity-corrected) and a paired bootstrap CI on the pass-rate difference; never trust the raw percentage gap alone at n=500. Script:
 [`docs/stats.py`](stats.py) (`python3 docs/stats.py TRACES_A.jsonl TRACES_B.jsonl`).
 
 A first pass (one run each, seed 42) found exactly one comparison that
 survived correction for multiple comparisons: "Arm A beats Arm B at step 25."
 Both arms were then retrained independently with seed 43 (same SFT
 checkpoint, same everything else) specifically to test whether that held up.
-It didn't — see below.
+It didn't; see below.
 
 **Each arm, seed 42 vs seed 43, same checkpoint step (is training
 reproducible?):**
@@ -161,10 +160,9 @@ reproducible?):**
 | 100 | −2.2 (p=0.20) | +1.6 (p=0.37) |
 
 No step shows a significant difference between either arm's two independent
-training runs — both arms' RL training is reasonably stable across seeds.
+training runs; both arms' RL training is reasonably stable across seeds.
 
-**Arm A RL vs its own SFT baseline, both seeds** (50.6%, `RL_ARM_A_sft/eval/`
-— the only archived 500-task Arm A SFT eval; an earlier 51.6% figure appeared
+**Arm A RL vs its own SFT baseline, both seeds** (50.6%, `RL_ARM_A_sft/eval/`, the only archived 500-task Arm A SFT eval; an earlier 51.6% figure appeared
 in prior report drafts with no corresponding raw eval file anywhere in this
 repo, so it has been corrected to this one, single, reproducible number):
 
@@ -184,11 +182,11 @@ repo, so it has been corrected to this one, single, reproducible number):
 | 75 | +4.4 (p=0.010) | +3.0 (p=0.064) |
 | 100 | +3.8 (p=0.033) | **+5.4 (p=0.0017)** |
 
-For both arms, step 100 vs SFT is significant in both seeds — the most
+For both arms, step 100 vs SFT is significant in both seeds; the most
 solid result in this whole project, and Arm A's is the strongest single
 number here (p=0.0003). Arm A's step 75 is significant in both seeds too;
 Arm B's is significant in one and marginal in the other (p=0.064). Neither
-arm shows a significant step-25 effect in both seeds — the step-25
+arm shows a significant step-25 effect in both seeds; the step-25
 "regression" reported from Arm B's seed 42 alone did not replicate (p=0.88
 in seed 43) and was noise, not a real early-RL effect.
 
@@ -201,10 +199,10 @@ in seed 43) and was noise, not a real early-RL effect.
 | 75 | −1.0 (p=0.71) | −2.4 (p=0.32) | −2.2 (p=0.37) | −3.6 (p=0.13) |
 | 100 | −4.4 (p=0.068) | −2.8 (p=0.25) | −2.2 (p=0.39) | −0.6 (p=0.86) |
 
-**At step 100, none of the four seed combinations are significant** — the
+**At step 100, none of the four seed combinations are significant**; the
 seed43-vs-seed43 pair is a near dead heat (54.2% vs 53.6%, p=0.86). At step
 25, two of four combinations are nominally significant (p=0.006, p=0.026),
-and both involve Arm B's seed-42 run specifically — its own lowest point
+and both involve Arm B's seed-42 run specifically, its own lowest point
 (45.2%, and the one seed that showed a significant dip vs its own SFT
 baseline above). That reads as Arm B seed 42's step-25 checkpoint being an
 outlier, not a reproducible Arm A advantage: swap in Arm B's seed-43 run at
@@ -217,12 +215,12 @@ Arm A leading (56.4% vs 52.0%) shrinks to a coin flip once both arms have a
 second independent training run (54.2% vs 53.6%).
 
 **Bottom line.** RLVR reliably improves *both* arms over their own SFT
-baseline by step 100 — replicated across two independent training runs per
+baseline by step 100, replicated across two independent training runs per
 arm, strong evidence for each (Arm A p=0.0003 seed42 / p=0.028 seed43; Arm B
 p=0.033 seed42 / p=0.0017 seed43). Whether Arm A's reactive design or Arm B's
 predictive design performs *better than the other* is a separate question and
 remains **unconfirmed** at every checkpoint, across every seed combination
-tested — the one result that once suggested Arm A's edge traced back to a
+tested; the one result that once suggested Arm A's edge traced back to a
 single outlier training run, not a reproducible arm-level effect. Both arms
 show good within-arm reproducibility (seed 42 vs seed 43 never significantly
 differ, for either arm, at any step).
@@ -234,7 +232,7 @@ of good patches.
 
 The primary comparison is Arm A RLVR versus Arm B RLVR. Base and SFT results
 show where each training stage changed behavior. This is a system-vs-system
-comparison, not a single-variable ablation — see
+comparison, not a single-variable ablation; see
 [research_specs.md § Limits to report](research_specs.md#limits-to-report)
 for what's bundled inside "Arm B" and can't currently be varied independently.
 
@@ -249,11 +247,11 @@ proxy, not exact tokenization):
 | Arm A (25/50/75/100) | 5.3–5.5 | 1.94–1.99 | 835–856 |
 | Arm B (SFT/25/50/75/100) | 5.4–5.7 | 1.62–1.99 | 996–1124 |
 
-Arm B does not use fewer turns or tool calls — slightly more. It does use
+Arm B does not use fewer turns or tool calls; it uses slightly more. It does use
 fewer visible test executions (shadow-testing on `REVISE` moves some test
 cycles off the visible ledger, as designed), but spends ~20-30% more
 generation length per task on `<PREDICTION>`/`<DECISION>` tags. Not a clean
-efficiency win either direction — fewer visible failures, more tokens to get
+efficiency win either direction: fewer visible failures, more tokens to get
 there.
 
 A related data-quality note: 3 of 2500 Arm B eval rows (steps 25/50/75, a

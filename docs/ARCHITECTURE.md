@@ -12,9 +12,9 @@ read_file → apply_patch → python_test → FINAL
 The MBPP assertions are shown verbatim in the task prompt, so the agent knows
 the exact function signature and expected behavior up front; they are never
 added to the editable project files. The agent still must run `python_test`
-to find out whether its candidate satisfies them—test output is reduced to an
-outcome class, not an assertion diff. Runtime-recorded calls and results—not
-model claims—determine success.
+to find out whether its candidate satisfies them, test output is reduced to an
+outcome class, not an assertion diff. Runtime-recorded calls and results, not
+model claims, determine success.
 
 Reward is binary:
 

@@ -1,14 +1,14 @@
 # Canonical Agent Traces
 
 Both arms use explicit ChatML, the same task, and matched candidate patches.
-The task prompt shows the exact assertions the implementation must satisfy—
-this is a test-driven workflow, not blind-signature guessing—but the
+The task prompt shows the exact assertions the implementation must satisfy:
+this is a test-driven workflow, not blind-signature guessing, but the
 assertions are never written into the editable project; the agent must still
 run `python_test` to learn whether its candidate satisfies them. Arm A reacts
 to test output. Arm B predicts the outcome before testing and uses that
 prediction to choose `KEEP` or `REVISE`.
 
-## Arm A — reactive recovery
+## Arm A: reactive recovery
 
 ```text
 <|im_start|>system
@@ -85,7 +85,7 @@ FINAL: implemented is_even and passed the tests.
 <|im_end|>
 ```
 
-## Arm B — pre-execution consequence prediction
+## Arm B: pre-execution consequence prediction
 
 ```text
 <|im_start|>system
