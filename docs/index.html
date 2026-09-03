@@ -245,6 +245,12 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     <a href="#echo">ECHO-style auxiliary prediction</a>, is predictive: patch, predict the verified
     outcome, KEEP or REVISE, then execute, trained with GRPO plus an auxiliary cross-entropy loss
     on the outcome the verifier confirms afterward.</p>
+  <p class="tagline">Conceptually, PREDICT is a narrow experiment in internalized reasoning about
+    action consequences. Rather than requiring the model to emit a natural-language chain of
+    thought, it trains the policy's representation to support a small verified prediction expressed
+    through outcome-label tokens: what will happen if this patch is executed? The goal is not to
+    recover general hidden reasoning, but to test whether externally verified future consequences
+    can supervise an internal predictive distinction before the agent acts.</p>
   <p class="tagline">Arm B did not win. The useful result is why: <b>the prediction learned a real
     distinction, the decision gate discriminated in the right direction, and rollouts that acted on
     the prediction almost never recovered.</b> Rollouts that never revised passed 63%. Rollouts
@@ -321,7 +327,10 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <h2 class="section-title">Qwen3-4B-Base on MBPP, SFT then RLVR</h2>
   <p class="section-lede lede-narrow">RL never trains on problems seen during SFT, and the final
     500-task test set was evaluated once, after the experimental design was frozen. Both arms were
-    trained with two RL seeds.</p>
+    trained with two RL seeds. The experiment was intentionally narrow because compute and
+    funding were limited: one 4B model family, MBPP, two RL seeds, and a small controlled
+    post-training budget. The aim was therefore mechanism discovery rather than a scaling
+    claim.</p>
   <div class="stat-grid mt-md">
     <div class="stat-tile"><div class="stat-value">212</div><div class="stat-label">SFT tasks: 142 direct + 70 recovery traces</div></div>
     <div class="stat-tile"><div class="stat-value">212</div><div class="stat-label">RL tasks, disjoint from SFT</div></div>
