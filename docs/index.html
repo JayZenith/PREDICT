@@ -562,6 +562,15 @@ predict <b class="wrong">failure</b> &rarr; REVISE &rarr; no feedback, one call 
     never showed them.</p>
 
   <div class="callout warn">
+    <div class="callout-label">The SFT failures are synthetic</div>
+    The recovery traces are not sampled model failures. Each faulty patch is a deterministic,
+    verifier-confirmed mutation of a gold MBPP solution, so the SFT failure distribution is one
+    I chose rather than one the policy produces. The mutations skew toward failures that are easy
+    to construct and confirm, while the failures encountered during RL are the model's own &mdash;
+    which is exactly where a 0% <code>ASSERTION_FAILURE</code> recall would show up.
+  </div>
+
+  <div class="callout warn">
     <div class="callout-label">Known labeling limitation</div>
     Pass/fail is real execution, but the outcome <i>class</i> is a heuristic on stderr
     (<code>program.py:167</code>): SyntaxError &rarr; SYNTAX_ERROR, AssertionError &rarr;
@@ -735,6 +744,36 @@ patch applied</code></div>
     Does learning to predict consequences improve decisions when those consequences cannot be
     cheaply observed after acting? Answering it needs a different environment, not a better
     predictor. It needs one where acting first is expensive, irreversible, or delayed.
+  </div>
+</section>
+
+<section class="section" id="ablations">
+  <p class="section-kicker">What would settle it</p>
+  <h2 class="section-title">Three ablations this design still owes</h2>
+  <p class="section-lede">Arm A vs. Arm B compares two complete systems, so it cannot say which
+    piece mattered. Each of these holds Arm B fixed and changes one factor.</p>
+  <div class="grid-3">
+    <div class="next-card">
+      <div class="next-num">01</div>
+      <div class="next-title"><code>alpha = 0</code></div>
+      <p>Arm B with the same prediction and KEEP/REVISE protocol, same trace format, same action
+      budget, but no verified-label CE. If the learned outcome distinction survives, it came from
+      the protocol or from GRPO on the surrounding tokens &mdash; not from the auxiliary loss.</p>
+    </div>
+    <div class="next-card">
+      <div class="next-num">02</div>
+      <div class="next-title">Forced KEEP</div>
+      <p>Keep the prediction and the CE, disable REVISE, make every decision a KEEP. If pass@1
+      recovers, the decision gate is the failure mode. Without it the REVISE split stays
+      correlational: revised rollouts are also the ones the model already judged risky.</p>
+    </div>
+    <div class="next-card">
+      <div class="next-num">03</div>
+      <div class="next-title">Budget-neutral REVISE</div>
+      <p>Make REVISE free, or raise the tool budget past exhaustion. This tests the strongest
+      mechanism claim directly. If the deficit survives a budget that cannot be exhausted, the
+      cost is discarding a patch without observing why, not the spent action.</p>
+    </div>
   </div>
 </section>
 
