@@ -1,0 +1,58 @@
+<!-- Markdown pages (blog.html, REPRODUCTION, research_specs, ...) render through
+     the default GitHub Pages theme. This puts them on the same black / dark grey /
+     red scale as index.html and the portfolio. -->
+<style>
+:root {
+  --bg: #0b0b0c;
+  --surface: #151517;
+  --surface-2: #1e1e21;
+  --line: rgba(255,255,255,0.10);
+  --ink: #f4f2f1;
+  --ink-2: #cac6c4;
+  --mute: #8b8785;
+  --accent: #ff4d4d;
+  --code-ink: #f0b5b1;
+}
+html, body { background: var(--bg) !important; color: var(--ink-2) !important; }
+.markdown-body {
+  background: transparent !important;
+  color: var(--ink-2) !important;
+  font-size: 16.5px;
+  line-height: 1.7;
+}
+.markdown-body h1, .markdown-body h2, .markdown-body h3,
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  color: var(--ink) !important;
+  border-bottom-color: var(--line) !important;
+}
+.markdown-body h1:first-child a { color: var(--accent) !important; border: none !important; }
+.markdown-body b, .markdown-body strong { color: var(--ink) !important; }
+.markdown-body a {
+  color: inherit !important;
+  text-decoration: none !important;
+  border-bottom: 1px solid rgba(255,77,77,0.55);
+}
+.markdown-body a:hover { color: var(--accent) !important; border-bottom-color: var(--accent); }
+.markdown-body code, .markdown-body tt {
+  background: rgba(255,77,77,0.08) !important;
+  color: var(--code-ink) !important;
+}
+.markdown-body pre {
+  background: var(--surface) !important;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+.markdown-body pre code, .markdown-body pre tt,
+.markdown-body .highlight, .markdown-body .highlight pre {
+  background: transparent !important;
+  color: #dedad8 !important;
+}
+.markdown-body .highlight * { color: inherit !important; }
+.markdown-body table th, .markdown-body table td { border-color: var(--line) !important; }
+.markdown-body table tr { background: transparent !important; border-top-color: var(--line) !important; }
+.markdown-body table tr:nth-child(2n) { background: var(--surface) !important; }
+.markdown-body table th { color: var(--ink) !important; }
+.markdown-body blockquote { color: var(--mute) !important; border-left-color: var(--accent) !important; }
+.markdown-body hr { background-color: var(--line) !important; border-color: var(--line) !important; }
+.markdown-body img { background: transparent !important; }
+</style>
