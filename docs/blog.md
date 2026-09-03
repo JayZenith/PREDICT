@@ -109,6 +109,16 @@ separate reasoning step, and doubles pass@1 on TerminalBench-2.0 (Qwen3-8B:
 Total: 212 traces per arm (70 recovery, split 50 one-step / 20 two-step). Full
 detail: [research_specs.md § SFT composition](research_specs.md#sft-composition).
 
+**Limitation.** These recovery traces are synthetic: the faulty patches are
+deterministic, verifier-confirmed mutations of gold MBPP solutions, not
+failures naturally sampled from the model. So the SFT failure distribution is
+one I chose, not one the policy actually produces — and the two need not
+match. That bears directly on the `ASSERTION_FAILURE` result below: the
+curriculum's mutations skew toward failures that are easy to construct and
+confirm, while the failures the model generates under RL are its own, and the
+outcome class it never learned to predict is exactly the one where that gap
+would show up.
+
 | Checkpoint | Final loss | val40 pass@1 (greedy) |
 |---|---:|---:|
 | [Arm A SFT](https://huggingface.co/JayZenith/SFT_ARM_A) | 0.0287 | 24/40 (60%) |
@@ -294,13 +304,22 @@ out of the claims, not the verdict:
    instead of uniform per-token weighting, then see whether prediction
    quality moves at all. Cheapest experiment on this list, and it separates
    "the signal was too weak" from "a 4B model can't do this."
-2. **Train longer than 100 steps.** 100 GRPO steps may simply be too short
+2. **`λ = 0` ablation.** The mirror of the item above, and the one this
+   write-up is missing (see lesson 1, above): run Arm B with the same
+   prediction / `KEEP`-`REVISE` protocol, same trace format, same action
+   budget, but `alpha = 0` — no verified-label CE at all. Every claim about
+   the auxiliary objective teaching a real distinction currently rests on
+   comparing Arm B to Arm A and to its own SFT checkpoint, neither of which
+   holds the protocol fixed. If the learned outcome distinction survives at
+   `λ = 0`, it came from the protocol or from GRPO on the surrounding tokens,
+   not from the CE. Cheapest test of the project's central mechanism claim.
+3. **Train longer than 100 steps.** 100 GRPO steps may simply be too short
    to judge this. Nothing has plateaued: two of the four runs are still
    climbing at step 100 (+2.8 and +2.4 points over step 75), and the other
    two are down only 0.6, inside the noise. Comparing the arms at a point
    where both are still moving risks reading a transient as a result. Run to
    convergence, then compare.
-3. **Reward shaping.** Final task reward pays out identically regardless of
+4. **Reward shaping.** Final task reward pays out identically regardless of
    whether the prediction was right, so GRPO carries no direct incentive
    toward good predictions. Hypothesis: extra reward for
    `true failure + predicted failure + REVISE` and
@@ -313,18 +332,35 @@ out of the claims, not the verdict:
    there's limited headroom there. Squarely targeting prediction
    correctness likely still means lifting the mask, not just adding a
    reward term.
-4. **Ablate the gate.** Test prediction-with-behavioral-gating (current
+5. **Ablate the gate.** Test prediction-with-behavioral-gating (current
    Arm B) against prediction-as-pure-auxiliary-signal (ECHO-style, no
    `KEEP`/`REVISE` control), holding the rest of the bundle fixed. This is
    the one piece that's actually new relative to ECHO, and it's never been
    tested in isolation.
-5. **Denser prediction target.** Not another SFT pass on the same label:
+6. **Forced-`KEEP` ablation.** Take Arm B exactly as trained and disable
+   `REVISE` at rollout time: keep the `<PREDICTION>` tag, keep the CE, but
+   make every decision a `KEEP`. If pass@1 recovers toward Arm A, the
+   decision gate — not prediction itself — is the failure mode. As it
+   stands, the `REVISE`-path analysis above is correlational: `REVISE`
+   rollouts are also the rollouts the model already judged risky, so their
+   low recovery rate could be selection rather than damage. Forcing the
+   decision breaks that confound.
+7. **Budget-neutral `REVISE` ablation.** The strongest mechanism claim here
+   is that `REVISE` hurts because it burns actions without returning
+   feedback. Test it directly: make `REVISE` free (don't charge it against
+   the tool budget), or raise the budget enough that revision can't cause
+   exhaustion, and hold everything else fixed. If the deficit disappears,
+   the cost is action exhaustion; if it survives a budget that can't be
+   exhausted, the problem is that `REVISE` discards a patch without ever
+   observing why — and the fix is a different repair action, not a bigger
+   budget.
+8. **Denser prediction target.** Not another SFT pass on the same label:
    change what's being predicted. Today's target is a single token from a
    6-way enum. Predicting the specific failing assertion or expected/actual
    value instead forces multi-token, generative simulation of the test,
    closer to how ECHO's dense observation-token target works, and may be why
    the model never learned to simulate in the first place.
-6. **Isolate the causal effect.** Right now the prediction and the
+9. **Isolate the causal effect.** Right now the prediction and the
    decision always agree: `KEEP` follows `PASS`, `REVISE` follows a
    predicted failure, ~100% of the time. So when a rollout goes well, there
    is no way to tell whether it went well because the *prediction* was
@@ -332,7 +368,7 @@ out of the claims, not the verdict:
    the link: on some rollouts, pick `KEEP` or `REVISE` at random instead of
    following the prediction. If reward still tracks whether the prediction
    was correct, the prediction is doing real work.
-7. **Scale beyond one model and one benchmark.** n=500 on MBPP with a 4B
+10. **Scale beyond one model and one benchmark.** n=500 on MBPP with a 4B
    model that may have seen MBPP in pretraining can't rule out idiosyncrasy.
    Replicating across model scale or on a benchmark unlikely to be
    memorized is what would make this a claim, not just a run.
