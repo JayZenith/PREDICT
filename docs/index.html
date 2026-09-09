@@ -145,6 +145,9 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 16.5px; ma
 .good { --c: #78b07f; } .warn { --c: #d9a441; } .crit { --c: var(--red); } .info { --c: #7e9ec4; }
 .transcript-grid + .callout { margin-top: 18px; }
 .callout + .callout { margin-top: 10px; }
+details { margin-top: 22px; }
+summary { cursor: pointer; color: var(--green); font-size: 15px; font-weight: 650; }
+summary:hover { color: var(--ink); }
 
 /* ---- transcripts ---- */
 .transcript-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
@@ -251,14 +254,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     verified outcome is later used as an auxiliary training target at that earlier point in the
     trajectory.</p>
   <p class="tagline">Arm B did not outperform the reactive baseline. The interesting part was where its
-    behavior diverged. The prediction learned a real distinction, the decision gate discriminated
-    in the right direction, and rollouts that acted on the prediction almost never recovered.
-    Rollouts that never revised passed 63%. Rollouts that revised passed 1%. Both seeds split the
-    same way.</p>
-  <p class="tagline">On MBPP, predicting the outcome saves the agent nothing: running the test
-    costs one tool call and returns the same outcome class the prediction was guessing at. So being
-    right early bought no advantage over simply testing, while the REVISE gate that acted on it
-    cost a call and returned no result. <a href="#bottleneck">Jump to the finding &darr;</a></p>
+    behavior diverged: rollouts that never revised passed 63%, while rollouts that revised passed
+    1%. On MBPP, predicting the outcome saved nothing over simply testing, and the REVISE action
+    consumed a call without returning feedback. <a href="#bottleneck">Jump to the finding &darr;</a></p>
 </header>
 
 <section class="section" id="protocol">
@@ -491,7 +489,7 @@ predict <b class="wrong">failure</b> &rarr; REVISE &rarr; no feedback, one call 
 
 <section class="section" id="prediction">
   <p class="section-kicker">Supporting evidence</p>
-  <h2 class="section-title">The auxiliary objective did teach a real distinction</h2>
+  <h2 class="section-title">The predictive agent learned a real outcome distinction</h2>
   <p class="section-lede">If the gate is what failed, the objective behind it still has to work.
     It does. The Arm B SFT checkpoint effectively predicted <code>PASS</code> for everything; after
     RLVR it did not.</p>
@@ -593,6 +591,9 @@ predict <b class="wrong">failure</b> &rarr; REVISE &rarr; no feedback, one call 
     <code>RESULTS_PUBLISHED/RL_ARM_B_100/eval/</code>. It predicts PASS on all three candidates, is
     wrong on the first two, and still scores reward 1.0.</p>
 
+  <details>
+  <summary>Open the full trace and verifier-gap note</summary>
+
   <div>
         <div class="transcript-card" style="--accent:#78b07f">
   <div class="transcript-head">
@@ -653,6 +654,7 @@ patch applied</code></div>
     One case, but it shows the verifier can reward solutions that pass tests while violating the
     task.
   </div>
+  </details>
 </section>
 
 <section class="section" id="mechanism">
