@@ -246,18 +246,15 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     <a href="#echo">ECHO-style auxiliary prediction</a>, is predictive: patch, predict the verified
     outcome, KEEP or REVISE, then execute, trained with GRPO plus an auxiliary cross-entropy loss
     on the outcome the verifier confirms afterward.</p>
-  <p class="tagline">Conceptually, PREDICT is a narrow experiment in internalized reasoning about
-    action consequences. Rather than requiring the model to emit a natural-language chain of
-    thought, cross-entropy on verified outcome-label tokens trains the transformer's internal
-    hidden states to encode a prediction of what will happen if this patch is executed. That
-    distinction has to be carried in its activations, since the label is emitted immediately
-    after <code>apply_patch</code> with no visible reasoning in between. The goal is not to recover
-    general hidden reasoning, but to test whether externally verified future consequences can
-    supervise an internal predictive distinction before the agent acts.</p>
-  <p class="tagline">Arm B did not win. The useful result is why: <b>the prediction learned a real
-    distinction, the decision gate discriminated in the right direction, and rollouts that acted on
-    the prediction almost never recovered.</b> Rollouts that never revised passed 63%. Rollouts
-    that revised passed 1%. Both seeds split the same way.</p>
+  <p class="tagline">PREDICT asks whether verified future outcomes can supervise an agent before it
+    acts. After a patch is written, the model predicts what execution will produce, and the
+    verified outcome is later used as an auxiliary training target at that earlier point in the
+    trajectory.</p>
+  <p class="tagline">Arm B did not outperform the reactive baseline. The interesting part was where its
+    behavior diverged. The prediction learned a real distinction, the decision gate discriminated
+    in the right direction, and rollouts that acted on the prediction almost never recovered.
+    Rollouts that never revised passed 63%. Rollouts that revised passed 1%. Both seeds split the
+    same way.</p>
   <p class="tagline">On MBPP, predicting the outcome saves the agent nothing: running the test
     costs one tool call and returns the same outcome class the prediction was guessing at. So being
     right early bought no advantage over simply testing, while the REVISE gate that acted on it
@@ -429,7 +426,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="section-kicker">The main finding</p>
   <h2 class="section-title">The observed deficit concentrates in the REVISE path</h2>
   <p class="section-lede">Split Arm B's 500 test trajectories by whether the agent ever chose
-    REVISE. The two halves are not slightly different. They are different agents.</p>
+    REVISE. The difference is extreme: trajectories that never revised carried almost the entire
+    score.</p>
 
     <div class="chart-wrap"><svg viewBox="0 0 620 226" class="chart-svg" role="img" aria-label="pass@1 by whether the trajectory used REVISE">
 <line x1="16" y1="186" x2="604" y2="186" stroke="#4a4a4f" stroke-width="1"/>
@@ -735,9 +733,9 @@ patch applied</code></div>
       <li><span class="learned-tag">Prediction can gate behavior</span>The prediction directly
       controls agent behavior through KEEP / REVISE, rather than existing only as a hidden
       auxiliary objective.</li>
-      <li><span class="learned-tag">A correct prediction is not a useful action</span>The policy
-      detected risk correctly and still performed worse, because the action attached to that
-      detection destroyed more information than the prediction supplied.</li>
+      <li><span class="learned-tag">Useful prediction does not guarantee useful behavior</span>In
+      this environment, the REVISE action attached to detected risk discarded feedback and
+      consumed scarce interaction budget.</li>
     </ol>
   </div>
   <div class="callout info">
@@ -786,7 +784,7 @@ patch applied</code></div>
       <div class="next-title">Verifiers</div>
       <p>Runs and scores the coding environment. <code>GlyphTaskset</code> defines task setup,
       reward, metrics, and finalization; <code>GlyphHarness</code> launches the agent program
-      inside the sandbox. The completed execution trace carries the verified prediction outcomes
+      inside a confined subprocess environment. The completed execution trace carries the verified prediction outcomes
       PREDICT trains on.</p>
     </div>
     <div class="next-card">
@@ -805,7 +803,7 @@ patch applied</code></div>
     <div class="next-card">
       <div class="next-title">Glyph: <code>src/glyph/</code></div>
       <p><code>taskset.py</code> task setup, scoring, verified trace extraction &middot;
-      <code>harness.py</code> sandbox and program launch &middot; <code>program.py</code>
+      <code>harness.py</code> confined subprocess environment and program launch &middot; <code>program.py</code>
       coding-agent interaction loop &middot; <code>prime_rl.py</code> the PREDICT training
       algorithm.</p>
     </div>

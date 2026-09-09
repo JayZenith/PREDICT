@@ -388,10 +388,10 @@ wrong conclusion that survived several rounds before the data caught it.
 
 | path | responsibility |
 |---|---|
-| `src/glyph/program.py` | the rollout program, run inside the sandbox. The agent loop, turn-shape validation, `<PREDICTION>`/`<DECISION>` parsing, shadow-test execution, and the `prediction_targets` records everything downstream reads. |
+| `src/glyph/program.py` | the rollout program, run inside a confined subprocess environment. The agent loop, turn-shape validation, `<PREDICTION>`/`<DECISION>` parsing, shadow-test execution, and the `prediction_targets` records everything downstream reads. |
 | `src/glyph/taskset.py` | task loading, real test execution, and **all** reward and metric definitions. If you want to know what the reward actually paid for, it is here and nowhere else. |
 | `src/glyph/prime_rl.py` | `PredictAlgorithm`: the verified-label CE auxiliary sample, and (at the run commit) the `rl_weights = 0.0` masking of the prediction span. |
-| `src/glyph/harness.py` | Verifiers v1 harness; ships `program.py` into the sandbox verbatim. |
+| `src/glyph/harness.py` | Verifiers v1 harness; ships `program.py` into the confined subprocess environment verbatim. |
 | `src/glyph/chat.py` | system prompts and ChatML rendering, source of the `<PREDICTION>OUTCOME</PREDICTION>` placeholder that skews naive label counts. |
 | `src/glyph/passk.py`, `cli.py` | eval-trace reporting |
 | `data/prepare.py`, `recovery.py`, `validate.py` | generate and validate the MBPP splits and the hand-designed SFT traces. **The curriculum's class balance is decided here**, which is why two outcome classes were never demonstrated. |
