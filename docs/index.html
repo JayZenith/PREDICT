@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reactive vs. Predictive Post-Training for Coding Agents</title>
-<meta name="description" content="Two Qwen3-4B coding agents on one RL environment: test-and-recover versus predict-and-decide. The predictive agent learned real outcome prediction and still lost, and the trajectory split shows exactly which part of its protocol cost it.">
+<meta name="description" content="Two Qwen3-4B coding agents on one RL environment: test-and-recover versus predict-and-decide. The predictive agent learned a real outcome distinction but did not outperform the reactive baseline.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%230b0b0c'/%3E%3Cpath d='M13 2 L4 14 H11 L10 22 L20 9 H13 Z' fill='%23ff4d4d'/%3E%3C/svg%3E">
 <style>
 :root {
@@ -249,10 +249,6 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     <a href="#echo">ECHO-style auxiliary prediction</a>, is predictive: patch, predict the verified
     outcome, KEEP or REVISE, then execute, trained with GRPO plus an auxiliary cross-entropy loss
     on the outcome the verifier confirms afterward.</p>
-  <p class="tagline">PREDICT asks whether verified future outcomes can supervise an agent before it
-    acts. After a patch is written, the model predicts what execution will produce, and the
-    verified outcome is later used as an auxiliary training target at that earlier point in the
-    trajectory.</p>
   <p class="tagline">Arm B did not outperform the reactive baseline. The interesting part was where its
     behavior diverged: rollouts that never revised passed 63%, while rollouts that revised passed
     1%. On MBPP, predicting the outcome saved nothing over simply testing, and the REVISE action
