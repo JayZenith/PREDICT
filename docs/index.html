@@ -240,35 +240,25 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     <a href="https://jayzenith.me/">jayzenith.me</a> &middot;
     <a href="https://github.com/JayZenith/PREDICT">GitHub</a>
   </p>
-  <p class="tagline"><b class="hl">When does teaching an agent to predict the consequence
-    of an action actually improve its behavior?</b></p>
-  <p class="tagline">PREDICT compares two Qwen3-4B coding agents trained on the same environment, tasks,
-    reward, and SFT &rarr; RL pipeline.</p>
+  <p class="tagline"><b class="hl">When does teaching an agent to predict the consequence of an action actually improve its behavior?</b></p>
+  <p class="tagline">PREDICT compares two Qwen3-4B coding agents trained on the same environment, tasks, reward, and SFT &rarr; RL pipeline.</p>
   <p class="tagline"><b>Arm A</b> is reactive: patch, test, recover.</p>
-  <p class="tagline"><b>Arm B</b> is predictive: patch, predict the verified outcome, choose KEEP or
-    REVISE, then execute. It is trained with GRPO plus an auxiliary cross-entropy target from the
-    outcome the verifier confirms afterward.</p>
-  <p class="tagline">Arm B did not outperform the reactive baseline. The interesting part was how it
-    failed. The predictive agent learned a real outcome distinction, but trajectories that acted on
-    that prediction through REVISE almost never recovered.</p>
-  <p class="tagline">On MBPP, predicting the outcome offered little advantage over simply running the test.
-    Testing cost one tool call and returned the same information the model was trying to predict.
-    REVISE also consumed a call without returning that feedback. <a href="#bottleneck">Jump to the
-    finding &darr;</a></p>
+  <p class="tagline"><b>Arm B</b> is predictive: patch, predict the verified outcome, choose KEEP or REVISE, then execute. It is trained with GRPO plus an auxiliary cross-entropy target from the outcome the verifier confirms afterward.</p>
+  <p class="tagline">Arm B did not outperform the reactive baseline. The interesting part was how it failed. The predictive agent learned a real outcome distinction, but trajectories that acted on that prediction through REVISE almost never recovered.</p>
+  <p class="tagline">On MBPP, predicting the outcome offered little advantage over simply running the test. Testing cost one tool call and returned the same information the model was trying to predict. REVISE also consumed a call without returning that feedback.</p>
 </header>
 
 <section class="section" id="protocol">
   <p class="section-kicker">Agent design</p>
   <h2 class="section-title">Two agents, one environment</h2>
-  <p class="section-lede">The tasks, tools, reward, and evaluation are shared between both arms.
-    Arm A follows the standard loop:</p>
+  <p class="section-lede">The tasks, tools, reward, and evaluation are shared between both arms.</p>
+  <p class="section-lede">Arm A follows the standard loop:</p>
   <div class="flow">patch &rarr; test &rarr; observe &rarr; recover</div>
   <p class="section-lede mt-md">Arm B inserts prediction before execution:</p>
   <div class="flow">patch &rarr; predict outcome &rarr; KEEP or REVISE &rarr; execute</div>
-  <p class="section-lede mt-md">Arm B predicts one of six outcome classes:
-    <code>PASS</code>, <code>ASSERTION_FAILURE</code>, <code>RUNTIME_ERROR</code>,
-    <code>SYNTAX_ERROR</code>, <code>TIMEOUT</code>, <code>OTHER</code>, before it is allowed
-    to test. If the agent chooses REVISE, the rejected patch is still executed in the background so
+  <p class="section-lede mt-md">Arm B predicts one of six outcome classes:</p>
+  <div class="flow">PASS<br>ASSERTION_FAILURE<br>RUNTIME_ERROR<br>SYNTAX_ERROR<br>TIMEOUT<br>OTHER</div>
+  <p class="section-lede mt-md">If the agent chooses REVISE, the rejected patch is still executed in the background so
     the training system can recover a verified outcome label. That result is not shown to the agent
     during the rollout.</p>
     <div class="card"><svg viewBox="0 0 1000 600" class="diagram-svg" role="img" aria-label="Arm A versus Arm B execution flow">
@@ -324,9 +314,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="experiment">
   <p class="section-kicker">Experiment</p>
   <h2 class="section-title">Qwen3-4B-Base on MBPP, SFT then RLVR</h2>
-  <p class="section-lede lede-narrow">The final test set was evaluated after the experimental design
-    was frozen. Both arms were trained with two RL seeds. The experiment was intentionally narrow:
-    one model family, one coding environment, two RL seeds, and a limited post-training budget.</p>
+  <p class="section-lede lede-narrow">212 SFT tasks<br>212 RL tasks, disjoint from SFT<br>40 validation tasks<br>500 final test tasks</p>
+  <p class="section-lede">Both arms were trained with two RL seeds. The final test set was evaluated after the experimental design was frozen.</p>
+  <p class="section-lede">The experiment was intentionally narrow: one model family, one coding environment, two RL seeds, and a limited post-training budget.</p>
   <div class="stat-grid mt-md">
     <div class="stat-tile"><div class="stat-value">212</div><div class="stat-label">SFT tasks: 142 direct + 70 recovery traces</div></div>
     <div class="stat-tile"><div class="stat-value">212</div><div class="stat-label">RL tasks, disjoint from SFT</div></div>
@@ -340,9 +330,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="results">
   <p class="section-kicker">Result</p>
   <h2 class="section-title">Neither arm established an overall advantage</h2>
-  <p class="section-lede">At step 100, both agents improved over their own SFT checkpoints, but the
-    apparent Arm A advantage in seed 42 did not replicate in seed 43. This experiment does not
-    establish an overall pass@1 advantage for either protocol.</p>
+  <p class="section-lede">At step 100:</p>
+  <div class="flow">Arm A<br>seed 42: 56.4%<br>seed 43: 54.2%<br><br>Arm B<br>seed 42: 52.0%<br>seed 43: 53.6%</div>
+  <p class="section-lede mt-md">Both agents improved over their own SFT checkpoints. The apparent Arm A advantage in seed 42 did not replicate in seed 43, so this experiment does not establish an overall pass@1 advantage for either protocol.</p>
 
   <div class="callout good">
     <div class="callout-label">&#10003; Replicated across two seeds</div>
@@ -402,29 +392,18 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   </div>
 </div>
 
-  <div class="callout crit">
-    <div class="callout-label">&#9888; No confirmed pass@1 advantage for PREDICT</div>
-    No checkpoint shows a reliable difference between Arm A and Arm B across all seed pairings
-    (McNemar, p=0.026&ndash;0.86). The apparent step-100 Arm A lead in seed 42, 56.4% versus 52.0%,
-    disappears in seed 43, where the arms score 54.2% and 53.6% (p=0.86). This experiment does not
-    show that requiring explicit outcome prediction makes the coding agent better overall.
-    <a href="#bottleneck">The next section isolates where Arm B's deficit comes from.</a>
-  </div>
-
-  <p class="chart-caption">The measured RLVR gain came from better first patches, not better
-    recovery: Arm A seed 42 went 42.8%&rarr;47.8% on first-patch correctness (p=0.0013) while its
-    recovery rate moved 14.1%&rarr;16.7% (p=0.58). About 270 of 500 first patches fail but only
-    around 40 are later fixed, too few recoveries to detect a small effect. Full McNemar and
-    paired-bootstrap results:
-    <a href="https://github.com/JayZenith/PREDICT/blob/main/docs/REPRODUCTION.md#6-statistics">REPRODUCTION.md &sect; 6</a>.</p>
+  <p class="chart-caption">Both agents improved over their own SFT checkpoints. The apparent Arm A
+    advantage in seed 42 did not replicate in seed 43, so this experiment does not establish an
+    overall pass@1 advantage for either protocol.</p>
 </section>
 
 <section class="section" id="bottleneck">
   <p class="section-kicker">The main finding</p>
   <h2 class="section-title">The deficit concentrates in the REVISE path</h2>
-  <p class="section-lede">Split Arm B's 500 test trajectories by whether the agent ever chose
-    REVISE. The difference is extreme: trajectories that never revised carried almost the entire
-    score.</p>
+  <p class="section-lede">For Arm B, trajectories that never used REVISE passed:</p>
+  <div class="flow">63.3% in seed 42<br>60.4% in seed 43</div>
+  <p class="section-lede mt-md">Trajectories that used REVISE at least once passed:</p>
+  <div class="flow">1.1% in seed 42<br>4.9% in seed 43</div>
 
     <div class="chart-wrap"><svg viewBox="0 0 620 226" class="chart-svg" role="img" aria-label="pass@1 by whether the trajectory used REVISE">
 <line x1="16" y1="186" x2="604" y2="186" stroke="#4a4a4f" stroke-width="1"/>
@@ -449,24 +428,23 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="chart-caption">Greedy pass@1, step 100. Arm B's headline 52.0% is almost exactly
     409 &times; 63.3% out of 500: the never-revised trajectories carry nearly the entire score.</p>
 
-  <p class="section-lede mt-lg">The gate had useful discrimination; REVISE was the dominant
-    observed failure mode. It chose REVISE two to three times more often on patches that genuinely
-    failed than on patches that would have passed: <b>22.2%</b> against <b>8.5%</b> in
-    seed 42, <b>14.3%</b> against <b>4.2%</b> in seed 43. It detected risk, acted on that
-    detection, and lost.</p>
+  <p class="section-lede mt-lg">The gate was not random. It chose REVISE more often when the patch
+    would actually fail:</p>
+  <div class="flow">seed 42: 22.2% on failing patches vs. 8.5% on passing patches<br>seed 43: 14.3% on failing patches vs. 4.2% on passing patches</div>
+  <p class="section-lede mt-md">But acting on that signal was expensive.</p>
 
   <div class="callout crit">
     <div class="callout-label">&#9888; REVISE spends a call and returns nothing</div>
-    REVISE costs a visible tool call and returns only <code>patch applied</code>. <b>99% of REVISE
-    trajectories exhaust the 8-call budget in seed 42 and 95% in seed 43</b>, against 35% and 37%
-    of KEEP-only ones.
+    REVISE also consumed a call without returning that feedback. <b>99% of REVISE trajectories
+    exhausted the 8-call budget in seed 42 and 95% did so in seed 43.</b>
+    For trajectories that never revised, those numbers were 35% and 37%.
   </div>
 
   <div class="callout info">
-    <div class="callout-label">So predicting PASS everywhere was correct, not broken</div>
+    <div class="callout-label">The protocol created a bad trade</div>
     <div class="flow" style="margin-top:2px">predict <b>PASS</b> &rarr; KEEP &rarr; test &rarr; see the real failure &rarr; repair
 predict <b class="wrong">failure</b> &rarr; REVISE &rarr; no feedback, one call spent
-<span class="flow-note">RL found the first row</span></div>
+<span class="flow-note">The predictive signal could be useful while the action attached to it was not.</span></div>
   </div>
 
   <div class="callout warn">
@@ -480,9 +458,8 @@ predict <b class="wrong">failure</b> &rarr; REVISE &rarr; no feedback, one call 
 
   <div class="callout warn">
     <div class="callout-label">Scope</div>
-    The split is correlational, because harder patches attract REVISE. The false-positive rate on
-    patches that would have passed is the control, and budget exhaustion is the mechanism, but this
-    is not a controlled ablation. Forcing KEEP on the same trajectories would settle it.
+    This split is still correlational. Harder patches may be more likely to trigger REVISE in the
+    first place. A forced-KEEP ablation is needed to isolate the effect.
   </div>
 </section>
 
