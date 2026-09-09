@@ -314,7 +314,6 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="experiment">
   <p class="section-kicker">Experiment</p>
   <h2 class="section-title">Qwen3-4B-Base on MBPP, SFT then RLVR</h2>
-  <p class="section-lede lede-narrow">212 SFT tasks<br>212 RL tasks, disjoint from SFT<br>40 validation tasks<br>500 final test tasks</p>
   <p class="section-lede">Both arms were trained with two RL seeds. The final test set was evaluated after the experimental design was frozen.</p>
   <p class="section-lede">The experiment was intentionally narrow: one model family, one coding environment, two RL seeds, and a limited post-training budget.</p>
   <div class="stat-grid mt-md">
@@ -330,15 +329,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="results">
   <p class="section-kicker">Result</p>
   <h2 class="section-title">Neither arm established an overall advantage</h2>
-  <p class="section-lede">At step 100:</p>
-  <div class="flow">Arm A<br>seed 42: 56.4%<br>seed 43: 54.2%<br><br>Arm B<br>seed 42: 52.0%<br>seed 43: 53.6%</div>
-  <p class="section-lede mt-md">Both agents improved over their own SFT checkpoints. The apparent Arm A advantage in seed 42 did not replicate in seed 43, so this experiment does not establish an overall pass@1 advantage for either protocol.</p>
-
-  <div class="callout good">
-    <div class="callout-label">&#10003; Replicated across two seeds</div>
-    By step 100, RLVR improved both arms over SFT in both seeds: Arm A, p=0.0003 and p=0.028;
-    Arm B, p=0.033 and p=0.0017.
-  </div>
+  <p class="section-lede">Both agents improved over their own SFT checkpoints. The apparent Arm A advantage in seed 42 did not replicate in seed 43, so this experiment does not establish an overall pass@1 advantage for either protocol.</p>
 
     <div class="chart-wrap"><svg viewBox="0 0 720 300" class="chart-svg" role="img" aria-label="line chart">
 <line x1="40" y1="266.0" x2="646" y2="266.0" stroke="#2e2e32" stroke-width="1"/>
@@ -448,15 +439,6 @@ predict <b class="wrong">failure</b> &rarr; REVISE &rarr; no feedback, one call 
   </div>
 
   <div class="callout warn">
-    <div class="callout-label">One interpretation: the masking has a gap</div>
-    The <code>&lt;PREDICTION&gt;</code> label is held out of RL credit, but
-    <code>&lt;DECISION&gt;</code> is not, and the protocol ties them together: a non-PASS
-    prediction forces REVISE. So reward pressure toward KEEP is also pressure toward predicting
-    PASS, working against the CE term. Masking stops reward reinforcing a lucky label, not the
-    behaviour of predicting PASS. Untested here.
-  </div>
-
-  <div class="callout warn">
     <div class="callout-label">Scope</div>
     This split is still correlational. Harder patches may be more likely to trigger REVISE in the
     first place. A forced-KEEP ablation is needed to isolate the effect.
@@ -504,70 +486,20 @@ predict <b class="wrong">failure</b> &rarr; REVISE &rarr; no feedback, one call 
 
 <section class="section" id="limits">
   <p class="section-kicker">Limitations</p>
-  <h2 class="section-title">What did not work</h2>
-  <p class="section-lede">PREDICT did not learn <code>ASSERTION_FAILURE</code>. That class was
-    roughly 57% of evaluation outcomes, yet recall stayed at 0%. This matters more than the
-    runtime-error result, because catching logical failures before execution would be substantially
-    more useful to the agent.</p>
-
-  <p class="section-lede mt-md"><span class="block-label">It was not a shortage of failures</span>
-    Across 15,122 verified Arm B training outcomes, about 70% of patches failed. The model still
-    predicted failure classes far less often than they occurred:</p>
-
-  <table class="data-table">
-    <thead><tr><th>outcome class</th><th>share of real outcomes</th><th>share of predictions</th></tr></thead>
-    <tbody>
-      <tr><td>ASSERTION_FAILURE</td><td>49.5%</td><td>3.2%</td></tr>
-      <tr><td>PASS</td><td>29.8%</td><td>78.7%</td></tr>
-      <tr><td>RUNTIME_ERROR</td><td>18.2%</td><td>18.0%</td></tr>
-      <tr><td>SYNTAX_ERROR <span style="opacity:.6">(never taught)</span></td><td>2.2%</td><td>0.1%</td></tr>
-      <tr><td>TIMEOUT <span style="opacity:.6">(never taught)</span></td><td>0.3%</td><td>0.0%</td></tr>
-    </tbody>
-  </table>
-  <p class="chart-caption"><b>SFT showed ASSERTION_FAILURE 37 times but RUNTIME_ERROR only 8 times,
-    yet only RUNTIME_ERROR was learned.</b> Raw example count was not the binding constraint. The
-    demonstrated assertion failures were likely not representative of the failures the trained
-    policy actually produces, so SFT never established a usable distinction between
-    wrong-but-runnable code and PASS. SYNTAX_ERROR and TIMEOUT cannot be judged at all, because SFT
-    never showed them.</p>
-
-  <div class="callout warn">
-    <div class="callout-label">The SFT failures are synthetic</div>
-    The recovery traces are not sampled model failures. Each faulty patch is a deterministic,
-    verifier-confirmed mutation of a gold MBPP solution, so the SFT failure distribution is one
-    I chose rather than one the policy produces. The mutations skew toward failures that are easy
-    to construct and confirm, while the failures encountered during RL are the model's own,
-    which is exactly where a 0% <code>ASSERTION_FAILURE</code> recall would show up.
-  </div>
-
-  <div class="callout warn">
-    <div class="callout-label">Known labeling limitation</div>
-    Pass/fail is real execution, but the outcome <i>class</i> is a heuristic on stderr
-    (<code>program.py:167</code>): SyntaxError &rarr; SYNTAX_ERROR, AssertionError &rarr;
-    ASSERTION_FAILURE, Traceback &rarr; RUNTIME_ERROR. A solution that raises
-    <code>AssertionError</code> itself is therefore labeled ASSERTION_FAILURE when it is really a
-    runtime error. Rare on MBPP, but the class split carries some label noise. The RUNTIME_ERROR
-    result is unaffected in direction: that misrule can only move counts <i>out</i> of
-    RUNTIME_ERROR.
-  </div>
-
-  <p class="section-lede mt-lg"><span class="block-label">MBPP was the wrong environment for the
-    question</span>Even a perfect predictor has little to sell here. A test costs one tool call and
-    returns the same outcome class the prediction was guessing at, so foresight saves nothing while
-    the gate that acts on it costs a call. Answering this question needs actions expensive enough
-    that anticipating consequences beats discovering them.</p>
+  <h2 class="section-title">What the experiment leaves open</h2>
+  <p class="section-lede">The recovery examples used during SFT were synthetic mutations of correct
+    MBPP solutions rather than failures sampled from the policy itself. That likely made the SFT
+    failure distribution different from the failures the model later produced during RL.</p>
+  <p class="section-lede">Outcome classes were inferred heuristically from execution errors, so the
+    fine-grained failure labels contain some noise.</p>
+  <p class="section-lede">MBPP was a weak environment for prediction-before-action. Even a perfect
+    outcome predictor has little advantage when execution is cheap: running the test costs one tool
+    call and directly reveals the outcome the prediction is trying to anticipate.</p>
 </section>
 
 <section class="section" id="demo">
-  <p class="section-kicker">One rollout</p>
-  <h2 class="section-title">Both sides of the result in a single trace</h2>
-  <p class="section-lede">One real Arm B rollout, step 100, seed 42, on <code>mbpp_127</code>
-    (&ldquo;multiply two integers without <code>*</code>&rdquo;). Verbatim from
-    <code>RESULTS_PUBLISHED/RL_ARM_B_100/eval/</code>. It predicts PASS on all three candidates, is
-    wrong on the first two, and still scores reward 1.0.</p>
-
   <details>
-  <summary>Open the full trace and verifier-gap note</summary>
+  <summary>Example rollout + verifier gap</summary>
 
   <div>
         <div class="transcript-card" style="--accent:#78b07f">
