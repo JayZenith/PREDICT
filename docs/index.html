@@ -13,17 +13,17 @@
   --surface: #151517;
   --surface-2: #1e1e21;
   --border: rgba(255,255,255,0.10);
-  --border-2: rgba(255,77,77,0.34);
-  --wash: rgba(255,77,77,0.08);
+  --border-2: rgba(177,62,53,0.42);
+  --wash: rgba(177,62,53,0.10);
   --ink: #f4f2f1;
   --ink-2: #cac6c4;
   --mute: #8b8785;
-  --code-ink: #f0b5b1;
-  --green: #ff4d4d;      /* accent: links, kickers, stat values */
-  --green-dim: #b0706c;  /* muted brick, secondary rules */
+  --code-ink: #d08b83;
+  --green: #b13e35;      /* accent: links, kickers, stat values */
+  --green-dim: #784944;  /* muted brick, secondary rules */
   --blue: #9a9694;
   --yellow: #b0706c;
-  --red: #ff4d4d;
+  --red: #b13e35;
   --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, monospace;
   --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -34,17 +34,17 @@
 .card, .chart-wrap, .callout, .transcript-card, .stat-tile, .next-card,
 .flow, .turn-legend {
   --border: rgba(255,255,255,0.09);
-  --border-2: rgba(255,77,77,0.30);
+  --border-2: rgba(177,62,53,0.38);
   --wash: rgba(255,255,255,0.05);
   --ink: #f4f2f1;
   --ink-2: #c6c2c0;
   --mute: #8b8785;
-  --code-ink: #f0b5b1;
-  --green: #ff5c5c;
-  --green-dim: #b0706c;
+  --code-ink: #d08b83;
+  --green: #b13e35;
+  --green-dim: #784944;
   --blue: #9a9694;
   --yellow: #b0706c;
-  --red: #ff4d4d;
+  --red: #b13e35;
   color: var(--ink-2);
 }
 * { box-sizing: border-box; }
@@ -148,6 +148,8 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 16.5px; ma
 details { margin-top: 22px; }
 summary { cursor: pointer; color: var(--green); font-size: 15px; font-weight: 650; }
 summary:hover { color: var(--ink); }
+svg [stroke="#ff4d4d"] { stroke: #b13e35 !important; }
+svg [fill="#ff4d4d"] { fill: #b13e35 !important; }
 
 /* ---- transcripts ---- */
 .transcript-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
