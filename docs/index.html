@@ -260,13 +260,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <div class="flow">patch &rarr; test &rarr; observe &rarr; repair if needed</div>
   <p class="tagline mt-md"><b>Arm B is predictive:</b></p>
   <div class="flow">patch &rarr; predict outcome &rarr; KEEP or REVISE</div>
-  <p class="tagline mt-md">If Arm B chooses KEEP, the patch is tested normally and the result is shown to the model.</p>
-  <p class="tagline">If it chooses REVISE, the model discards the patch and writes another one without seeing the test result of the rejected patch.</p>
-  <p class="tagline">Arm B is also trained to predict the verified execution outcome of each patch before seeing that outcome.</p>
-  <p class="tagline">Both agents improved over their SFT checkpoints, but Arm B did not outperform the reactive baseline.</p>
-  <p class="tagline">The interesting part was why.</p>
-  <p class="tagline">The predictive agent learned a real, although incomplete, ability to anticipate some failures. But REVISE was badly matched to this environment. It removed useful test feedback while consuming part of a limited tool-call budget.</p>
-  <p class="tagline">On MBPP, simply running the test was usually more useful than predicting its result.</p>
+  <p class="tagline mt-md">If Arm B chooses KEEP, the patch is tested normally and the result is shown to the model. If it chooses REVISE, the model discards the patch and writes another one without seeing the test result of the rejected patch. Arm B is also trained to predict the verified execution outcome of each patch before seeing that outcome.</p>
+  <p class="tagline">Both agents improved over their SFT checkpoints, but Arm B did not outperform the reactive baseline. The interesting part was why.</p>
+  <p class="tagline">The predictive agent learned a real, although incomplete, ability to anticipate some failures. But REVISE was badly matched to this environment. It removed useful test feedback while consuming part of a limited tool-call budget. On MBPP, simply running the test was usually more useful than predicting its result.</p>
 </header>
 
 <section class="section" id="protocol">
@@ -285,10 +281,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="section-lede"><b>REVISE</b></p>
   <div class="flow">patch &rarr; prediction &rarr; REVISE &rarr; another patch</div>
   <p class="section-lede mt-md">The rejected patch is still executed in the background. This hidden execution lets the training system recover the true outcome of the patch, but that result is not shown to the model during the rollout.</p>
-  <p class="section-lede">So there are two different things happening:</p>
-  <p class="section-lede"><b>KEEP gives information to the agent.</b></p>
-  <p class="section-lede"><b>Shadow execution after REVISE gives information to the training system.</b></p>
-  <p class="section-lede">Everything else about the environment is shared between the two arms.</p>
+  <p class="section-lede">So there are two different things happening: <b>KEEP gives information to the agent.</b> <b>Shadow execution after REVISE gives information to the training system.</b> Everything else about the environment is shared between the two arms.</p>
     <div class="card"><svg viewBox="0 0 1000 600" class="diagram-svg" role="img" aria-label="Arm A versus Arm B execution flow">
 <defs><marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#6f6b69"/></marker>
@@ -350,8 +343,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <div class="flow">RUNTIME_ERROR</div>
   <p class="section-lede mt-md">The rollout therefore contains:</p>
   <div class="flow">context &rarr; PASS &rarr; KEEP &rarr; execute &rarr; RUNTIME_ERROR</div>
-  <p class="section-lede mt-md">The sampled <code>PASS</code> prediction is excluded from the RL loss. The eventual task reward does not reinforce that prediction token simply because it appeared in the rollout.</p>
-  <p class="section-lede">After execution, however, the verifier knows that the correct prediction was <code>RUNTIME_ERROR</code>.</p>
+  <p class="section-lede mt-md">The sampled <code>PASS</code> prediction is excluded from the RL loss. The eventual task reward does not reinforce that prediction token simply because it appeared in the rollout. After execution, however, the verifier knows that the correct prediction was <code>RUNTIME_ERROR</code>.</p>
   <p class="section-lede">PREDICT then constructs a separate supervised example from the same context that existed immediately before the prediction:</p>
   <div class="flow">same context &rarr; RUNTIME_ERROR</div>
   <p class="section-lede mt-md">That additional example is CE-only:</p>
@@ -367,8 +359,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <span class="flow-note">CE loss applies only to the verified label.</span></div>
   </div>
 
-  <p class="section-lede mt-md">This also works when the model chooses REVISE.</p>
-  <p class="section-lede">The rejected patch is executed in the background. The result stays hidden from the agent, but the verifier can still use it to construct the supervised prediction target.</p>
+  <p class="section-lede mt-md">This also works when the model chooses REVISE. The rejected patch is executed in the background. The result stays hidden from the agent, but the verifier can still use it to construct the supervised prediction target.</p>
   <p class="section-lede">So the central mechanism is:</p>
   <p class="section-lede"><b>the rollout contains the model's own prediction, while training later creates a separate example containing the verified prediction that should have been made from the same earlier context.</b></p>
   <p class="section-lede">This is related to ECHO-style auxiliary prediction training, but the target here is verifier-derived and attached to an earlier pre-execution state rather than simply predicting an observation already present in the visible rollout.</p>
@@ -384,9 +375,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     <div class="stat-tile"><div class="stat-value">40 validation tasks</div><div class="stat-label">used for checkpoint selection</div></div>
     <div class="stat-tile"><div class="stat-value">500 final evaluation tasks</div></div>
   </div>
-  <p class="section-lede">Both arms were trained with two RL seeds.</p>
-  <p class="section-lede">The final test set was evaluated after the experimental design was fixed.</p>
-  <p class="section-lede">The experiment was intentionally narrow: one model family, one coding environment, two RL seeds, and a limited post-training budget.</p>
+  <p class="section-lede">Both arms were trained with two RL seeds. The final test set was evaluated after the experimental design was fixed. The experiment was intentionally narrow: one model family, one coding environment, two RL seeds, and a limited post-training budget.</p>
   <p class="section-lede">MBPP consists of short Python programming problems evaluated using test assertions.</p>
 </section>
 
@@ -401,9 +390,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
       <tr><td>Arm B: predictive</td><td>52.0%</td><td>53.6%</td></tr>
     </tbody>
   </table>
-  <p class="section-lede">Both agents improved over their own SFT checkpoints.</p>
-  <p class="section-lede">Arm A appeared better in seed 42, but that advantage did not replicate in seed 43.</p>
-  <p class="section-lede">So this experiment does not establish an overall pass@1 advantage for either protocol.</p>
+  <p class="section-lede">Both agents improved over their own SFT checkpoints. Arm A appeared better in seed 42, but that advantage did not replicate in seed 43. So this experiment does not establish an overall pass@1 advantage for either protocol.</p>
 
     <div class="chart-wrap"><svg viewBox="0 0 720 300" class="chart-svg" role="img" aria-label="line chart">
 <line x1="40" y1="266.0" x2="646" y2="266.0" stroke="#2e2e32" stroke-width="1"/>
@@ -488,44 +475,29 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     <span class="legend-item"><span class="swatch" style="background:#5f8f68"></span>seed 43</span>
   </div>
 </div>
-  <p class="section-lede mt-md">The gate was not completely random.</p>
-  <p class="section-lede">Arm B chose REVISE more often when a patch would actually fail than when it would pass:</p>
-  <p class="section-lede"><b>Seed 42:</b> 22.2% on failing patches vs. 8.5% on passing patches</p>
-  <p class="section-lede"><b>Seed 43:</b> 14.3% on failing patches vs. 4.2% on passing patches</p>
-  <p class="section-lede">So the decision contained some real signal.</p>
-  <p class="section-lede">The problem was what happened after the signal was used.</p>
+  <p class="section-lede mt-md">The gate was not completely random. Arm B chose REVISE more often when a patch would actually fail than when it would pass:</p>
+  <p class="section-lede"><b>Seed 42:</b> 22.2% on failing patches vs. 8.5% on passing patches<br><b>Seed 43:</b> 14.3% on failing patches vs. 4.2% on passing patches</p>
+  <p class="section-lede">So the decision contained some real signal. The problem was what happened after the signal was used.</p>
   <p class="section-lede">If the model predicts PASS and chooses KEEP:</p>
   <div class="flow">patch &rarr; predict PASS &rarr; KEEP &rarr; test &rarr; observe failure &rarr; repair</div>
   <p class="section-lede mt-md">Even though the prediction was wrong, the model gets useful information from the test.</p>
   <p class="section-lede">If the model predicts failure and chooses REVISE:</p>
   <div class="flow">patch &rarr; predict failure &rarr; REVISE &rarr; no test feedback &rarr; another patch</div>
-  <p class="section-lede mt-md">The model may have correctly recognized that something was wrong, but it does not learn what went wrong.</p>
-  <p class="section-lede">REVISE also consumes a tool call.</p>
-  <p class="section-lede">The agents had an 8-call budget.</p>
+  <p class="section-lede mt-md">The model may have correctly recognized that something was wrong, but it does not learn what went wrong. REVISE also consumes a tool call. The agents had an 8-call budget.</p>
   <p class="section-lede">Among trajectories that used REVISE:</p>
-  <p class="section-lede"><b>99% exhausted the budget in seed 42</b></p>
-  <p class="section-lede"><b>95% exhausted the budget in seed 43</b></p>
+  <p class="section-lede"><b>99% exhausted the budget in seed 42</b><br><b>95% exhausted the budget in seed 43</b></p>
   <p class="section-lede">Among trajectories that never revised:</p>
-  <p class="section-lede"><b>35% exhausted the budget in seed 42</b></p>
-  <p class="section-lede"><b>37% exhausted the budget in seed 43</b></p>
-  <p class="section-lede">So the protocol created a bad trade.</p>
-  <p class="section-lede">A wrong PASS prediction followed by KEEP still gave the agent the information needed to recover.</p>
-  <p class="section-lede">A correct failure prediction followed by REVISE removed that information while leaving less budget for recovery.</p>
-  <p class="section-lede">That does not prove that REVISE itself caused the entire performance gap. The split is correlational. Harder patches may naturally be more likely to trigger REVISE.</p>
-  <p class="section-lede">A forced-KEEP ablation is needed to isolate that effect.</p>
+  <p class="section-lede"><b>35% exhausted the budget in seed 42</b><br><b>37% exhausted the budget in seed 43</b></p>
+  <p class="section-lede">So the protocol created a bad trade. A wrong PASS prediction followed by KEEP still gave the agent the information needed to recover. A correct failure prediction followed by REVISE removed that information while leaving less budget for recovery.</p>
+  <p class="section-lede">That does not prove that REVISE itself caused the entire performance gap. The split is correlational. Harder patches may naturally be more likely to trigger REVISE. A forced-KEEP ablation is needed to isolate that effect.</p>
 </section>
 
 <section class="section" id="prediction">
   <h2 class="section-title"><span class="section-number">6.</span> Did the model actually learn to predict outcomes?</h2>
   <h3 class="next-title">Yes, but only partially</h3>
-  <p class="section-lede">One possible explanation for the result would be that Arm B simply failed to learn prediction at all.</p>
-  <p class="section-lede">That is not what happened.</p>
-  <p class="section-lede">At the SFT checkpoint, Arm B effectively predicted <code>PASS</code> for everything.</p>
-  <p class="section-lede">After RL, it developed a nontrivial ability to recognize <code>RUNTIME_ERROR</code>.</p>
+  <p class="section-lede">One possible explanation for the result would be that Arm B simply failed to learn prediction at all. That is not what happened. At the SFT checkpoint, Arm B effectively predicted <code>PASS</code> for everything. After RL, it developed a nontrivial ability to recognize <code>RUNTIME_ERROR</code>.</p>
   <p class="section-lede">In seed 42:</p>
-  <p class="section-lede"><b>PASS recall: 92%</b></p>
-  <p class="section-lede"><b>RUNTIME_ERROR recall: about 63%</b></p>
-  <p class="section-lede"><b>ASSERTION_FAILURE recall: 0%</b></p>
+  <p class="section-lede"><b>PASS recall: 92%</b><br><b>RUNTIME_ERROR recall: about 63%</b><br><b>ASSERTION_FAILURE recall: 0%</b></p>
   <p class="section-lede">Runtime errors represented only about 16% of verified evaluation outcomes, while assertion failures represented roughly 57%.</p>
 
     <div class="chart-wrap"><svg viewBox="0 0 620 220" class="chart-svg" role="img" aria-label="bar chart">
@@ -544,42 +516,26 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <text x="506.0" y="214" text-anchor="middle" class="axis-sub">57% of verified outcomes</text>
 </svg></div>
   <p class="section-lede mt-md"><code>RUNTIME_ERROR</code> precision was:</p>
-  <p class="section-lede"><b>62.5% in seed 42</b></p>
-  <p class="section-lede"><b>64.1% in seed 43</b></p>
-  <p class="section-lede">So the model had learned a real distinction about which patches were likely to crash.</p>
-  <p class="section-lede">But it did not learn the much more common distinction between code that executes and code that executes successfully but produces the wrong answer.</p>
-  <p class="section-lede">That is an important limitation of the learned predictor.</p>
-  <p class="section-lede">There is also a causal limitation.</p>
-  <p class="section-lede">Arm B was trained using both GRPO and the auxiliary verified-outcome CE objective.</p>
-  <p class="section-lede">Because I did not run an <code>alpha = 0</code> version of Arm B, this experiment cannot establish that the auxiliary CE term itself caused the learned runtime-error distinction.</p>
-  <p class="section-lede">What the experiment shows is that the distinction emerged during the combined training procedure.</p>
+  <p class="section-lede"><b>62.5% in seed 42</b><br><b>64.1% in seed 43</b></p>
+  <p class="section-lede">So the model had learned a real distinction about which patches were likely to crash. But it did not learn the much more common distinction between code that executes and code that executes successfully but produces the wrong answer. That is an important limitation of the learned predictor.</p>
+  <p class="section-lede">There is also a causal limitation. Arm B was trained using both GRPO and the auxiliary verified-outcome CE objective. Because I did not run an <code>alpha = 0</code> version of Arm B, this experiment cannot establish that the auxiliary CE term itself caused the learned runtime-error distinction. What the experiment shows is that the distinction emerged during the combined training procedure.</p>
 </section>
 
 <section class="section" id="limits">
   <h2 class="section-title"><span class="section-number">7.</span> Why MBPP was a weak environment for prediction-before-action</h2>
-  <p class="section-lede">The original idea only becomes valuable when knowing a consequence <b>before acting</b> is meaningfully better than simply observing the consequence afterward.</p>
-  <p class="section-lede">MBPP does not strongly satisfy that condition.</p>
-  <p class="section-lede">Running a test costs one tool call.</p>
-  <p class="section-lede">That test directly tells the model whether the patch worked.</p>
+  <p class="section-lede">The original idea only becomes valuable when knowing a consequence <b>before acting</b> is meaningfully better than simply observing the consequence afterward. MBPP does not strongly satisfy that condition. Running a test costs one tool call. That test directly tells the model whether the patch worked.</p>
   <p class="section-lede">The reactive agent can therefore do:</p>
   <div class="flow">patch &rarr; test</div>
-  <p class="section-lede mt-md">and immediately receive the information Arm B is being trained to predict.</p>
-  <p class="section-lede">Even a perfect predictor has limited room to add value when verification is already this cheap.</p>
-  <p class="section-lede">At the same time, the predictive protocol introduced a real cost.</p>
-  <p class="section-lede">REVISE could prevent the model from seeing the test feedback it would otherwise have received.</p>
-  <p class="section-lede">So this experiment does not show that prediction-before-action is generally useless.</p>
-  <p class="section-lede">It shows that <b>prediction had little opportunity to create value in an environment where checking the consequence was already cheap, while acting on a negative prediction carried an additional cost.</b></p>
-  <p class="section-lede">Prediction should matter more in environments where consequences are expensive, delayed, risky, or difficult to reverse.</p>
+  <p class="section-lede mt-md">and immediately receive the information Arm B is being trained to predict. Even a perfect predictor has limited room to add value when verification is already this cheap.</p>
+  <p class="section-lede">At the same time, the predictive protocol introduced a real cost. REVISE could prevent the model from seeing the test feedback it would otherwise have received. So this experiment does not show that prediction-before-action is generally useless.</p>
+  <p class="section-lede">It shows that <b>prediction had little opportunity to create value in an environment where checking the consequence was already cheap, while acting on a negative prediction carried an additional cost.</b> Prediction should matter more in environments where consequences are expensive, delayed, risky, or difficult to reverse.</p>
 </section>
 
 <section class="section" id="demo">
   <h2 class="section-title"><span class="section-number">8.</span> Other limitations</h2>
-  <p class="section-lede">The SFT recovery examples were synthetic mutations of correct MBPP solutions rather than failures sampled from the policy itself.</p>
-  <p class="section-lede">That means the failures shown during SFT may have differed substantially from the failures the model later generated during RL.</p>
-  <p class="section-lede">This distribution mismatch may help explain why the model learned some outcome distinctions but completely failed to learn <code>ASSERTION_FAILURE</code>.</p>
+  <p class="section-lede">The SFT recovery examples were synthetic mutations of correct MBPP solutions rather than failures sampled from the policy itself. That means the failures shown during SFT may have differed substantially from the failures the model later generated during RL. This distribution mismatch may help explain why the model learned some outcome distinctions but completely failed to learn <code>ASSERTION_FAILURE</code>.</p>
   <p class="section-lede">The fine-grained outcome classes also contain some noise because they are inferred heuristically from execution errors.</p>
-  <p class="section-lede">Finally, this was a small experiment: one model family, one benchmark, two RL seeds, and a limited post-training budget.</p>
-  <p class="section-lede">The results are evidence about this particular mechanism and environment, not a general conclusion about predictive agents.</p>
+  <p class="section-lede">Finally, this was a small experiment: one model family, one benchmark, two RL seeds, and a limited post-training budget. The results are evidence about this particular mechanism and environment, not a general conclusion about predictive agents.</p>
   <details open>
   <summary>Agent trace + verifier gap</summary>
 
@@ -645,34 +601,26 @@ patch applied</code></div>
   <div class="grid-3">
     <div class="next-card">
       <div class="next-title">alpha = 0</div>
-      <p>Keep Arm B's prediction and KEEP/REVISE protocol exactly the same, but remove the verifier-derived auxiliary CE loss.</p>
-      <p>If the learned outcome distinction remains, then it came from the protocol or from GRPO acting on the surrounding behavior rather than from the auxiliary objective itself.</p>
+      <p>Keep Arm B's prediction and KEEP/REVISE protocol exactly the same, but remove the verifier-derived auxiliary CE loss. If the learned outcome distinction remains, then it came from the protocol or from GRPO acting on the surrounding behavior rather than from the auxiliary objective itself.</p>
     </div>
     <div class="next-card">
       <div class="next-title">Forced KEEP</div>
-      <p>Keep prediction and the auxiliary CE objective, but disable REVISE.</p>
-      <p>Every patch is predicted and then executed normally.</p>
-      <p>If pass@1 recovers, that would provide much stronger evidence that the REVISE mechanism was responsible for the performance deficit.</p>
+      <p>Keep prediction and the auxiliary CE objective, but disable REVISE. Every patch is predicted and then executed normally. If pass@1 recovers, that would provide much stronger evidence that the REVISE mechanism was responsible for the performance deficit.</p>
     </div>
     <div class="next-card">
       <div class="next-title">Budget-neutral REVISE</div>
-      <p>Keep REVISE, but either make it free or increase the tool budget enough that exhaustion is no longer relevant.</p>
-      <p>If revised trajectories still fail, then the important cost is likely the loss of execution feedback rather than the spent tool call.</p>
+      <p>Keep REVISE, but either make it free or increase the tool budget enough that exhaustion is no longer relevant. If revised trajectories still fail, then the important cost is likely the loss of execution feedback rather than the spent tool call.</p>
     </div>
   </div>
 </section>
 
 <section class="section" id="stack">
   <h2 class="section-title"><span class="section-number">10.</span> Implementation</h2>
-  <p class="section-lede">PREDICT is built on Prime Intellect's PRIME-RL and Verifiers stack.</p>
-  <p class="section-lede"><code>GlyphTaskset</code> loads the coding tasks, prepares the runtime environment, and computes reward and rollout metrics.</p>
-  <p class="section-lede"><code>GlyphHarness</code> launches each coding-agent rollout in a confined subprocess environment.</p>
+  <p class="section-lede">PREDICT is built on Prime Intellect's PRIME-RL and Verifiers stack. <code>GlyphTaskset</code> loads the coding tasks, prepares the runtime environment, and computes reward and rollout metrics. <code>GlyphHarness</code> launches each coding-agent rollout in a confined subprocess environment.</p>
   <p class="section-lede">The rollout program implements the actual agent loop:</p>
   <div class="flow">model &rarr; tool call &rarr; patch &rarr; prediction/decision &rarr; execution &rarr; next model turn</div>
-  <p class="section-lede mt-md">It also records the verifier-derived prediction targets used after the rollout.</p>
-  <p class="section-lede"><code>PredictAlgorithm</code> determines how the resulting tokens and samples participate in training. Normal rollout tokens participate in GRPO, sampled prediction-label tokens are masked out of RL credit, and the verified prediction targets become separate CE-only training samples.</p>
-  <p class="section-lede">PRIME-RL then performs the actual batching, loss computation, backpropagation, optimizer updates, and synchronization of the updated model weights.</p>
-  <p class="section-lede">The repository contains the environment, SFT and RL configurations, auxiliary training logic, evaluation code, published results, version pins, and reproduction documentation.</p>
+  <p class="section-lede mt-md">It also records the verifier-derived prediction targets used after the rollout. <code>PredictAlgorithm</code> determines how the resulting tokens and samples participate in training. Normal rollout tokens participate in GRPO, sampled prediction-label tokens are masked out of RL credit, and the verified prediction targets become separate CE-only training samples.</p>
+  <p class="section-lede">PRIME-RL then performs the actual batching, loss computation, backpropagation, optimizer updates, and synchronization of the updated model weights. The repository contains the environment, SFT and RL configurations, auxiliary training logic, evaluation code, published results, version pins, and reproduction documentation.</p>
 </section>
 
 <footer>
