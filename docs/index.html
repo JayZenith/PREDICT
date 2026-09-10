@@ -541,7 +541,7 @@ patch applied</code></div>
     This successful Arm B rollout behaved like Arm A: it kept each patch, ran the visible tests,
     saw the failures, and repaired the code. The model predicted <code>PASS</code> three times,
     including for two incorrect patches, but the test feedback let it recover. It never used
-    <code>REVISE</code>, matching the high pass rate for never-revised trajectories—
+    <code>REVISE</code>, matching the high pass rate for never-revised trajectories,
     <a href="#bottleneck">63.3% in seed 42</a>.
   </div>
   <div class="callout crit">
@@ -580,7 +580,7 @@ patch applied</code></div>
     <div class="callout-label">The correct target is added to a separate supervised training sample</div>
     The rollout uses the model&rsquo;s own prediction and decision. Afterward, the verifier records the
     patch&rsquo;s correct outcome. Training then creates a separate supervised example from the same
-    context before the prediction, with that verified outcome as the target&mdash;even when the outcome
+    context before the prediction, with that verified outcome as the target, even when the outcome
     was hidden during the rollout, as with a rejected patch evaluated through shadow execution.
   </div>
 </section>
