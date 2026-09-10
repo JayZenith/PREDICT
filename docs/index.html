@@ -142,6 +142,7 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 18px; marg
   background: var(--surface); }
 .callout-label { font-weight: 700; font-size: 13px; letter-spacing: .09em; text-transform: uppercase;
   color: var(--c); margin-bottom: 7px; display: flex; align-items: center; gap: 7px; }
+.callout.warn .callout-label, .callout.crit .callout-label { color: var(--ink); }
 .good { --c: #78b07f; } .warn { --c: #d9a441; } .crit { --c: var(--red); } .info { --c: #7e9ec4; }
 .transcript-grid + .callout { margin-top: 18px; }
 .callout + .callout { margin-top: 10px; }
