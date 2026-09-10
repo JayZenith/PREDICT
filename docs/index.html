@@ -250,7 +250,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="tagline">PREDICT compares two Qwen3-4B coding agents trained on the same environment, tasks, reward, and SFT &rarr; RL pipeline.</p>
   <p class="tagline"><b>Arm A</b> is reactive: patch, test, recover.</p>
   <p class="tagline"><b>Arm B</b> is predictive: patch, predict the verified outcome, choose KEEP or REVISE, then execute. It is trained with GRPO plus an auxiliary cross-entropy target from the outcome the verifier confirms afterward.</p>
-  <p class="tagline">Both agents improved over their SFT bases, but Arm B did not outperform the reactive baseline after RL. The interesting part was how it failed. The predictive agent learned a real outcome distinction, but trajectories that acted on that prediction through REVISE almost never recovered&mdash;that is, they failed to reach a passing final state after revising, usually because they exhausted the 8-call budget before they could test and repair the new patch.</p>
+  <p class="tagline">Both agents improved over their SFT bases, but Arm B did not outperform the reactive baseline after RL. The predictive agent learned a real outcome distinction. When it chose REVISE, it had to rewrite the patch without seeing test feedback and usually exhausted the 8-call budget before it could test and repair the new patch.</p>
   <p class="tagline">On MBPP, predicting the outcome offered little advantage over simply running the test. Testing cost one tool call and returned direct, if coarse, execution feedback; the model saw whether tests passed or failed, not the explicit outcome label or an assertion diff. REVISE also consumed a call without returning that feedback.</p>
 </header>
 
