@@ -253,14 +253,9 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     <a href="https://jayzenith.me/">jayzenith.me</a> &middot;
     <a href="https://github.com/JayZenith/PREDICT">GitHub</a>
   </p>
-  <p class="tagline">PREDICT began with a simple question:</p>
-  <p class="tagline"><b class="hero-question">Can a coding agent learn to predict what will happen when its patch runs, and use that prediction to act better than an agent that simply runs the code and reacts to the result?</b></p>
-  <p class="tagline">I trained two Qwen3-4B coding agents in the same environment, on the same tasks, with the same tools, reward, tool-call budget, and SFT &rarr; RL pipeline.</p>
-  <p class="tagline"><b>Arm A is reactive:</b></p>
-  <div class="flow">patch &rarr; test &rarr; observe &rarr; repair if needed</div>
-  <p class="tagline mt-md"><b>Arm B is predictive:</b></p>
-  <div class="flow">patch &rarr; predict outcome &rarr; KEEP or REVISE</div>
-  <p class="tagline mt-md">If Arm B chooses KEEP, the patch is tested normally and the result is shown to the model. If it chooses REVISE, the model discards the patch and writes another one without seeing the test result of the rejected patch. Arm B is also trained to predict the verified execution outcome of each patch before seeing that outcome.</p>
+  <p class="tagline">PREDICT began with a broader question: can an agent learn to predict the outcome of its own actions before observing the result?</p>
+  <p class="tagline">I used coding as the testbed because patches have clear, verifiable outcomes, and because I wanted to understand the post-training stack end to end by actually training an agent.</p>
+  <p class="tagline">I compared two Qwen3-4B agents in the same coding environment. Arm A reacts to test feedback. Arm B predicts the outcome of each patch before execution, decides whether to keep or revise it, and is trained using the verified outcome afterward.</p>
   <p class="tagline">Both agents improved over their SFT checkpoints, but Arm B did not outperform the reactive baseline. The interesting part was why.</p>
   <p class="tagline">The predictive agent learned a real, although incomplete, ability to anticipate some failures. But REVISE was badly matched to this environment. It removed useful test feedback while consuming part of a limited tool-call budget. On MBPP, simply running the test was usually more useful than predicting its result.</p>
 </header>
