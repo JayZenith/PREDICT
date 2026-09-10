@@ -146,7 +146,7 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 18px; marg
 .transcript-grid + .callout { margin-top: 18px; }
 .callout + .callout { margin-top: 10px; }
 details { margin-top: 22px; }
-summary { cursor: pointer; color: var(--green); font-size: 15px; font-weight: 650; }
+summary { cursor: pointer; color: var(--green); font-size: 18px; font-weight: 650; }
 summary:hover { color: var(--ink); }
 svg [stroke="#ff4d4d"] { stroke: #b13e35 !important; }
 svg [fill="#ff4d4d"] { fill: #b13e35 !important; }
@@ -503,7 +503,7 @@ predict <b class="wrong">failure</b> &rarr; REVISE &rarr; no feedback, one call 
 </section>
 
 <section class="section" id="demo">
-  <details>
+  <details open>
   <summary>Example rollout + verifier gap</summary>
 
   <div>
@@ -592,16 +592,16 @@ patch applied</code></div>
     an earlier pre-execution state.</p>
 
   <div class="callout info">
-    <div class="callout-label">Why the target does not have to be in the rollout</div>
-    This supervision also works when the verified outcome never appeared in the visible rollout
-    for example when a rejected patch is evaluated through shadow execution. The label is
-    manufactured by the verifier after the fact and rendered onto the pre-execution context as its
-    own training sample.
+    <div class="callout-label">The correct target is added to a separate supervised training sample</div>
+    The rollout uses the model&rsquo;s own prediction and decision. Afterward, the verifier records the
+    patch&rsquo;s correct outcome. Training then creates a separate supervised example from the same
+    context before the prediction, with that verified outcome as the target&mdash;even when the outcome
+    was hidden during the rollout, as with a rejected patch evaluated through shadow execution.
   </div>
 </section>
 
 <section class="section" id="ablations">
-  <p class="section-kicker">What would settle it</p>
+  <p class="section-kicker">Open questions and next experiments</p>
   <h2 class="section-title">Three ablations this design still owes</h2>
   <p class="section-lede">Arm A vs. Arm B compares two complete systems, so it cannot say which
     piece mattered. Each of these holds Arm B fixed and changes one factor.</p>
