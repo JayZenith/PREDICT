@@ -131,6 +131,7 @@ table.data-table { width: 100%; border-collapse: collapse; font-size: 18px; marg
 .diagram-sub { font-size: 14.5px; fill: var(--ink-2); }
 .diagram-edge { font-size: 14.5px; fill: var(--ink-2); }
 .chart-caption { font-size: 17px; color: var(--ink-2); padding: 12px 2px 14px; line-height: 1.6; }
+.recovery-note { font-size: 18px; }
 .legend { display: flex; flex-wrap: wrap; gap: 18px; padding: 2px 2px 14px; font-size: 16.5px; color: var(--ink-2); }
 .legend-item { display: flex; align-items: center; gap: 8px; }
 .swatch { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
@@ -399,7 +400,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <div class="flow">63.3% in seed 42<br>60.4% in seed 43</div>
   <p class="section-lede mt-md">Trajectories that used REVISE at least once passed:</p>
   <div class="flow">1.1% in seed 42<br>4.9% in seed 43</div>
-  <p class="chart-caption">Here, “recovered” means that the final trajectory ended in a passing solution after
+  <p class="chart-caption recovery-note">Here, “recovered” means that the final trajectory ended in a passing solution after
     choosing REVISE. “Never recovered” means it did not reach that passing final state; most such
     trajectories exhausted the 8-call budget before visible test-and-repair could happen.</p>
 
