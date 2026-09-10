@@ -428,30 +428,10 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="chart-caption">Greedy pass@1, step 100. Arm B's headline 52.0% is almost exactly
     409 &times; 63.3% out of 500: the never-revised trajectories carry nearly the entire score.</p>
 
-  <p class="section-lede mt-lg">The gate was not random. It chose REVISE more often when the patch
-    would actually fail:</p>
-  <div class="flow">seed 42: 22.2% on failing patches vs. 8.5% on passing patches<br>seed 43: 14.3% on failing patches vs. 4.2% on passing patches</div>
-  <p class="section-lede mt-md">But acting on that signal was expensive.</p>
-
-  <div class="callout crit">
-    <div class="callout-label">&#9888; REVISE spends a call and returns nothing</div>
-    REVISE also consumed a call without returning that feedback. <b>99% of REVISE trajectories
-    exhausted the 8-call budget in seed 42 and 95% did so in seed 43.</b>
-    For trajectories that never revised, those numbers were 35% and 37%.
-  </div>
-
-  <div class="callout info">
-    <div class="callout-label">The protocol created a bad trade</div>
-    <div class="flow" style="margin-top:2px">predict <b>PASS</b> &rarr; KEEP &rarr; test &rarr; see coarse failure feedback &rarr; repair
-predict <b class="wrong">failure</b> &rarr; REVISE &rarr; no feedback, one call spent
-<span class="flow-note">The predictive signal could be useful while the action attached to it was not.</span></div>
-  </div>
-
-  <div class="callout warn">
-    <div class="callout-label">Scope</div>
-    This split is still correlational. Harder patches may be more likely to trigger REVISE in the
-    first place. A forced-KEEP ablation is needed to isolate the effect.
-  </div>
+  <p class="section-lede mt-lg"><b>The gate had a signal.</b> It chose REVISE more often when a patch would fail: 22.2% vs. 8.5% in seed 42, and 14.3% vs. 4.2% in seed 43.</p>
+  <p class="section-lede"><b>REVISE was costly.</b> It used one call without showing the test result. 99% of REVISE trajectories exhausted the 8-call budget in seed 42, and 95% did so in seed 43. The corresponding numbers for trajectories that never revised were 35% and 37%.</p>
+  <p class="section-lede"><b>The tradeoff:</b> a correct prediction followed by KEEP led to a visible test and a chance to repair. A prediction of failure followed by REVISE led to another patch without test feedback and left less budget for recovery.</p>
+  <p class="section-lede"><b>Limitation.</b> This split is correlational. Harder patches may be more likely to trigger REVISE in the first place. A forced-KEEP ablation is needed to isolate the effect.</p>
 </section>
 
 <section class="section" id="prediction">
