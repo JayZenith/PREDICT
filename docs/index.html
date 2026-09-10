@@ -554,10 +554,11 @@ patch applied</code></div>
   </div>
   <div class="callout warn">
     <div class="callout-label">What this shows</div>
-    This is the winning strategy, and it is the baseline's strategy. Two logical failures labelled
-    PASS, three KEEPs, three tests, reward 1.0, with recovery entirely on visible test feedback,
-    exactly like Arm A. The 0% ASSERTION_FAILURE recall and the
-    <a href="#bottleneck">63.3% never-revised pass rate</a> in one trace.
+    This successful Arm B rollout behaved like Arm A: it kept each patch, ran the visible tests,
+    saw the failures, and repaired the code. The model predicted <code>PASS</code> three times,
+    including for two incorrect patches, but the test feedback let it recover. It never used
+    <code>REVISE</code>, matching the high pass rate for never-revised trajectories—
+    <a href="#bottleneck">63.3% in seed 42</a>.
   </div>
   <div class="callout crit">
     <div class="callout-label">Verifier gap</div>
