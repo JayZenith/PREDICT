@@ -262,7 +262,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <div class="flow">patch &rarr; test &rarr; observe &rarr; recover</div>
   <p class="section-lede mt-md">Arm B inserts prediction before execution:</p>
   <div class="flow">patch &rarr; predict outcome &rarr; KEEP or REVISE &rarr; execute</div>
-  <p class="section-lede mt-md">A KEEP executes the patch with a visible test, so the agent observes the result and can recover by patching again. A REVISE executes the rejected patch in the background to obtain the verified label, but hides that result from the agent; the agent must immediately write another patch without seeing the test outcome. Thus the shared mechanism is the same patch/test/recovery loop, with Arm B’s prediction and decision gate inserted before execution.</p>
+  <p class="section-lede mt-md"><code>KEEP</code> runs the test and shows the result. <code>REVISE</code> hides the result and immediately asks for another patch. Everything else is shared with Arm A.</p>
   <p class="section-lede mt-md">Arm B predicts one of six outcome classes:</p>
   <div class="flow">PASS<br>ASSERTION_FAILURE<br>RUNTIME_ERROR<br>SYNTAX_ERROR<br>TIMEOUT<br>OTHER</div>
   <p class="section-lede mt-md">If the agent chooses REVISE, the rejected patch is still executed in the background so
