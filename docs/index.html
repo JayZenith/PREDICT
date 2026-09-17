@@ -253,8 +253,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
     <a href="https://jayzenith.me/">jayzenith.me</a> &middot;
     <a href="https://github.com/JayZenith/PREDICT">GitHub</a>
   </p>
-  <p class="kicker mt-md">Project overview</p>
-  <p class="tagline">A concise summary of the motivation, experiment, results, and main lesson.</p>
+  <h2 class="section-title mt-md">Project overview</h2>
   <p class="tagline">PREDICT started from a broader question: <b>can an agent be trained to predict the outcome of its own actions before observing the result?</b></p>
   <p class="tagline">I used MBPP, a benchmark of short Python programming problems with executable tests, as the testbed: the agent had to write and repair code against verifiable outcomes, while I learned the post-training stack by building the system end to end.</p>
   <p class="tagline">I trained two Qwen3-4B coding agents on the same underlying tasks, with the same environment, tools, reward, tool-call budget, and SFT &rarr; RL pipeline. Their SFT traces were tailored to each protocol, and both were evaluated on the same final evaluation set.</p>
