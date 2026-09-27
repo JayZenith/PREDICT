@@ -72,7 +72,7 @@ seed 43  KEEP        5.03               37%
 
 Effectively every REVISE trajectory exhausts its budget and terminates before it can run a test.
 
-That makes always predicting `PASS` the rational policy, not a training failure:
+That makes predicting `PASS` the safer bet, not a training failure:
 
 ```text
 predict PASS  → KEEP   → test → see the real failure → repair
@@ -87,8 +87,8 @@ selection bias, but it is not a controlled ablation.
 
 ## The auxiliary objective did work
 
-The Arm B SFT checkpoint effectively predicted `PASS` for everything. After RLVR it learned a real
-execution-outcome distinction:
+The Arm B SFT checkpoint effectively predicted `PASS` for everything. After RLVR it started flagging
+some patches as `RUNTIME_ERROR`:
 
 ```text
 RUNTIME_ERROR precision      seed 42: 62.5%   seed 43: 64.1%
@@ -97,6 +97,14 @@ RUNTIME_ERROR precision      seed 42: 62.5%   seed 43: 64.1%
 against a ~16% base rate, and not by over-predicting the class (18.0% of predictions against 18.2%
 of real outcomes). It did not learn `ASSERTION_FAILURE` at all: 0% recall against ~57% of
 outcomes. `SYNTAX_ERROR` and `TIMEOUT` were never shown during SFT and cannot be judged.
+
+`RUNTIME_ERROR` was the only failure label it ever used, so it works as a general "something is
+off" flag, not a crash detector: at step 50 (seed 42), 331 of its 557 `RUNTIME_ERROR` predictions
+were actually assertion failures. By step 100 it is right more often than not, so the flag is a
+real but rough signal.
+
+The CE term also got less data than the method implies: PRIME-RL's zero-advantage filter drops
+every rollout in a group whose rewards are all identical, and with it their verified prediction labels.
 
 The distinction is learned during GRPO+CE training and replicates across both seeds. Attributing it
 to the CE term specifically would need an `alpha = 0` ablation, which was not run. Either way, the
@@ -203,7 +211,8 @@ Qwen3-4B-Base · MBPP · SFT → RLVR · two RL seeds per arm
 212 SFT tasks   212 RL tasks   40 validation   500 final test
 ```
 
-Splits are disjoint. The 500-task test set was evaluated once, after the design was frozen.
+Splits are disjoint. The 500-task test set was never used for training or design decisions. Every
+checkpoint was scored on it, and step 100 was fixed in advance as the headline checkpoint.
 
 ## Reproduction
 
@@ -220,7 +229,7 @@ bash scripts/evaluate.sh a MODEL test
 
 See `docs/REPRODUCTION.md` and `docs/research_specs.md`. Upstream dependencies and the PRIME-RL
 commit are pinned. All headline numbers come from the four Arm A / Arm B runs across seeds 42 and
-43 in [`RESULTS_PUBLISHED/`](RESULTS_PUBLISHED/).
+43 in `RESULTS_PUBLISHED/` (kept locally, not committed to git).
 
 ## What this establishes
 

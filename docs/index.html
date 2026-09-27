@@ -264,8 +264,8 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <div class="flow">patch &rarr; predict outcome &rarr; KEEP or REVISE</div>
   <div class="flow">KEEP &rarr; test &rarr; observe &rarr; repair if needed</div>
   <div class="flow">REVISE &rarr; discard patch &rarr; write another patch without seeing the test result</div>
-  <p class="tagline mt-md">Both arms improved over their own SFT checkpoints after RL. The predictive arm did not outperform the reactive baseline. But it did learn a real, incomplete ability to anticipate some execution failures.</p>
-  <p class="tagline">Arm B went from predicting <code>PASS</code> almost everywhere after SFT to showing nontrivial <code>RUNTIME_ERROR</code> recall and precision after RL. Learning to recognize likely <code>RUNTIME_ERROR</code> did not mean the agent had a good action to take in response. <code>REVISE</code> was costly because it removed immediate test feedback and consumed limited action budget, so the trained policy favored <code>KEEP</code> much more often.</p>
+  <p class="tagline mt-md">Both arms improved over their own SFT checkpoints after RL. The predictive arm did not outperform the reactive baseline. But it did learn a rough signal that a patch was likely to fail.</p>
+  <p class="tagline">Arm B went from predicting <code>PASS</code> almost everywhere after SFT to flagging some patches as <code>RUNTIME_ERROR</code> after RL. It used that label as a general &ldquo;something is off&rdquo; signal rather than specifically for runtime errors. Sensing that a patch was bad did not mean the agent had a good action to take in response. <code>REVISE</code> was costly because it removed immediate test feedback and consumed limited action budget, so the trained policy favored <code>KEEP</code> much more often.</p>
   <p class="tagline">Two training signals could push behavior in different directions. The auxiliary cross-entropy loss trained the prediction itself toward the verified outcome, while GRPO optimized the surrounding policy, including the <code>KEEP</code>/<code>REVISE</code> decision, based on downstream task reward.</p>
   <p class="tagline">After each patch, the verifier records what actually happened and later uses that result as supervised feedback for the model&rsquo;s earlier prediction.</p>
   <p class="tagline">KEEP preserved the normal feedback loop: the agent ran the patch, saw the interpreter or test result, and could repair its work. REVISE removed that immediate feedback while consuming limited action budget. Both paths still generated this later training signal, but only KEEP gave the agent the information needed to improve the current trajectory.</p>
@@ -379,7 +379,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <div class="stat-grid mt-md">
     <div class="stat-tile"><div class="stat-value">212 SFT tasks</div><div class="stat-label">142 direct solutions and 70 recovery traces</div></div>
     <div class="stat-tile"><div class="stat-value">212 RL tasks</div><div class="stat-label">disjoint from SFT</div></div>
-    <div class="stat-tile"><div class="stat-value">40 validation tasks</div><div class="stat-label">used for checkpoint selection</div></div>
+    <div class="stat-tile"><div class="stat-value">40 validation tasks</div><div class="stat-label">monitored during RL</div></div>
     <div class="stat-tile"><div class="stat-value">500 final evaluation tasks</div></div>
   </div>
   <p class="section-lede">Both arms were trained with two RL seeds. The final test set was evaluated after the experimental design was fixed. The experiment was intentionally narrow: one model family, one coding environment, two RL seeds, and a limited post-training budget.</p>
@@ -501,7 +501,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 <section class="section" id="prediction">
   <h2 class="section-title"><span class="section-number">6.</span> Did the model actually learn to predict outcomes?</h2>
   <h3 class="next-title">Yes, but only partially</h3>
-  <p class="section-lede">One possible explanation for the result would be that Arm B simply failed to learn prediction at all. That is not what happened. At the SFT checkpoint, Arm B effectively predicted <code>PASS</code> for everything. After RL, it developed a nontrivial ability to recognize <code>RUNTIME_ERROR</code>.</p>
+  <p class="section-lede">One possible explanation for the result would be that Arm B simply failed to learn prediction at all. That is not what happened. At the SFT checkpoint, Arm B effectively predicted <code>PASS</code> for everything. After RL, it started flagging some patches as <code>RUNTIME_ERROR</code>.</p>
   <p class="section-lede">In seed 42:</p>
   <p class="section-lede"><b>PASS recall: 92%</b><br><b>RUNTIME_ERROR recall: about 63%</b><br><b>ASSERTION_FAILURE recall: 0%</b></p>
   <p class="section-lede">Runtime errors represented only about 16% of verified evaluation outcomes, while assertion failures represented roughly 57%.</p>
@@ -523,7 +523,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
 </svg></div>
   <p class="section-lede mt-md"><code>RUNTIME_ERROR</code> precision was:</p>
   <p class="section-lede"><b>62.5% in seed 42</b><br><b>64.1% in seed 43</b></p>
-  <p class="section-lede">So the model had learned a real distinction about which patches were likely to crash. But it did not learn the much more common distinction between code that executes and code that executes successfully but produces the wrong answer. That is an important limitation of the learned predictor.</p>
+  <p class="section-lede"><code>RUNTIME_ERROR</code> was the only failure label the model ever used, so it became a general &ldquo;something is off&rdquo; flag. At step 50 in seed 42, most of its <code>RUNTIME_ERROR</code> predictions were actually assertion failures (331 of 557). By step 100 it was right more often than not, so the flag carries a real but rough signal about which patches will fail. It did not learn the much more common distinction between code that executes and code that executes successfully but produces the wrong answer. That is an important limitation of the learned predictor.</p>
   <p class="section-lede">There is also a causal limitation. Arm B was trained using both GRPO and the auxiliary verified-outcome CE objective. Because I did not run an <code>alpha = 0</code> version of Arm B, this experiment cannot establish that the auxiliary CE term itself caused the learned runtime-error distinction. What the experiment shows is that the distinction emerged during the combined training procedure. The CE term also got less data than the method implies: PRIME-RL's zero-advantage filter drops every rollout in a group whose rewards are all identical, and with it those rollouts' verified prediction labels.</p>
 </section>
 
