@@ -524,7 +524,7 @@ hr.rule { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
   <p class="section-lede mt-md"><code>RUNTIME_ERROR</code> precision was:</p>
   <p class="section-lede"><b>62.5% in seed 42</b><br><b>64.1% in seed 43</b></p>
   <p class="section-lede">So the model had learned a real distinction about which patches were likely to crash. But it did not learn the much more common distinction between code that executes and code that executes successfully but produces the wrong answer. That is an important limitation of the learned predictor.</p>
-  <p class="section-lede">There is also a causal limitation. Arm B was trained using both GRPO and the auxiliary verified-outcome CE objective. Because I did not run an <code>alpha = 0</code> version of Arm B, this experiment cannot establish that the auxiliary CE term itself caused the learned runtime-error distinction. What the experiment shows is that the distinction emerged during the combined training procedure.</p>
+  <p class="section-lede">There is also a causal limitation. Arm B was trained using both GRPO and the auxiliary verified-outcome CE objective. Because I did not run an <code>alpha = 0</code> version of Arm B, this experiment cannot establish that the auxiliary CE term itself caused the learned runtime-error distinction. What the experiment shows is that the distinction emerged during the combined training procedure. The CE term also got less data than the method implies: PRIME-RL's zero-advantage filter drops every rollout in a group whose rewards are all identical, and with it those rollouts' verified prediction labels.</p>
 </section>
 
 <section class="section" id="limits">
